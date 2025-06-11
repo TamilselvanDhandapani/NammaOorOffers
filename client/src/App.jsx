@@ -14,7 +14,7 @@ import OffersDetails from "./Componets/Offers/OffersDetails"
 import Login from "./pages/AuthPages/Login";
 import Register from "./pages/AuthPages/Register";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
-import ResetPassword from "./pages/AuthPages/ResetPassword";
+
 import Verification from "./pages/AuthPages/Verification";
 
 // Components
@@ -45,6 +45,7 @@ import StoreInformation from "./Componets/Store/StoreInformation"
 import UserCoupons from "./Componets/User/UserCoupons";
 import MyStore from "./Componets/Store/MyStore";
 import StoreAnalytics from "./Componets/Store/StoreAnalytics";
+import ResetPassword from "./pages/AuthPages/ResetPassword";
 
 
 const App = () => {
