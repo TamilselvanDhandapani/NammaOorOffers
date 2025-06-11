@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: true,
+    origin: "https://nammaooroffers-1-ouei.onrender.com", // ✅ Your frontend domain
     credentials: true,
   })
 );
