@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
-import { useStore } from "../../context/StoreContext"; // ✅ Import context
+import  useStore from "../../hooks/useStore";
 import "../../styles/UserList.css";
 
 const UserList = () => {
   const [role, setRole] = useState("store");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [updating, setUpdating] = useState({}); // track which user is updating
 
-  const {
-    users,
-    loading,
-    error,
-    fetchUsersByRole,
-  } = useStore(); // ✅ Use context
+  const { users, loading, error, fetchUsersByRole, changeUserRole } =
+    useStore();
 
+  // Fetch users when role changes
   useEffect(() => {
-    fetchUsersByRole(role); // ✅ Fetch users from context method
-  }, [role]);
+    fetchUsersByRole(role);
+  }, [role, fetchUsersByRole]); // ✅ Now clean and warning-free
 
+  // Filter users when search term or user list changes
   useEffect(() => {
     const results = users.filter(
       (user) =>
@@ -27,6 +26,12 @@ const UserList = () => {
     );
     setFilteredUsers(results);
   }, [searchTerm, users]);
+
+  const handleRoleChange = async (userId, newRole) => {
+    setUpdating((prev) => ({ ...prev, [userId]: true }));
+    await changeUserRole(userId, newRole);
+    setUpdating((prev) => ({ ...prev, [userId]: false }));
+  };
 
   return (
     <div className="user-management-container">
@@ -66,6 +71,7 @@ const UserList = () => {
                 <th>Username</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Change Role</th>
               </tr>
             </thead>
             <tbody>
@@ -75,15 +81,34 @@ const UserList = () => {
                     <td>{user.username}</td>
                     <td>{user.email}</td>
                     <td>
-                      <span className={`role-badge ${user.role?.toLowerCase()}`}>
+                      <span
+                        className={`role-badge ${user.role?.toLowerCase()}`}
+                      >
                         {user.role}
                       </span>
+                    </td>
+                    <td>
+                      <select
+                        className="role-selector"
+                        value={user.role}
+                        onChange={(e) =>
+                          handleRoleChange(user._id, e.target.value)
+                        }
+                        disabled={updating[user._id]}
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="store">Store</option>
+                        <option value="user">User</option>
+                      </select>
+                      {updating[user._id] && (
+                        <span className="updating-msg">Updating...</span>
+                      )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="status-message">
+                  <td colSpan="4" className="status-message">
                     {searchTerm
                       ? "No users match your search criteria."
                       : "No users found for the selected role."}

@@ -11,6 +11,7 @@ const {
   getAllStores,
   getStoreByOwner,
   getStoreById,
+  updateUserRole,
 } = require("../controllers/storeController");
 
 
@@ -20,6 +21,9 @@ router.post("/create", protect, authorizeRoles("admin"), StoreCredentials);
 
 // ✅ Get all users with a specific role
 router.get("/users/:role", protect, authorizeRoles("admin"), getUsersByRole);
+
+//  Update the Roles
+router.put("/:userId/role", protect, authorizeRoles("admin"), updateUserRole);
 
 // ✅ Create a new store (Only for store role)
 router.post(

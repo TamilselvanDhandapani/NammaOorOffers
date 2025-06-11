@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useCoupon } from "../../context/CouponContext";
+import  useAuth  from "../../hooks/useAuth";
+import  useCoupon  from "../../hooks/useCoupon";
 import "../../styles/CouponForm.css";
 
 const CouponForm = () => {

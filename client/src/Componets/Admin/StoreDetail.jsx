@@ -1,13 +1,8 @@
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useStore } from "../../context/StoreContext";
+import useStore from "../../hooks/useStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faInstagram,
-  faYoutube,
-  faTwitter,
-  faFacebook,
-} from "@fortawesome/free-brands-svg-icons";
+// Solid icons (regular shapes)
 import {
   faGlobe,
   faStore,
@@ -15,31 +10,43 @@ import {
   faInfoCircle,
   faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
+// Brand icons (social media)
+import {
+  faInstagram,
+  faYoutube,
+  faTwitter,
+  faFacebook,
+} from "@fortawesome/free-brands-svg-icons";
 import "../../styles/StoreDetail.css";
 
 const StoreDetails = () => {
   const { id } = useParams();
-  const { selectedStore, storeLoading, storeError, getStoreById } = useStore();
+  const {
+    storeDetails,
+    loading,
+    error,
+    fetchStoreById,
+  } = useStore();
 
   useEffect(() => {
-    if (id) {
-      getStoreById(id);
-    }
-  }, [id]);
+    if (id) fetchStoreById(id);
+  }, [id, fetchStoreById]);
 
-  if (storeLoading) return <p className="loading-text">Loading store information...</p>;
+  if (loading) return <p className="loading-text">Loading store information...</p>;
 
-  if (storeError)
+  if (error)
     return (
       <div className="error-box">
-        <p className="error-text">{storeError}</p>
-        <button onClick={() => getStoreById(id)} className="retry-btn">Retry</button>
+        <p className="error-text">{error}</p>
+        <button onClick={() => fetchStoreById(id)} className="retry-btn">
+          Retry
+        </button>
       </div>
     );
 
-  if (!selectedStore) return <p className="error-text">Store not found.</p>;
+  if (!storeDetails) return <p className="error-text">Store not found.</p>;
 
-  const shop = selectedStore;
+  const shop = storeDetails;
 
   return (
     <div className="store-detail-container">
@@ -48,7 +55,7 @@ const StoreDetails = () => {
       </h2>
 
       <div className="shop-profile-wrapper">
-        <div>
+        <div className="shop-image-section">
           <img
             src={
               shop.storeLogo
@@ -62,22 +69,42 @@ const StoreDetails = () => {
 
           <div className="social-links-wrapper">
             {shop.socialMedia?.instagram && (
-              <a href={shop.socialMedia.instagram} target="_blank" rel="noreferrer" className="social-link insta">
+              <a
+                href={shop.socialMedia.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="social-link insta"
+              >
                 <FontAwesomeIcon icon={faInstagram} size="2x" />
               </a>
             )}
             {shop.socialMedia?.youtube && (
-              <a href={shop.socialMedia.youtube} target="_blank" rel="noreferrer" className="social-link yt">
+              <a
+                href={shop.socialMedia.youtube}
+                target="_blank"
+                rel="noreferrer"
+                className="social-link yt"
+              >
                 <FontAwesomeIcon icon={faYoutube} size="2x" />
               </a>
             )}
             {shop.socialMedia?.twitter && (
-              <a href={shop.socialMedia.twitter} target="_blank" rel="noreferrer" className="social-link tw">
+              <a
+                href={shop.socialMedia.twitter}
+                target="_blank"
+                rel="noreferrer"
+                className="social-link tw"
+              >
                 <FontAwesomeIcon icon={faTwitter} size="2x" />
               </a>
             )}
             {shop.socialMedia?.facebook && (
-              <a href={shop.socialMedia.facebook} target="_blank" rel="noreferrer" className="social-link fb">
+              <a
+                href={shop.socialMedia.facebook}
+                target="_blank"
+                rel="noreferrer"
+                className="social-link fb"
+              >
                 <FontAwesomeIcon icon={faFacebook} size="2x" />
               </a>
             )}

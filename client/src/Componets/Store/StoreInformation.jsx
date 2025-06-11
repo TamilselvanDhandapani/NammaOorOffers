@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../../styles/StoreInformation.css";
-import { useStore } from "../../context/StoreContext";
+import useStore  from "../../hooks/useStore";
 const StoreInformation = () => {
   const { createStore } = useStore();
 

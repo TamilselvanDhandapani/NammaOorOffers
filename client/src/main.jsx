@@ -7,6 +7,7 @@ import "./index.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { CouponProvider } from "./context/CouponContext.jsx";
 import { StoreProvider } from "./context/StoreContext.jsx";
+import { AnalyticsProvider } from "./context/AnalyticsContext.jsx";
 
 // Google OAuth
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -19,7 +20,9 @@ createRoot(root).render(
       <AuthProvider>
         <CouponProvider>
           <StoreProvider>
-            <App />
+           <AnalyticsProvider>
+             <App />
+           </AnalyticsProvider>
           </StoreProvider>
         </CouponProvider>
       </AuthProvider>

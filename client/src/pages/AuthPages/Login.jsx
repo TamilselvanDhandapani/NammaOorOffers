@@ -1,11 +1,11 @@
-import { useAuth } from "../../context/AuthContext";
+import  useAuth  from "../../hooks/useAuth";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaArrowRight } from "react-icons/fa";
 import { GoogleLogin } from "@react-oauth/google";
 import "../../styles/Login.css";
 
-import logo from "../../assets/logo.png"; // Optional: replace with your logo
+
 
 const Login = () => {
   const [email, setEmail] = useState("");

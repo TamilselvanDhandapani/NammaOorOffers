@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import  useAuth  from "../../hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
 import '../../Styles/ResetPassword.css';
 

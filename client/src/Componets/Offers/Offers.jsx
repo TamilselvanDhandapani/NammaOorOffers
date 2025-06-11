@@ -5,8 +5,7 @@ import { format } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/Offers.css";
-import { useCoupon } from "../../context/CouponContext";
-
+import useCoupon from "../../hooks/useCoupon";
 const Offers = () => {
   const {
     coupons,
@@ -24,7 +23,7 @@ const Offers = () => {
 
   useEffect(() => {
     fetchAllCoupons();
-  }, []);
+  }, [fetchAllCoupons]);
 
   useEffect(() => {
     const filteredData = coupons.filter((coupon) => coupon && typeof coupon === "object");

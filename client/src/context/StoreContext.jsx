@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useReducer, useCallback } from "react";
 import api from "../Services/api"; // Axios instance with baseURL and token
 
 const StoreContext = createContext();
@@ -16,16 +16,33 @@ const storeReducer = (state, action) => {
   switch (action.type) {
     case "FETCH_START":
       return { ...state, loading: true, error: null };
+
     case "FETCH_ALL_SUCCESS":
       return { ...state, loading: false, stores: action.payload };
+
     case "FETCH_MY_STORE_SUCCESS":
       return { ...state, loading: false, myStore: action.payload };
+
     case "FETCH_STORE_BY_ID_SUCCESS":
       return { ...state, loading: false, storeDetails: action.payload };
+
     case "FETCH_USERS_SUCCESS":
       return { ...state, loading: false, users: action.payload };
+
+    case "CHANGE_USER_ROLE":
+      return {
+        ...state,
+        loading: false,
+        users: state.users.map((user) =>
+          user._id === action.payload.userId
+            ? { ...user, role: action.payload.newRole }
+            : user
+        ),
+      };
+
     case "ERROR":
       return { ...state, loading: false, error: action.payload };
+
     default:
       return state;
   }
@@ -35,7 +52,7 @@ export const StoreProvider = ({ children }) => {
   const [state, dispatch] = useReducer(storeReducer, initialState);
 
   // ✅ Get all stores
-  const fetchAllStores = async () => {
+  const fetchAllStores = useCallback(async () => {
     dispatch({ type: "FETCH_START" });
     try {
       const res = await api.get("/store/all");
@@ -46,10 +63,10 @@ export const StoreProvider = ({ children }) => {
         payload: err.response?.data?.msg || "Failed to fetch stores",
       });
     }
-  };
+  }, []);
 
   // ✅ Get current user's store
-  const fetchMyStore = async () => {
+  const fetchMyStore = useCallback(async () => {
     dispatch({ type: "FETCH_START" });
     try {
       const res = await api.get("/store/my");
@@ -60,10 +77,10 @@ export const StoreProvider = ({ children }) => {
         payload: err.response?.data?.msg || "Failed to fetch your store",
       });
     }
-  };
+  }, []);
 
   // ✅ Get store by ID
-  const fetchStoreById = async (id) => {
+  const fetchStoreById = useCallback(async (id) => {
     dispatch({ type: "FETCH_START" });
     try {
       const res = await api.get(`/store/${id}`);
@@ -74,7 +91,7 @@ export const StoreProvider = ({ children }) => {
         payload: err.response?.data?.msg || "Failed to fetch store details",
       });
     }
-  };
+  }, []);
 
   // ✅ Create a store (only for 'store' role)
   const createStore = async (formData) => {
@@ -101,7 +118,7 @@ export const StoreProvider = ({ children }) => {
   };
 
   // ✅ Get users by role (admin only)
-  const fetchUsersByRole = async (role) => {
+  const fetchUsersByRole = useCallback(async (role) => {
     dispatch({ type: "FETCH_START" });
     try {
       const res = await api.get(`/store/users/${role}`);
@@ -112,7 +129,24 @@ export const StoreProvider = ({ children }) => {
         payload: err.response?.data?.msg || "Failed to fetch users",
       });
     }
-  };
+  }, []);
+
+  // ✅ Change a user's role
+  const changeUserRole = useCallback(async (userId, newRole) => {
+    dispatch({ type: "FETCH_START" });
+    try {
+      await api.put(`/store/${userId}/role`, { newRole });
+      dispatch({
+        type: "CHANGE_USER_ROLE",
+        payload: { userId, newRole },
+      });
+    } catch (err) {
+      dispatch({
+        type: "ERROR",
+        payload: err.response?.data?.msg || "Failed to update user role",
+      });
+    }
+  }, []);
 
   return (
     <StoreContext.Provider
@@ -124,6 +158,7 @@ export const StoreProvider = ({ children }) => {
         createStore,
         updateStore,
         fetchUsersByRole,
+        changeUserRole,
       }}
     >
       {children}
@@ -131,4 +166,4 @@ export const StoreProvider = ({ children }) => {
   );
 };
 
-export const useStore = () => useContext(StoreContext);
+export default StoreContext;

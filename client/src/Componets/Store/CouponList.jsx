@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useCoupon } from "../../context/CouponContext";
+import  useAuth  from "../../hooks/useAuth";
+import  useCoupon  from "../../hooks/useCoupon";
 import { Link } from "react-router-dom";
 import "../../styles/CouponList.css";
 
@@ -17,7 +17,7 @@ const CouponList = () => {
     if (!authLoading && user?.storeId) {
       fetchCouponsByStore(user.storeId);
     }
-  }, [authLoading, user]);
+  }, [authLoading, user,fetchCouponsByStore]);
 
   if (authLoading || couponLoading) {
     return <p className="couponlist-loading">Loading coupons...</p>;

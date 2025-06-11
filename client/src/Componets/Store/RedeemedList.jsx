@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useCoupon } from "../../context/CouponContext";
+import  useAuth  from "../../hooks/useAuth";
+import  useCoupon  from "../../hooks/useCoupon";
 import "../../styles/RedeemedList.css";
 
 const RedeemedList = () => {
@@ -20,11 +20,11 @@ const RedeemedList = () => {
       const storeId = typeof user.storeId === "object" ? user.storeId._id : user.storeId;
       fetchRedeemedCouponsByStore(storeId);
     }
-  }, [user]);
+  }, [user,fetchRedeemedCouponsByStore]);
 
   useEffect(() => {
     setFilteredCoupons(redeemedCoupons);
-  }, [redeemedCoupons]);
+  }, [redeemedCoupons,]);
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();

@@ -29,6 +29,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/coupon", require("./routes/couponRoutes"));
 
 app.use("/api/store", require("./routes/storeRoutes"));
+app.use("/api/analytics",require("./routes/analyticsRoutes"))
 
 // Server Start
 const PORT = process.env.PORT || 5000;

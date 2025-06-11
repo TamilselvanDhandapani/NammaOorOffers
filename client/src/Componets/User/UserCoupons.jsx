@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useCoupon } from "../../context/CouponContext";
+import  useAuth  from "../../hooks/useAuth";
+import useCoupon  from "../../hooks/useCoupon";
 import "../../styles/RedeemedCoupons.css";
 
 const RedeemedCoupons = () => {
@@ -16,7 +16,7 @@ const RedeemedCoupons = () => {
     if (user?._id) {
       fetchMyRedeemedCoupons(user._id);
     }
-  }, [user?._id]);
+  }, [user?._id,fetchMyRedeemedCoupons]);
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
@@ -66,6 +66,7 @@ const RedeemedCoupons = () => {
                       : "N/A"}
                   </span>
                 </p>
+                
               </div>
             </div>
           ))}
