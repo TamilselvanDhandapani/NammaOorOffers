@@ -13,9 +13,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: ["http://localhost:5173", "https://nammaooroffers-1-ouei.onrender.com"],
-  methods: ["GET", "POST"],
-  credentials: true
+    origin: 'https://nammaooroffers-1-ouei.onrender.com',
+    methods: 'GET,POST,PUT,DELETE',
+    credentials: true
 }));
 app.use(cookieParser());
 
@@ -30,9 +30,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Serve frontend
 
-app.use((req, res, next) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+
 
 
 
