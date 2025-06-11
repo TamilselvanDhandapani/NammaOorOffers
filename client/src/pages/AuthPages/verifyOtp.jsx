@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import  useAuth  from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import logo from "../../assets/logo.png"; // ✅ Add your logo path here
+ // ✅ Add your logo path here
 import "../../styles/VerifyOtp.css";
 
 const VerifyOtp = () => {
@@ -75,7 +75,7 @@ const VerifyOtp = () => {
 
 return (
   <div className="verify-container">
-    <img src={logo} alt="Logo" className="verify-logo" />
+   
 
     <h2 className="verify-title">Verify OTP</h2>
 
