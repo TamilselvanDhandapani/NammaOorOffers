@@ -7,7 +7,6 @@ import "chart.js/auto";
 const AdminAnalyticsPage = () => {
   const {
     adminStats,
-  
     fetchAdminStats,
     fetchStoreStats,
     loading,
