@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useStore from "../../hooks/useStore";
-import "../../styles/MyStore.css";
+import "../../styles/Store.css"
 
 const MyStore = () => {
   const { fetchMyStore, updateStore, myStore, loading } = useStore();
