@@ -17,7 +17,7 @@ const MyStore = () => {
 
   useEffect(() => {
     fetchMyStore();
-  }, [fetchMyStore]);
+  }, []);
 
   useEffect(() => {
     if (myStore) {

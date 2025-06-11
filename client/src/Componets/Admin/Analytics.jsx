@@ -20,7 +20,7 @@ useEffect(() => {
     fetchAdminStats();
     if (user.storeId) fetchStoreStats(user.storeId);
   }
-}, [user, fetchAdminStats, fetchStoreStats]); // ✅ no warning now
+}, [user]); // ✅ no warning now
 
 
   if (loading) return <p className="text-center mt-6">Loading analytics...</p>;

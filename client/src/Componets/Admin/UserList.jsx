@@ -15,7 +15,7 @@ const UserList = () => {
   // Fetch users when role changes
   useEffect(() => {
     fetchUsersByRole(role);
-  }, [role, fetchUsersByRole]); // ✅ Now clean and warning-free
+  }, [role]); // ✅ Now clean and warning-free
 
   // Filter users when search term or user list changes
   useEffect(() => {

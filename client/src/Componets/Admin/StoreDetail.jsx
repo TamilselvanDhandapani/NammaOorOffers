@@ -30,7 +30,7 @@ const StoreDetails = () => {
 
   useEffect(() => {
     if (id) fetchStoreById(id);
-  }, [id, fetchStoreById]);
+  }, [id]);
 
   if (loading) return <p className="loading-text">Loading store information...</p>;
 

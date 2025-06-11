@@ -13,7 +13,7 @@ const AllStore = () => {
 
   useEffect(() => {
   fetchAllStores();
-}, [fetchAllStores]); 
+}, []); 
 
 
   if (loading) return <p className="store-loading">Loading store data...</p>;

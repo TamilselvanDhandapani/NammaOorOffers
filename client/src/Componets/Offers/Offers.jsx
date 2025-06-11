@@ -23,13 +23,13 @@ const Offers = () => {
 
   useEffect(() => {
     fetchAllCoupons();
-  }, [fetchAllCoupons]);
+  }, []);
 
   useEffect(() => {
     const filteredData = coupons.filter((coupon) => coupon && typeof coupon === "object");
 
     const uniqueCategories = [
-      ...new Set(filteredData.flatMap((c) => c.categories || [])),
+      ...new Set(filteredData.flatMap((c) => c.categories || [])),    
     ];
     const uniqueCities = [
       ...new Set(filteredData.map((c) => c.store?.storeCity).filter(Boolean)),

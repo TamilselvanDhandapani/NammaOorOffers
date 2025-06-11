@@ -41,7 +41,7 @@ const CouponDetail = () => {
     };
 
     fetchCoupon();
-  }, [user?.storeId, id,getCouponByStoreAndId]);
+  }, [user?.storeId]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
