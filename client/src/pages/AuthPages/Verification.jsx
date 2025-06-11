@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import  useAuth  from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "../../styles/Verification.css"
 
-import "../../styles/VerifyOtp.css";
 
-const VerifyOtp = () => {
+
+const Verification = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timer, setTimer] = useState(60);
   const [verifying, setVerifying] = useState(false);
@@ -121,4 +122,4 @@ return (
 
 };
 
-export default VerifyOtp;
+export default Verification;

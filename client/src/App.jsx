@@ -15,7 +15,7 @@ import Login from "./pages/AuthPages/Login";
 import Register from "./pages/AuthPages/Register";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
-import VerifyOtp from "./pages/AuthPages/verifyOtp";
+import Verification from "./pages/AuthPages/Verification";
 
 // Components
 import Navbar from "./Componets/Navbar/Navbar";
@@ -46,6 +46,7 @@ import UserCoupons from "./Componets/User/UserCoupons";
 import MyStore from "./Componets/Store/MyStore";
 import StoreAnalytics from "./Componets/Store/StoreAnalytics";
 
+
 const App = () => {
   return (
     <>
@@ -74,7 +75,7 @@ const App = () => {
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/verify-otp" element={<Verification />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
