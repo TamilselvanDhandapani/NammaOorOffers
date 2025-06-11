@@ -44,6 +44,7 @@ import StoreInformation from "./Componets/Store/StoreInformation"
 // User Pages
 import UserCoupons from "./Componets/User/UserCoupons";
 import MyStore from "./Componets/Store/MyStore";
+import StoreAnalytics from "./Componets/Store/StoreAnalytics";
 
 const App = () => {
   return (
@@ -211,6 +212,16 @@ const App = () => {
               <PrivateRoute role="store">
                 <StoreDashboard>
                   <MyStore />
+                </StoreDashboard>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/storeanalytics"
+            element={
+              <PrivateRoute role="store">
+                <StoreDashboard>
+                  <StoreAnalytics />
                 </StoreDashboard>
               </PrivateRoute>
             }

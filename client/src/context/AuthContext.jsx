@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useReducer, useEffect } from "react";
 import api from "../Services/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -52,9 +52,11 @@ export const AuthProvider = ({ children }) => {
         const user = res.data.user;
         localStorage.setItem("user", JSON.stringify(user));
         dispatch({ type: "AUTH_SUCCESS", payload: user });
-      } catch (err) {
+      } catch (error) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        console.log(error);
+        
         dispatch({ type: "LOGOUT" });
         toast.error("Session expired. Please log in again.");
       }
@@ -244,4 +246,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export default AuthContext;

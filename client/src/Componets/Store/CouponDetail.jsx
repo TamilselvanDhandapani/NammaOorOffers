@@ -4,8 +4,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useAuth } from "../../context/AuthContext";
-import { useCoupon } from "../../context/CouponContext";
+import  useAuth  from "../../hooks/useAuth";
+import useCoupon from "../../hooks/useCoupon";
 import "../../styles/CouponDetail.css";
 
 const CouponDetail = () => {
@@ -33,6 +33,7 @@ const CouponDetail = () => {
         setCoupon(data);
         setEditedCoupon(data);
       } catch (err) {
+        console.error("Error fetching coupon:", err);
         setError("Failed to fetch coupon");
       } finally {
         setLoading(false);
@@ -40,7 +41,7 @@ const CouponDetail = () => {
     };
 
     fetchCoupon();
-  }, [user?.storeId, id]);
+  }, [user?.storeId, id,getCouponByStoreAndId]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";

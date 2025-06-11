@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useStore } from "../../context/StoreContext";
+import  useStore  from "../../hooks/useStore";
 import "../../styles/MyStore.css";
 
 const MyStore = () => {
@@ -22,7 +22,7 @@ const MyStore = () => {
 
   useEffect(() => {
     fetchMyStore();
-  }, []);
+  }, [fetchMyStore]);
 
   useEffect(() => {
     if (myStore) {
@@ -66,7 +66,7 @@ const MyStore = () => {
 
   return (
     <div className="mystore-container">
-      <h2>My Store</h2>
+       <h1>{myStore.storeName}'s Information</h1>
       {!editMode ? (
         <div className="mystore-card">
           <img
@@ -97,6 +97,9 @@ const MyStore = () => {
         </div>
       ) : (
         <form className="store-form" onSubmit={handleSubmit}>
+
+       
+         <label>Store Name :</label>
           <input
             name="storeName"
             value={formData.storeName}
@@ -104,12 +107,17 @@ const MyStore = () => {
             placeholder="Store Name"
             required
           />
+      
+
+       <label>Store Website</label>
           <input
             name="storeWebsite"
             value={formData.storeWebsite}
             onChange={handleChange}
             placeholder="Website"
           />
+
+          <label>Store Address</label>
           <input
             name="storeAddress"
             value={formData.storeAddress}
@@ -117,6 +125,8 @@ const MyStore = () => {
             placeholder="Address"
             required
           />
+
+          <label>Store City</label>
           <input
             name="storeCity"
             value={formData.storeCity}
@@ -124,6 +134,8 @@ const MyStore = () => {
             placeholder="City"
             required
           />
+
+          <label>Store Description</label>
           <textarea
             name="storeDescription"
             value={formData.storeDescription}

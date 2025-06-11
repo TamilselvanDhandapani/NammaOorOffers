@@ -194,6 +194,33 @@ const getUsersByRole = async (req, res) => {
   }
 };
 
+
+// ✅ Change a user's role
+const updateUserRole = async (req, res) => {
+  const { userId } = req.params;
+  const { newRole } = req.body;
+
+  if (!newRole) {
+    return res.status(400).json({ msg: "New role is required in request body" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    user.role = newRole;
+    await user.save();
+
+    res.status(200).json({ msg: "User role updated successfully", user: { id: user._id, username: user.username, role: user.role } });
+  } catch (err) {
+    console.error("Error updating user role:", err);
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+
 module.exports = {
   StoreCredentials,
   addStore,
@@ -202,4 +229,5 @@ module.exports = {
   getStoreByOwner,
   getStoreById,
   getUsersByRole,
+  updateUserRole,
 };

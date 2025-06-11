@@ -6,13 +6,14 @@ import {
   FaListAlt,
   FaCheckCircle
 } from "react-icons/fa";
+import { IoAnalytics } from "react-icons/io5";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faTimes } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/StoreDashboard.css";
-import { useAuth } from "../../context/AuthContext";
+
 
 const StoreDashboard = ({ children }) => {
-   const { user, isAuthenticated } = useAuth();
+   
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -85,6 +86,17 @@ const StoreDashboard = ({ children }) => {
               onClick={() => setSidebarOpen(false)}
             >
               <FaCheckCircle className="nav-icon" /> Redeemed Coupons
+            </Link>
+          </li>
+          <li className="store-nav-item">
+            <Link
+              to="/storeanalytics"
+              className={`store-nav-link ${
+                location.pathname.startsWith("/storeanalytics") ? "active" : ""
+              }`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <IoAnalytics className="nav-icon" /> Store Analytics
             </Link>
           </li>
         </ul>

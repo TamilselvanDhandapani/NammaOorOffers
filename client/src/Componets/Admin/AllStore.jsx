@@ -1,19 +1,20 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useStore } from "../../context/StoreContext";
+import useStore  from "../../hooks/useStore";
 import "../../styles/AllStore.css";
 
 const AllStore = () => {
   const {
-    allStores,
+    stores,
     loading,
     error,
     fetchAllStores,
   } = useStore();
 
   useEffect(() => {
-    fetchAllStores();
-  }, []);
+  fetchAllStores();
+}, [fetchAllStores]); 
+
 
   if (loading) return <p className="store-loading">Loading store data...</p>;
 
@@ -29,11 +30,11 @@ const AllStore = () => {
     <div className="store-container">
       <h2 className="store-header">🛒 All Registered Stores</h2>
 
-      {allStores.length === 0 ? (
+      {stores.length === 0 ? (
         <p className="store-empty">No stores registered yet.</p>
       ) : (
         <div className="store-grid">
-          {allStores.map((store) => (
+          {stores.map((store) => (
             <div key={store._id} className="store-card">
               <img
                 src={

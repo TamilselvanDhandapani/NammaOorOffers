@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useReducer } from "react";
 import api from "../Services/api"; // centralized Axios instance with baseURL + token
 
 const CouponContext = createContext();
@@ -179,4 +179,4 @@ export const CouponProvider = ({ children }) => {
   );
 };
 
-export const useCoupon = () => useContext(CouponContext);
+export default CouponContext; 

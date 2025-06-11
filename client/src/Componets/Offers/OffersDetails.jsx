@@ -3,8 +3,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Helmet } from "react-helmet";
 import { format } from "date-fns";
-import { useAuth } from "../../context/AuthContext";
-import { useCoupon } from "../../context/CouponContext";
+import  useAuth  from "../../hooks/useAuth";
+import useCoupon from "../../hooks/useCoupon";
 import "react-toastify/dist/ReactToastify.css";
 import "../../styles/OfferDetail.css";
 
@@ -48,9 +48,7 @@ const OffersDetails = () => {
           await fetchMyRedeemedCoupons(user.id);
 
           // Check if already redeemed
-          const found = redeemedCoupons.some(
-            (item) => item.coupon?._id === id
-          );
+          const found = redeemedCoupons.some((item) => item.coupon?._id === id);
           setAlreadyRedeemed(found);
           if (found) setShowCode(true);
         }
@@ -62,7 +60,7 @@ const OffersDetails = () => {
     };
 
     fetchDetails();
-  }, [id, user?.id]);
+  }, [id, user?.id,fetchMyRedeemedCoupons, getCouponById, redeemedCoupons]);
 
   const handleRedeem = async () => {
     if (!user) {
@@ -187,7 +185,9 @@ const OffersDetails = () => {
             <div className="details-code-hidden">
               <p className="details-code-placeholder">•••• •••• ••••</p>
               <button
-                className={`details-redeem-button ${isExpired ? "disabled" : ""}`}
+                className={`details-redeem-button ${
+                  isExpired ? "disabled" : ""
+                }`}
                 onClick={handleRedeem}
                 disabled={isExpired}
               >

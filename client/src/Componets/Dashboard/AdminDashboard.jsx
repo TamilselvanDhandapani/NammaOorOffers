@@ -61,7 +61,7 @@ const AdminDashboard = ({ children }) => {
             <Link
               to="/allstore"
               className={`admin-nav-link ${
-                location.pathname.startsWith("/storedetail") ? "active" : ""
+                location.pathname.startsWith("/allstore") ? "active" : ""
               }`}
               onClick={() => setSidebarOpen(false)}
             >
