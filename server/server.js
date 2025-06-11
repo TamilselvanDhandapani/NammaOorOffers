@@ -30,10 +30,10 @@ app.use("/api/store", require("./routes/storeRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 // ===== Serve React Frontend =====
-app.use(express.static(path.join(__dirname, "client", "dist")));
+app.use(express.static(path.join(__dirname, "dist"))); // ✅ just "dist", not "client/dist"
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+  res.sendFile(path.join(__dirname, "dist", "index.html")); // ✅ point to dist/index.html
 });
 
 // ===== Start Server =====
