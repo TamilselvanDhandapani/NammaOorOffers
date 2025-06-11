@@ -76,6 +76,7 @@ const VerifyOtp = () => {
 return (
   <div className="verify-container">
    
+
     <h2 className="verify-title">Verify OTP</h2>
 
     {message && <p className="verify-message">{message}</p>}
