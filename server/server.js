@@ -12,12 +12,11 @@ const app = express();
 // ===== Middleware =====
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: "https://nammaooroffers-1-ouei.onrender.com",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: ["http://localhost:5173", "https://nammaooroffers-1-ouei.onrender.com"],
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 app.use(cookieParser());
 
 // ===== API Routes =====
@@ -28,6 +27,14 @@ app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 // ===== Serve uploaded files =====
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Serve frontend
+
+app.use((req, res, next) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+
 
 
 // ===== Start Server =====
