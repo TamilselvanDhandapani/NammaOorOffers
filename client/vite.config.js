@@ -4,12 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: {
-    proxy: {
-      "/api": {
-        target: "https://nammaooroffers-qlmw.onrender.com",
-        changeOrigin: true,
-      },
-    },
+  build: {
+    outDir: "dist", // Ensure build output goes to dist/
   },
 });
