@@ -1,8 +1,11 @@
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
+
 import useStore from "../../hooks/useStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// Solid icons (regular shapes)
+
+// Solid icons
 import {
   faGlobe,
   faStore,
@@ -10,13 +13,15 @@ import {
   faInfoCircle,
   faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
-// Brand icons (social media)
+
+// Brand icons
 import {
   faInstagram,
   faYoutube,
   faTwitter,
   faFacebook,
 } from "@fortawesome/free-brands-svg-icons";
+
 import "../../styles/StoreDetail.css";
 
 const StoreDetails = () => {
@@ -48,6 +53,32 @@ const StoreDetails = () => {
 
   const shop = storeDetails;
 
+
+  <Helmet>
+  <title>{shop.storeName} | Namma Ooru Offers</title>
+  <meta
+    name="description"
+    content={
+      shop.storeDescription?.slice(0, 150) ||
+      `Explore ${shop.storeName}'s store details and latest offers on Namma Ooru Offers.`
+    }
+  />
+  <meta property="og:title" content={`${shop.storeName} | Namma Ooru Offers`} />
+  <meta
+    property="og:description"
+    content={
+      shop.storeDescription?.slice(0, 150) ||
+      `Find deals from ${shop.storeName} in ${shop.storeCity}.`
+    }
+  />
+  {shop.storeLogo?.startsWith("http") && (
+    <meta property="og:image" content={shop.storeLogo} />
+  )}
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={`https://nammaooroffers-1-ouei.onrender.com/store/${id}`} />
+</Helmet>
+
+
   return (
     <div className="store-detail-container">
       <h2 className="shop-heading">
@@ -58,8 +89,8 @@ const StoreDetails = () => {
         <div className="shop-image-section">
           <img
             src={
-              shop.storeLogo
-                ? `http://localhost:5000${shop.storeLogo}`
+              shop.storeLogo?.startsWith("http")
+                ? shop.storeLogo
                 : "/placeholder.png"
             }
             onError={(e) => (e.target.src = "/placeholder.png")}
@@ -118,7 +149,9 @@ const StoreDetails = () => {
 
           {shop.storeWebsite && (
             <p className="shop-detail">
-              <strong><FontAwesomeIcon icon={faGlobe} /> Website:</strong>{" "}
+              <strong>
+                <FontAwesomeIcon icon={faGlobe} /> Website:
+              </strong>{" "}
               <a
                 href={shop.storeWebsite}
                 target="_blank"
@@ -131,13 +164,17 @@ const StoreDetails = () => {
           )}
 
           <p className="shop-detail">
-            <strong><FontAwesomeIcon icon={faMapMarkerAlt} /> Address:</strong>{" "}
+            <strong>
+              <FontAwesomeIcon icon={faMapMarkerAlt} /> Address:
+            </strong>{" "}
             {shop.storeAddress || "N/A"}
           </p>
 
           {shop.storeDescription && (
             <p className="shop-detail">
-              <strong><FontAwesomeIcon icon={faInfoCircle} /> Description:</strong>{" "}
+              <strong>
+                <FontAwesomeIcon icon={faInfoCircle} /> Description:
+              </strong>{" "}
               {shop.storeDescription}
             </p>
           )}
