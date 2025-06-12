@@ -97,14 +97,19 @@ const addStore = async (req, res) => {
   }
 };
 
-
-// ✅ Update store info
+// ✅ Update store info (Cloudinary version)
 const updateStore = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
+    // ✅ Use Cloudinary image URL if a new image was uploaded
     if (req.file) {
-      updateData.storeLogo = `/uploads/${req.file.filename}`;
+      updateData.storeLogo = req.file.path; // Cloudinary image URL
+    }
+
+    // Optional: Handle parsed JSON for nested fields (like socialMedia)
+    if (updateData.socialMedia && typeof updateData.socialMedia === "string") {
+      updateData.socialMedia = JSON.parse(updateData.socialMedia);
     }
 
     const updatedStore = await StoreInfo.findOneAndUpdate(
@@ -123,6 +128,7 @@ const updateStore = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
+
 
 // ✅ Get all stores (admin/public)
 const getAllStores = async (req, res) => {
