@@ -62,7 +62,8 @@ const addStore = async (req, res) => {
       return res.status(400).json({ msg: "Please fill all required fields." });
     }
 
-    const storeLogo = req.file ? `/uploads/${req.file.filename}` : "";
+    // ✅ Use Cloudinary URL if image is uploaded
+    const storeLogo = req.file?.path || ""; // This is the Cloudinary URL
 
     // ❗ Prevent duplicate store for user
     const existingStore = await StoreInfo.findOne({ owner: req.user.id });
@@ -74,7 +75,7 @@ const addStore = async (req, res) => {
 
     const newStore = await StoreInfo.create({
       storeName,
-      storeLogo,
+      storeLogo, // ✅ Saved as Cloudinary URL
       storeWebsite,
       storeAddress,
       storeCity,
