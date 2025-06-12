@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useStore from "../../hooks/useStore";
-import "../../styles/Store.css"
+import "../../styles/Store.css";
 
 const MyStore = () => {
   const { fetchMyStore, updateStore, myStore, loading } = useStore();
@@ -65,11 +65,11 @@ const MyStore = () => {
       {!editMode ? (
         <div className="mystore-card">
           <img
-            alt="Logo"
+            alt="Store Logo"
             className="store-logo"
             src={
-              myStore?.storeLogo
-                ? `http://localhost:5000${myStore.storeLogo}`
+              myStore?.storeLogo?.startsWith("http")
+                ? myStore.storeLogo
                 : "/placeholder.png"
             }
           />

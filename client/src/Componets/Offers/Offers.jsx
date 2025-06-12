@@ -7,12 +7,7 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/Offers.css";
 import useCoupon from "../../hooks/useCoupon";
 const Offers = () => {
-  const {
-    coupons,
-    loading,
-    error,
-    fetchAllCoupons,
-  } = useCoupon();
+  const { coupons, loading, error, fetchAllCoupons } = useCoupon();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState([]);
@@ -26,10 +21,12 @@ const Offers = () => {
   }, []);
 
   useEffect(() => {
-    const filteredData = coupons.filter((coupon) => coupon && typeof coupon === "object");
+    const filteredData = coupons.filter(
+      (coupon) => coupon && typeof coupon === "object"
+    );
 
     const uniqueCategories = [
-      ...new Set(filteredData.flatMap((c) => c.categories || [])),    
+      ...new Set(filteredData.flatMap((c) => c.categories || [])),
     ];
     const uniqueCities = [
       ...new Set(filteredData.map((c) => c.store?.storeCity).filter(Boolean)),
@@ -82,12 +79,20 @@ const Offers = () => {
       <div className="offers-container">
         <div className="offers-header">
           <h1>Exclusive Offers</h1>
-          <button className="filter-toggle-btn" onClick={() => setShowFilters(true)}>
+          <button
+            className="filter-toggle-btn"
+            onClick={() => setShowFilters(true)}
+          >
             Show Filters
           </button>
         </div>
 
-        {showFilters && <div className="filter-overlay" onClick={() => setShowFilters(false)} />}
+        {showFilters && (
+          <div
+            className="filter-overlay"
+            onClick={() => setShowFilters(false)}
+          />
+        )}
 
         <div className="offers-page">
           <section className="offers-content">
@@ -107,8 +112,14 @@ const Offers = () => {
                       itemType="https://schema.org/Offer"
                     >
                       <meta itemProp="name" content={coupon.title} />
-                      <meta itemProp="validThrough" content={coupon.expiryDate} />
-                      <meta itemProp="availability" content={isExpired ? "OutOfStock" : "InStock"} />
+                      <meta
+                        itemProp="validThrough"
+                        content={coupon.expiryDate}
+                      />
+                      <meta
+                        itemProp="availability"
+                        content={isExpired ? "OutOfStock" : "InStock"}
+                      />
 
                       <div
                         className={`status-tag ${
@@ -124,12 +135,13 @@ const Offers = () => {
 
                       <div className="store-info">
                         <img
-                          src={`http://localhost:5000${coupon.store?.storeLogo || "/placeholder.png"}`}
-                          alt={coupon.store?.storeName || "Store Logo"}
+                          alt="Store Logo"
                           className="store-logo"
-                          onError={(e) => {
-                            e.target.src = "/placeholder.png";
-                          }}
+                          src={
+                            coupon.store?.storeLogo?.startsWith("http")
+                              ? coupon.store.storeLogo
+                              : "/placeholder.png"
+                          }
                         />
                         <h3>{coupon.store?.storeName || "Store"}</h3>
                       </div>
@@ -139,13 +151,20 @@ const Offers = () => {
                         <p>{coupon.description || "Limited time deal"}</p>
                         <div className="coupon-meta">
                           {(coupon.categories || []).map((cat, i) => (
-                            <span key={i} className="category">{cat}</span>
+                            <span key={i} className="category">
+                              {cat}
+                            </span>
                           ))}
                         </div>
-                        <p className="store-location">{coupon.store?.storeCity}</p>
+                        <p className="store-location">
+                          {coupon.store?.storeCity}
+                        </p>
                       </div>
 
-                      <Link to={`/offersdetails/${coupon._id}`} className="view-offer-btn">
+                      <Link
+                        to={`/offersdetails/${coupon._id}`}
+                        className="view-offer-btn"
+                      >
                         {isExpired ? "Expired" : "View Offer"} <span>→</span>
                       </Link>
                     </div>
