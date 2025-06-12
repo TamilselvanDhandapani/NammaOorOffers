@@ -49,7 +49,6 @@ const StoreDetails = () => {
 
   const shop = storeDetails;
 
-
   return (
     <>
       <Helmet>
@@ -94,9 +93,8 @@ const StoreDetails = () => {
                   ? shop.storeLogo
                   : "/placeholder.png"
               }
-              onError={(e) => (e.target.src = "/placeholder.png")}
-              alt={shop.storeName || "Store Logo"}
-              className="shop-image"
+              alt={`${shop.storeName} Logo`}
+              className="shop-logo"
             />
 
             <div className="social-links-wrapper">
