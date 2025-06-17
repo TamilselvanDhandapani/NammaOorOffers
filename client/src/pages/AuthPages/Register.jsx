@@ -28,7 +28,14 @@ const RegisterPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const success = await register(username, email, password, phone, DOB, referalCode);
+      const success = await register(
+        username,
+        email,
+        password,
+        phone,
+        DOB,
+        referalCode
+      );
       if (success) navigate("/verify-otp");
     } catch (err) {
       console.error("Registration failed:", err);
@@ -38,23 +45,31 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className=" bg-white flex items-center justify-center  px-4">
+    <div className=" bg-white flex items-center justify-center min-h-[80vh] px-4">
       <Helmet>
         <title>Register | Namma Ooru Offers</title>
-        <meta name="description" content="Create an account to explore offers and rewards in your city!" />
+        <meta
+          name="description"
+          content="Create an account to explore offers and rewards in your city!"
+        />
       </Helmet>
 
-      <div className="bg-white shadow-md rounded-lg w-full max-w-md  p-6 space-y-6 border border-gray-200 mt-4 mb-4">
+      <div className="bg-white shadow-md rounded-lg w-full max-w-md  py-4 px-6 space-y-6 border border-gray-200 mt-2 mb-4">
         <div className="text-center">
-         
-          <h1 className="text-2xl font-semibold text-[#4a6bff]">Create Your Account</h1>
-          <p className="text-sm text-gray-600">Join us today to unlock local deals!</p>
+          <h1 className="text-2xl font-semibold text-[#4a6bff]">
+            Create Your Account
+          </h1>
+          <p className="text-sm text-gray-600">
+            Join us today to unlock local deals!
+          </p>
         </div>
 
         {message && (
           <div
             className={`text-sm p-2 rounded ${
-              message.includes("Error") ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+              message.includes("Error")
+                ? "bg-red-100 text-red-700"
+                : "bg-green-100 text-green-700"
             }`}
           >
             {message}
@@ -141,7 +156,10 @@ const RegisterPage = () => {
 
         <div className="text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <Link to="/login" className="text-[rgb(50,137,255)] hover:underline font-medium">
+          <Link
+            to="/login"
+            className="text-[rgb(50,137,255)] hover:underline font-medium"
+          >
             Login
           </Link>
         </div>
@@ -150,11 +168,18 @@ const RegisterPage = () => {
   );
 };
 
-const InputField = ({ id, label, icon, value, onChange, placeholder = "", type = "text", required = false }) => (
+const InputField = ({
+  id,
+  label,
+  icon,
+  value,
+  onChange,
+  placeholder = "",
+  type = "text",
+  required = false,
+}) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
-      {label}
-    </label>
+    
     <div className="flex items-center border border-gray-300 rounded px-3 py-2 bg-white">
       <span className="text-gray-500 mr-2">{icon}</span>
       <input

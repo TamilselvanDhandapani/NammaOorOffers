@@ -49,8 +49,8 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "py-2 shadow-lg" : "py-4 shadow"} bg-white px-6 md:px-8`}>
-      <div className="flex justify-between items-center">
+    <nav className={`sticky top-0 z-50 bg-white shadow transition-shadow duration-300`}>
+      <div className="max-w-8xl mx-auto px-6 md:px-8 h-20 flex justify-between items-center">
         <Link to="/" className="logo">
           <img
             src={logo}
@@ -77,20 +77,21 @@ const Navbar = () => {
           {isAuthenticated ? (
             <div className="user-info flex items-center gap-4">
               <span className="username text-sm text-gray-600">
+              
                 Hi, <strong>{user.username}</strong>
               </span>
               <button
                 onClick={handleLogout}
-                className="logout-btn bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 shadow-md"
+                className="logout-btn bg-red-500 text-white px-4 py-2 rounded-[10px] hover:bg-red-600 shadow-md flex items-center justify-center"
               >Logout</button>
             </div>
           ) : (
             <div className="auth-buttons flex gap-4">
               <Link to="/login">
-                <button className="btn signin-btn border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50">Sign In</button>
+                <button className="btn signin-btn border border-blue-600 text-blue-600 px-4 py-2 rounded-[10px] hover:bg-blue-50 flex items-center justify-center">Sign In</button>
               </Link>
               <Link to="/register">
-                <button className="btn signup-btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-md">Sign Up</button>
+                <button className="btn signup-btn bg-blue-600 text-white px-4 py-2 rounded-[10px] hover:bg-blue-700 shadow-md flex items-center justify-center">Sign Up</button>
               </Link>
             </div>
           )}
@@ -145,16 +146,16 @@ const Navbar = () => {
                   <span className="text-gray-700">Hi, <strong>{user.username}</strong></span>
                   <button
                     onClick={handleLogout}
-                    className="logout-btn bg-red-500 text-white py-2 rounded hover:bg-red-600"
+                    className="logout-btn bg-red-500 text-white py-2 rounded-[10px] hover:bg-red-600 flex items-center justify-center"
                   >Logout</button>
                 </div>
               ) : (
                 <div className="auth-buttons flex flex-col gap-3">
                   <Link to="/login">
-                    <button className="btn signin-btn border border-blue-600 text-blue-600 py-2 rounded hover:bg-blue-50 w-full">Sign In</button>
+                    <button className="btn signin-btn border border-blue-600 text-blue-600 py-2 rounded-[10px] hover:bg-blue-50 w-full flex items-center justify-center">Sign In</button>
                   </Link>
                   <Link to="/register">
-                    <button className="btn signup-btn bg-blue-600 text-white py-2 rounded hover:bg-blue-700 w-full">Sign Up</button>
+                    <button className="btn signup-btn bg-blue-600 text-white py-2 rounded-[10px] hover:bg-blue-700 w-full flex items-center justify-center">Sign Up</button>
                   </Link>
                 </div>
               )}

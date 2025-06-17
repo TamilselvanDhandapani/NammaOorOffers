@@ -50,10 +50,9 @@ import ResetPassword from "./pages/AuthPages/ResetPassword";
 
 import Unauthorized from "./pages/AuthPages/Unauthorized";
 import GenericError from "./pages/AuthPages/GenericError";
-import AuthContext from "./context/AuthContext";
+
 
 const App = () => {
-  const { loading } = useContext(AuthContext);
   
   return (
     <>
@@ -66,11 +65,8 @@ const App = () => {
         pauseOnHover={false}
         theme="dark"
       />
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center text-blue-600 text-lg font-semibold">
-          Loading...
-        </div>
-      ) : (
+      
+      
         <Router>
           <Navbar />
 
@@ -264,7 +260,7 @@ const App = () => {
 
           <Footer />
         </Router>
-      )}
+      
     </>
   );
 };
