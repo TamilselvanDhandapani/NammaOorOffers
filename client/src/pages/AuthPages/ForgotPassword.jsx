@@ -1,6 +1,7 @@
 import { useState } from "react";
-import  useAuth  from "../../hooks/useAuth";
-import "../../styles/ForgotPassword.css";
+import useAuth from "../../hooks/useAuth";
+import { FaEnvelope } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -12,46 +13,67 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="reset-wrapper">
-      <div className="reset-container">
-        <h2 className="reset-title">Forgot Password</h2>
+    <div className="flex justify-center items-center min-h-[80vh] bg-gray-50 px-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-[#4a6bff] mb-2">
+            Forgot Password
+          </h2>
+          <p className="text-sm text-gray-500">
+            Enter your email and we’ll send you a reset link
+          </p>
+        </div>
 
         {message && (
-          <p
-            className={`reset-message ${
-              error ? "reset-error" : "reset-success"
+          <div
+            className={`text-sm text-center px-4 py-2 rounded ${
+              error
+                ? "bg-red-100 text-red-600"
+                : "bg-green-100 text-green-600"
             }`}
           >
             {message}
-          </p>
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} className="reset-form">
-          <div className="reset-form-group">
-            <label htmlFor="email" className="reset-label">
-              Email Address
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email address
             </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="youremail@example.com"
-              className="reset-input"
-            />
+            <div className="flex items-center mt-1 border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-[#4a6bff]">
+              <FaEnvelope className="text-gray-400 mr-2" />
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
-          <button type="submit" className="reset-btn">
+          <button
+            type="submit"
+            className="w-full bg-[#4a6bff] hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition duration-200"
+          >
             Send Reset Link
           </button>
         </form>
 
-        <p className="reset-footer-text">
-          Remember your password?{" "}
-          <a href="/login" className="reset-login-link">
+        <p className="text-sm text-center text-gray-700">
+          Remember your password?
+          <Link
+            to="/login"
+            className="text-[#4a6bff] ml-1 hover:underline"
+          >
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

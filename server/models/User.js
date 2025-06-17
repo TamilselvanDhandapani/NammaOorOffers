@@ -28,12 +28,53 @@ const userSchema = new mongoose.Schema(
         return !this.googleId;
       },
       select: false,
-      minlength: 6, // Enforcing password strength
+      minlength: 6,
     },
+    phone: {
+      type: String,
+      required: function () {
+        return !this.googleId;
+      },
+      validate: {
+        validator: function (value) {
+          if (this.googleId && value == null) return true;
+          return /^[6-9]\d{9}$/.test(value);
+        },
+        message: "Invalid phone number format",
+      },
+    },
+    DOB: {
+      type: Date,
+      required: function () {
+        return !this.googleId;
+      },
+    },
+
+    referalCode: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+    },
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    myReferralCode: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+
+    // Auth
     googleId: {
       type: String,
       unique: true,
-      sparse: true, // Only enforced when googleId is present
+      sparse: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     role: {
       type: String,
@@ -44,26 +85,27 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    isVerified: {
-      type: Boolean,
-      default: false,
+    points: {
+      type: Number,
+      default: 0,
     },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-    verificationToken: String,
-    verificationTokenExpires: Date,
+
+    // OTP / Verification
     otp: String,
     otpExpires: {
       type: Date,
-      default: () => Date.now() + 10 * 60 * 1000, // default 10 min expiry
+      default: () => Date.now() + 10 * 60 * 1000,
     },
+    verificationToken: String,
+    verificationTokenExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
 
-    // Relationships
- storeId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "StoreInfo",
-},
-
+    // Store / Coupons
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "StoreInfo",
+    },
     coupons: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -84,12 +126,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-
-
 // ✅ Virtual property to check if user is a store owner
 userSchema.virtual("isStoreOwner").get(function () {
   return this.role === "store" && !!this.storeId;
 });
-
 
 module.exports = mongoose.model("User", userSchema);

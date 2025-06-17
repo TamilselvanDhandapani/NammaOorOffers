@@ -1,6 +1,6 @@
 /* Footer Container */
 .footer-container {
-  
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
@@ -10,7 +10,9 @@
   font-size: 0.9rem;
   color: #4a5568;
   padding: 1rem 0;
-    z-index: 1000;
+ 
+ 
+   
 }
 
 /* Footer Content */

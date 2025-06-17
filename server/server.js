@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: 'https://nammaooroffers-1-ouei.onrender.com',
+    origin: 'http://localhost:5173',
     methods: 'GET,POST,PUT,DELETE',
     credentials: true
 }));

@@ -5,13 +5,10 @@ import "react-toastify/dist/ReactToastify.css";
 
 const AuthContext = createContext();
 
-const storedUser = localStorage.getItem("user");
-const token = localStorage.getItem("token");
-
 const initialState = {
-  isAuthenticated: !!token,
-  user: storedUser ? JSON.parse(storedUser) : null,
-  loading: !!token && !storedUser,
+  isAuthenticated: false,
+  user: null,
+  loading: true,
   message: "",
 };
 
@@ -24,7 +21,7 @@ const authReducer = (state, action) => {
     case "AUTH_FAIL":
       return { ...state, loading: false, isAuthenticated: false, user: null, message: action.payload };
     case "LOGOUT":
-      return { ...initialState, isAuthenticated: false, user: null, loading: false };
+      return { ...initialState, loading: false };
     case "SET_MESSAGE":
       return { ...state, message: action.payload };
     case "STOP_LOADING":
@@ -37,7 +34,7 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // ✅ Load user on token presence
+  // 🔄 Load user if token exists
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("token");
@@ -55,14 +52,11 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        console.log(error);
-        
         dispatch({ type: "LOGOUT" });
         toast.error("Session expired. Please log in again.");
       }
     };
 
-    // ✅ Google login token handler
     const urlParams = new URLSearchParams(window.location.search);
     const oauthToken = urlParams.get("token");
     if (oauthToken) {
@@ -73,11 +67,19 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // ✅ Register
-  const register = async (username, email, password) => {
+  // 📝 Register
+  const register = async (username, email, password, phone, DOB, referalCode) => {
     dispatch({ type: "AUTH_START" });
     try {
-      const res = await api.post("/auth/register", { username, email, password });
+      const res = await api.post("/auth/register", {
+        username,
+        email,
+        password,
+        phone,
+        DOB,
+        referalCode,
+      });
+
       localStorage.setItem("pendingUserId", res.data.userId);
       localStorage.setItem("pendingEmail", email);
       dispatch({ type: "SET_MESSAGE", payload: res.data.msg || "OTP sent" });
@@ -91,14 +93,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Verify OTP
+  // 🔐 Verify OTP
   const verifyOtp = async (otp) => {
     dispatch({ type: "AUTH_START" });
     try {
       const userId = localStorage.getItem("pendingUserId");
       const res = await api.post("/auth/verify-otp", { userId, otp });
-
       const { token, user } = res.data;
+
       if (token && user) {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
@@ -119,7 +121,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Login
+  // 🔐 Login
   const login = async (email, password) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -138,7 +140,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Google Login
+  // 🔐 Google Login
   const googleLogin = async (tokenId) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -157,7 +159,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Resend OTP
+  // 🔁 Resend OTP
   const resendOtp = async () => {
     try {
       const email = localStorage.getItem("pendingEmail");
@@ -171,7 +173,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Forgot Password
+  // 🔐 Forgot Password
   const forgotPassword = async (email) => {
     try {
       const res = await api.post("/auth/forgot-password", { email });
@@ -184,7 +186,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Reset Password
+  // 🔐 Reset Password
   const resetPassword = async ({ token, newPassword }) => {
     try {
       const res = await api.post("/auth/reset-password", { token, newPassword });
@@ -199,7 +201,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Create Store User (by Super Admin)
+  // 🧑‍💼 Create Store User (by Super Admin)
   const createStoreUser = async (username, email, password, role) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -216,7 +218,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Logout
+  // 🚪 Logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -241,7 +243,7 @@ export const AuthProvider = ({ children }) => {
         createStoreUser,
       }}
     >
-      {children}
+      {!state.loading ? children : <div className="min-h-screen flex justify-center items-center">Loading auth...</div>}
     </AuthContext.Provider>
   );
 };

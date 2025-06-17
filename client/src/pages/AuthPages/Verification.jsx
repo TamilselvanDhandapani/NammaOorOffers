@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import  useAuth  from "../../hooks/useAuth";
+import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import "../../styles/Verification.css"
-
-
 
 const Verification = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -14,8 +11,9 @@ const Verification = () => {
   const inputsRef = useRef([]);
   const navigate = useNavigate();
 
-  const { verifyOtp, resendOtp, user, message } = useAuth(); 
+  const { verifyOtp, resendOtp, user, message } = useAuth();
 
+  // Countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer((prev) => {
@@ -28,11 +26,9 @@ const Verification = () => {
 
   const handleChange = (element, index) => {
     if (isNaN(element.value)) return;
-
     const newOtp = [...otp];
     newOtp[index] = element.value;
     setOtp(newOtp);
-
     if (element.value && index < 5) {
       inputsRef.current[index + 1].focus();
     }
@@ -48,20 +44,12 @@ const Verification = () => {
     e.preventDefault();
     setVerifying(true);
     const enteredOtp = otp.join("");
-  
     const success = await verifyOtp(enteredOtp);
-  
     if (success) {
-      
-      if (user?.role === "admin") {
-        navigate("/admin-dashboard");
-      } else {
-        navigate("/");
-      }
+      navigate(user?.role === "admin" ? "/admin-dashboard" : "/");
     } else {
       toast.error("Invalid OTP. Please try again.");
     }
-  
     setVerifying(false);
   };
 
@@ -70,56 +58,73 @@ const Verification = () => {
     await resendOtp();
     setOtp(new Array(6).fill(""));
     setTimer(60);
-
     setResending(false);
   };
 
-return (
-  <div className="verify-container">
-   
+  return (
+    <div className="flex justify-center items-center min-h-[80vh] bg-gray-50 px-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-[#4a6bff] mb-2">Verify OTP</h2>
+          <p className="text-sm text-gray-500">
+            Enter the 6-digit code sent to your email
+          </p>
+        </div>
 
-    <h2 className="verify-title">Verify OTP</h2>
+        {message && (
+          <div
+            className={`text-sm text-center px-4 py-2 rounded ${
+              message.toLowerCase().includes("error")
+                ? "bg-red-100 text-red-600"
+                : "bg-green-100 text-green-600"
+            }`}
+          >
+            {message}
+          </div>
+        )}
 
-    {message && <p className="verify-message">{message}</p>}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex justify-between gap-2">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                type="text"
+                maxLength="1"
+                value={digit}
+                onChange={(e) => handleChange(e.target, index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                ref={(el) => (inputsRef.current[index] = el)}
+                className="w-10 h-12 text-xl text-center border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#4a6bff] outline-none"
+                required
+              />
+            ))}
+          </div>
 
-    <form onSubmit={handleSubmit} className="verify-form">
-      <div className="otp-inputs">
-        {otp.map((digit, index) => (
-          <input
-            key={index}
-            type="text"
-            maxLength="1"
-            value={digit}
-            onChange={(e) => handleChange(e.target, index)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            ref={(el) => (inputsRef.current[index] = el)}
-            className="otp-box"
-            required
-          />
-        ))}
+          <button
+            type="submit"
+            className="w-full bg-[#4a6bff] hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition duration-200"
+            disabled={verifying}
+          >
+            {verifying ? "Verifying..." : "Verify OTP"}
+          </button>
+        </form>
+
+        <div className="text-center">
+          {timer > 0 ? (
+            <p className="text-sm text-gray-600">Resend OTP in {timer}s</p>
+          ) : (
+            <button
+              onClick={handleResend}
+              className="text-sm text-[#4a6bff] hover:underline disabled:opacity-50"
+              disabled={resending}
+            >
+              {resending ? "Resending..." : "Resend OTP"}
+            </button>
+          )}
+        </div>
       </div>
-
-      <button type="submit" className="verify-btn" disabled={verifying}>
-        {verifying ? "Verifying..." : "Verify"}
-      </button>
-    </form>
-
-    <div className="resend-section">
-      {timer > 0 ? (
-        <p className="timer-text">Resend OTP in {timer}s</p>
-      ) : (
-        <button
-          onClick={handleResend}
-          className="resend-btn"
-          disabled={resending}
-        >
-          {resending ? "Resending..." : "Resend OTP"}
-        </button>
-      )}
     </div>
-  </div>
-);
-
+  );
 };
 
 export default Verification;

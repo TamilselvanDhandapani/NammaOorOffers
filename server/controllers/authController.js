@@ -3,12 +3,27 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Store = require("../models/StoreInfo");
+const Counter = require("../models/Counter");
+
 const { sendOTP, sendResetLink } = require("../utils/sendEmail");
 const { generateTokenAndCookie } = require("../utils/generateTokenAndCookie");
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
+// Refferral code generator
+const generateReferralCode = async () => {
+  const counter = await Counter.findOneAndUpdate(
+    { key: "referral" },
+    { $inc: { count: 1 } },
+    { new: true, upsert: true }
+  );
+
+  const padded = counter.count.toString().padStart(4, "0"); // e.g. 1 → "0001"
+  return `NOO${padded}`; // e.g. NOO0001
+};
 
 const googleLogin = async (req, res) => {
   try {
@@ -23,15 +38,23 @@ const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email });
     if (!user) {
+      const myReferralCode = await generateReferralCode();
       user = await User.create({
         username: name,
         email,
         googleId: sub,
         isVerified: true,
+        phone: null,
+        DOB: null,
+        myReferralCode,
       });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     generateTokenAndCookie(res, user._id, user.role);
     user.lastLogin = new Date();
     await user.save();
@@ -41,11 +64,19 @@ const googleLogin = async (req, res) => {
 
     if (user.role === "store") {
       const store = await Store.findOne({ owner: user._id }).select("_id");
-      if (!store) return res.status(403).json({ msg: "Store ID not found. Please contact admin." });
+      if (!store)
+        return res
+          .status(403)
+          .json({ msg: "Store ID not found. Please contact admin." });
       safeUser.storeId = store._id;
     }
 
-    res.json({ success: true, msg: "Logged in successfully", user: safeUser, token });
+    res.json({
+      success: true,
+      msg: "Logged in successfully",
+      user: safeUser,
+      token,
+    });
   } catch (err) {
     console.error("Google login error:", err);
     res.status(401).json({ success: false, msg: "Google login failed" });
@@ -53,19 +84,43 @@ const googleLogin = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, phone, DOB, referalCode } = req.body;
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ msg: "User already exists with this email" });
+    if (existingUser)
+      return res
+        .status(400)
+        .json({ msg: "User already exists with this email" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 10 * 60000);
 
+    // 🔍 Check referral code
+    let referredBy = null;
+    if (referalCode) {
+      const referrer = await User.findOne({ myReferralCode: referalCode });
+      if (!referrer) {
+        return res.status(400).json({ msg: "Invalid referral code" });
+      }
+      referredBy = referrer._id;
+
+      // 🎁 Optional: reward the referrer
+      referrer.points += 100;
+      await referrer.save();
+    }
+
+    const myReferralCode = await generateReferralCode(); // Your logic here
+
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
+      phone,
+      DOB,
+      referalCode,
+      referredBy, // Save referrer ID
+      myReferralCode,
       otp,
       otpExpires,
       isVerified: false,
@@ -73,7 +128,7 @@ const register = async (req, res) => {
     });
 
     await sendOTP(email, otp);
-    res.status(201).json({ msg: "OTP sent to your email for verification", userId: user._id, otp });
+    res.status(201).json({ msg: "OTP sent to your email", userId: user._id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error, please try again later" });
@@ -84,13 +139,20 @@ const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email }).select("+password");
-    if (!user) return res.status(401).json({ msg: "Make sure you're registered" });
-    if (!user.isVerified) return res.status(401).json({ msg: "Please verify your email." });
+    if (!user)
+      return res.status(401).json({ msg: "Make sure you're registered" });
+    if (!user.isVerified)
+      return res.status(401).json({ msg: "Please verify your email." });
 
     const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) return res.status(401).json({ msg: "Invalid email or password" });
+    if (!isValidPassword)
+      return res.status(401).json({ msg: "Invalid email or password" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     generateTokenAndCookie(res, user._id, user.role);
     user.lastLogin = new Date();
     await user.save();
@@ -103,7 +165,12 @@ const login = async (req, res) => {
       safeUser.storeId = store ? store._id : null; // ✅ Allow login even if no store yet
     }
 
-    res.json({ success: true, msg: "Logged in successfully", user: safeUser, token });
+    res.json({
+      success: true,
+      msg: "Logged in successfully",
+      user: safeUser,
+      token,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Internal server error" });
@@ -128,13 +195,19 @@ const verifyOTP = async (req, res) => {
     user.otpExpires = null;
     await user.save();
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     generateTokenAndCookie(res, user._id, user.role);
 
     const safeUser = user.toObject();
     delete safeUser.password;
 
-    res.status(200).json({ message: "Email verified successfully", user: safeUser, token });
+    res
+      .status(200)
+      .json({ message: "Email verified successfully", user: safeUser, token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -148,7 +221,9 @@ const resendOTP = async (req, res) => {
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     if (user.otpSentAt && Date.now() - user.otpSentAt.getTime() < 60 * 1000) {
-      return res.status(429).json({ msg: "Please wait before requesting another OTP" });
+      return res
+        .status(429)
+        .json({ msg: "Please wait before requesting another OTP" });
     }
 
     const otp = generateOTP();
@@ -171,7 +246,9 @@ const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "10m" });
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     await sendResetLink(email, resetLink);
 
