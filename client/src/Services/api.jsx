@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const BASEURL = "http://localhost:5000/api"  
+export const BASEURL = "https://nammaooroffers-qlmw.onrender.com/api"  
 
 const api = axios.create({
   baseURL: BASEURL, // ✅ Correct usage without {}
