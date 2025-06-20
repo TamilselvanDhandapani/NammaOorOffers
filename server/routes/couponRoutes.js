@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const rateLimit = require("express-rate-limit");
 
 const {
   createCoupon,
@@ -18,13 +17,6 @@ const {
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
-
-// ✅ Rate limiter for coupon redemption
-const redeemLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5,
-  message: { msg: "Too many redemption attempts. Please try again later." },
-});
 
 // ========================= Store Coupon Management =========================
 
@@ -70,7 +62,7 @@ router.post(
   "/redeem",
   protect,
   authorizeRoles("user"),
-  redeemLimiter,
+
   redeemCoupon
 );
 
