@@ -1,45 +1,77 @@
 const StoreInfo = require("../models/StoreInfo");
-const User = require("../models/User")
+const User = require("../models/User");
+const Counter = require("../models/Counter");
 const bcrypt = require("bcryptjs");
+const { sendOTP } = require("../utils/sendEmail");
 
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 
+// Refferral code generator
+const generateReferralCode = async () => {
+  const counter = await Counter.findOneAndUpdate(
+    { key: "referral" },
+    { $inc: { count: 1 } },
+    { new: true, upsert: true }
+  );
+
+  const padded = counter.count.toString().padStart(4, "0"); // e.g. 1 → "0001"
+  return `NOO${padded}`; // e.g. NO-S0001
+};
 // ✅ Create Store Credentials
 
 const StoreCredentials = async (req, res) => {
-  let { username, email, password } = req.body;
-
-  if (!username || !email || !password) {
-    return res.status(400).json({ msg: "All fields are required" });
-  }
+  let { username, email, password, phone, referralCode } = req.body;
 
   email = email.toLowerCase().trim();
 
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ msg: "User already exists with this email" });
+      return res
+        .status(400)
+        .json({ msg: "User already exists with this email" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60000);
 
-    const storeAdmin = await User.create({
+    let referredBy = null;
+    if (referralCode) {
+      const referrer = await User.findOne({ myReferralCode: referralCode });
+      if (!referrer) {
+        return res.status(400).json({ msg: "Invalid referral code" });
+      }
+      referredBy = referrer._id;
+
+      // 🎁 Optional: reward the referrer
+      referrer.points += 100;
+      await referrer.save();
+    }
+
+    const myReferralCode = await generateReferralCode();
+
+    const user = await User.create({
       username,
       email,
       password: hashedPassword,
+      phone,
       role: "store",
-      isVerified: true,
-      createdBy: req.user?.id || null,
+      referredBy,
+      myReferralCode,
+      otp,
+      otpExpires,
+      isVerified: false,
+      otpSentAt: new Date(),
     });
 
+    await sendOTP(email, otp);
     res.status(201).json({
       msg: "Store user created successfully",
-      storeAdmin: {
-        id: storeAdmin._id,
-        email: storeAdmin.email,
-        username: storeAdmin.username,
-        role: storeAdmin.role,
-      },
+      userId: user._id,
     });
+    
   } catch (err) {
     console.error("Error creating store user:", err);
     res.status(500).json({ msg: "Server error, please try again later" });
@@ -68,7 +100,9 @@ const addStore = async (req, res) => {
     // ❗ Prevent duplicate store for user
     const existingStore = await StoreInfo.findOne({ owner: req.user.id });
     if (existingStore) {
-      return res.status(400).json({ msg: "A store already exists for this user." });
+      return res
+        .status(400)
+        .json({ msg: "A store already exists for this user." });
     }
 
     const parsedSocialMedia = socialMedia ? JSON.parse(socialMedia) : {};
@@ -90,7 +124,9 @@ const addStore = async (req, res) => {
       isStoreOwner: true,
     });
 
-    res.status(201).json({ msg: "Store created successfully", store: newStore });
+    res
+      .status(201)
+      .json({ msg: "Store created successfully", store: newStore });
   } catch (err) {
     console.error("Add Store Error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
@@ -122,13 +158,16 @@ const updateStore = async (req, res) => {
       return res.status(404).json({ msg: "Store not found for this user." });
     }
 
-    res.status(200).json({ msg: "Store updated successfully", store: updatedStore });
+    res.status(200).json({
+      success: true,
+      msg: "Store updated successfully",
+      data: { store: updatedStore },
+    });
   } catch (err) {
     console.error("Update Store Error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
-
 
 // ✅ Get all stores (admin/public)
 const getAllStores = async (req, res) => {
@@ -189,7 +228,7 @@ const getUsersByRole = async (req, res) => {
 
   try {
     const users = await User.find({ role }).select("-password"); // omit password
-    
+
     if (!users.length) {
       return res.status(404).json({ msg: `No users found with role: ${role}` });
     }
@@ -201,14 +240,15 @@ const getUsersByRole = async (req, res) => {
   }
 };
 
-
 // ✅ Change a user's role
 const updateUserRole = async (req, res) => {
   const { userId } = req.params;
   const { newRole } = req.body;
 
   if (!newRole) {
-    return res.status(400).json({ msg: "New role is required in request body" });
+    return res
+      .status(400)
+      .json({ msg: "New role is required in request body" });
   }
 
   try {
@@ -220,13 +260,15 @@ const updateUserRole = async (req, res) => {
     user.role = newRole;
     await user.save();
 
-    res.status(200).json({ msg: "User role updated successfully", user: { id: user._id, username: user.username, role: user.role } });
+    res.status(200).json({
+      msg: "User role updated successfully",
+      user: { id: user._id, username: user.username, role: user.role },
+    });
   } catch (err) {
     console.error("Error updating user role:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
-
 
 module.exports = {
   StoreCredentials,

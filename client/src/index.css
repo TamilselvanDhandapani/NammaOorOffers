@@ -1,12 +1,28 @@
 @import "tailwindcss";
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) rotate(6deg) scale(1.05);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
 
 
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
 
+body, #root {
+  height: 100%;
+  font-family: 'Times New Roman', Times, serif;
+}
 
-
-
-
-li{
-    list-style: none;
+li {
+  list-style: none;
 }

@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
-import  useAuth  from "../../hooks/useAuth";
-import  useCoupon  from "../../hooks/useCoupon";
 import { Link } from "react-router-dom";
-import "../../styles/CouponList.css";
+import useAuth from "../../hooks/useAuth";
+import useCoupon from "../../hooks/useCoupon";
 
 const CouponList = () => {
   const { user, loading: authLoading } = useAuth();
@@ -20,45 +19,62 @@ const CouponList = () => {
   }, [authLoading, user]);
 
   if (authLoading || couponLoading) {
-    return <p className="couponlist-loading">Loading coupons...</p>;
+    return (
+      <p className="text-center text-gray-600 text-lg mt-4">
+        Loading coupons...
+      </p>
+    );
   }
 
   if (!user || !user.storeId) {
     return (
-      <p className="couponlist-error">
+      <p className="text-center text-red-600 text-lg mt-4">
         Store information not available. Add store info and re-login.
       </p>
     );
   }
 
   if (error) {
-    return <p className="couponlist-error">{error}</p>;
+    return (
+      <p className="text-center text-red-600 text-lg mt-4">{error}</p>
+    );
   }
 
   return (
-    <div className="couponlist-wrapper">
-      <div className="couponlist-header-row">
-        <h2 className="couponlist-header">My Store Coupons</h2>
-      </div>
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md my-6">
+      <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
+        My Store Coupons
+      </h2>
 
       {storeCoupons.length === 0 ? (
-        <p className="couponlist-empty">No coupons found for your store.</p>
+        <p className="text-center text-gray-600 text-base">
+          No coupons found for your store.
+        </p>
       ) : (
-        <ul className="couponlist-items">
+        <ul className="grid gap-5">
           {storeCoupons.map((coupon) => (
-            <li key={coupon._id} className="couponlist-item">
-              <div className="couponlist-item-content">
-                <h3 className="couponlist-title">{coupon.title}</h3>
-                <p className="couponlist-description">{coupon.description}</p>
-                <p>
-                  <strong>Code:</strong> {coupon.redemptionCode}
+            <li
+              key={coupon._id}
+              className="border border-gray-200 bg-gray-100 rounded-md p-4 transition duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1"
+            >
+              <div>
+                <h3 className="text-xl font-medium text-gray-800 mb-1">
+                  {coupon.title}
+                </h3>
+                <p className="text-gray-600 mb-2">{coupon.description}</p>
+                <p className="text-sm">
+                  <span className="font-semibold">Code:</span>{" "}
+                  {coupon.redemptionCode}
                 </p>
-                <p>
-                  <strong>Expires:</strong>{" "}
+                <p className="text-sm mb-3">
+                  <span className="font-semibold">Expires:</span>{" "}
                   {new Date(coupon.expiryDate).toLocaleDateString()}
                 </p>
-                <div className="couponlist-action">
-                  <Link to={`/coupondetails/${coupon._id}`} className="couponlist-link">
+                <div className="flex justify-end">
+                  <Link
+                    to={`/coupondetails/${coupon._id}`}
+                    className="bg-teal-500 hover:bg-teal-600 text-white font-medium px-4 py-2 rounded-md text-sm transition"
+                  >
                     View Details
                   </Link>
                 </div>

@@ -2,19 +2,39 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { format } from "date-fns";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import "../../styles/Offers.css";
+import { FaMapMarkerAlt, FaTags } from "react-icons/fa";
+import { BiSolidCategory } from "react-icons/bi";
+import { FaChevronDown } from "react-icons/fa6";
 import useCoupon from "../../hooks/useCoupon";
+
+const CustomDropdown = ({ options, value, onChange, icon, label, color }) => {
+  return (
+    <div className="relative inline-block">
+      <div className={`flex items-center gap-2 px-4 py-2 border ${color} rounded-[25px] shadow-md cursor-pointer text-sm font-medium bg-white`}> 
+        <span>{icon} {label}</span>
+        <FaChevronDown className="ml-1" />
+        <select
+          value={value[0] || ""}
+          onChange={(e) => onChange(e.target.value ? [e.target.value] : [])}
+          className="absolute inset-0 opacity-0 cursor-pointer rounded-[25px]"
+        >
+          <option value="">{label}</option>
+          {options.map((option, idx) => (
+            <option key={idx} value={option}>{option}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+};
+
 const Offers = () => {
   const { coupons, loading, error, fetchAllCoupons } = useCoupon();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState([]);
   const [selectedCity, setSelectedCity] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchAllCoupons();
@@ -24,7 +44,6 @@ const Offers = () => {
     const filteredData = coupons.filter(
       (coupon) => coupon && typeof coupon === "object"
     );
-
     const uniqueCategories = [
       ...new Set(filteredData.flatMap((c) => c.categories || [])),
     ];
@@ -37,34 +56,60 @@ const Offers = () => {
 
   const filteredCoupons = useMemo(() => {
     return coupons.filter((coupon) => {
-      const storeMatch = coupon.store?.storeName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
       const categoryMatch =
         selectedCategory.length === 0 ||
         (coupon.categories || []).some((cat) => selectedCategory.includes(cat));
       const cityMatch =
         selectedCity.length === 0 ||
         selectedCity.includes(coupon.store?.storeCity);
-      return storeMatch && categoryMatch && cityMatch;
+      return categoryMatch && cityMatch;
     });
-  }, [coupons, searchTerm, selectedCategory, selectedCity]);
+  }, [coupons, selectedCategory, selectedCity]);
 
   const calculateDaysLeft = (expiryDate) => {
-    if (!expiryDate) return "No Expiry";
+    if (!expiryDate) return { text: "No Expiry", color: "bg-gray-300 text-gray-800" };
     const expiry = new Date(expiryDate);
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const timeDiff = expiry - today;
     const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-
-    if (daysLeft <= 0) return "Expired";
-    if (daysLeft === 1) return "Last Day";
-    if (daysLeft <= 7) return `${daysLeft}d left`;
-    return `${format(expiry, "dd MMM yyyy")}`;
+    if (daysLeft <= 0) return { text: "Expired", color: "bg-red-100 text-red-600" };
+    if (daysLeft === 1) return { text: "Last Day", color: "bg-orange-100 text-orange-600" };
+    if (daysLeft <= 7) return { text: `${daysLeft}d left`, color: "bg-yellow-100 text-yellow-700" };
+    return { text: format(expiry, "dd MMM yyyy"), color: "bg-green-100 text-green-700" };
   };
 
-  if (loading) return <div className="loading-state">Loading content...</div>;
-  if (error) return <div className="error-message">Error: {error}</div>;
+  const ShimmerCard = () => {
+    return (
+      <div className="max-w-sm mx-auto rounded-3xl overflow-hidden shadow-[0px_0px_20px_10px_#00000024] bg-white animate-pulse">
+        <div className="w-[350px] h-[180px] bg-gray-300" />
+        <div className="px-4 py-3 bg-gray-50 space-y-2">
+          <div className="h-5 bg-gray-300 rounded w-2/3" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+          <div className="h-10 bg-gray-300 rounded-lg mt-4" />
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-2 py-6">
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          🎉 Exclusive Offers
+        </h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, index) => (
+            <ShimmerCard key={index} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error)
+    return <div className="text-center text-red-500 mt-10">Error: {error}</div>;
 
   return (
     <>
@@ -76,179 +121,105 @@ const Offers = () => {
         />
       </Helmet>
 
-      <div className="offers-container">
-        <div className="offers-header">
-          <h1>Exclusive Offers</h1>
-          <button
-            className="filter-toggle-btn"
-            onClick={() => setShowFilters(true)}
-          >
-            Show Filters
-          </button>
+      <div className="max-w-7xl mx-auto px-2 py-4">
+        <h1 className="text-3xl font-bold mb-6 text-center">🎉 Exclusive Offers</h1>
+
+       <div className="flex justify-end md:justify-center gap-4 flex-wrap mb-10">
+          <CustomDropdown
+            options={categories}
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+            icon={"🗂️"}
+            label="Category"
+            color="border-blue-600 text-black-600 hover:bg-blue-50"
+          />
+
+          <CustomDropdown
+            options={cities}
+            value={selectedCity}
+            onChange={setSelectedCity}
+            icon={"📍"}
+            label="Location"
+            color="border-pink-600 text-black-600 hover:bg-pink-50"
+          />
         </div>
 
-        {showFilters && (
-          <div
-            className="filter-overlay"
-            onClick={() => setShowFilters(false)}
-          />
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCoupons.length === 0 ? (
+            <p className="col-span-full text-center text-gray-600">
+              No Matching Results Found.
+            </p>
+          ) : (
+            filteredCoupons.map((coupon) => {
+              const { text: daysLeftText, color: badgeColor } = calculateDaysLeft(
+                coupon.expiryDate
+              );
+              const isExpired = daysLeftText === "Expired";
 
-        <div className="offers-page">
-          <section className="offers-content">
-            {filteredCoupons.length === 0 ? (
-              <h2>No Matching Results Found.</h2>
-            ) : (
-              <div className="offers-coupons-grid">
-                {filteredCoupons.map((coupon) => {
-                  const daysLeft = calculateDaysLeft(coupon.expiryDate);
-                  const isExpired = daysLeft === "Expired";
-
-                  return (
+              return (
+                <div
+                  key={coupon._id}
+                  className="max-w-sm mx-auto rounded-3xl overflow-hidden shadow-[0px_0px_20px_10px_#00000024] bg-white"
+                >
+                  <div className="relative">
+                    <img
+                      src={
+                        coupon.backgroundImage ||
+                        "https://images.unsplash.com/photo-1596797038530-2f2f47d192ad"
+                      }
+                      alt="Offer Banner"
+                      className="w-[350px] h-40 object-cover object-center"
+                    />
+                    <div className="absolute top-3 left-3 bg-white rounded-full p-1 shadow">
+                      <img
+                        src={
+                          coupon.store?.storeLogo ||
+                          "https://via.placeholder.com/40x40.png?text=N"
+                        }
+                        alt="Logo"
+                        className="w-10 h-10 rounded-full"
+                      />
+                    </div>
                     <div
-                      key={coupon._id}
-                      className={`coupon-card ${isExpired ? "expired" : ""}`}
-                      itemScope
-                      itemType="https://schema.org/Offer"
+                      className={`absolute top-3 right-3 px-3 py-1 rounded-xl text-sm font-medium ${badgeColor}`}
                     >
-                      <meta itemProp="name" content={coupon.title} />
-                      <meta
-                        itemProp="validThrough"
-                        content={coupon.expiryDate}
-                      />
-                      <meta
-                        itemProp="availability"
-                        content={isExpired ? "OutOfStock" : "InStock"}
-                      />
+                      {daysLeftText}
+                    </div>
+                  </div>
 
-                      <div
-                        className={`status-tag ${
-                          isExpired
-                            ? "expired"
-                            : daysLeft.includes("d")
-                            ? "urgent"
-                            : "active"
-                        }`}
+                  <div className="px-4 py-3 bg-gray-50">
+                    <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                      <FaTags className="text-red-400" /> {coupon.title}
+                    </h3>
+
+                    {(coupon.categories || []).map((cat, i) => (
+                      <p
+                        key={i}
+                        className="text-gray-700 text-sm mt-1 flex items-center gap-2"
                       >
-                        {daysLeft}
-                      </div>
+                        <BiSolidCategory className="text-red-400" /> {cat}
+                      </p>
+                    ))}
+                    <p className="text-gray-700 text-sm mt-1 flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-red-500" /> {coupon.store?.storeCity}
+                    </p>
 
-                      <div className="store-info">
-                        <img
-                          alt="Store Logo"
-                          className="store-logo"
-                          src={
-                            coupon.store?.storeLogo?.startsWith("http")
-                              ? coupon.store.storeLogo
-                              : "/placeholder.png"
-                          }
-                        />
-                        <h3>{coupon.store?.storeName || "Store"}</h3>
-                      </div>
-
-                      <div className="coupon-details">
-                        <h4>{coupon.title || "Special Offer"}</h4>
-                        <p>{coupon.description || "Limited time deal"}</p>
-                        <div className="coupon-meta">
-                          {(coupon.categories || []).map((cat, i) => (
-                            <span key={i} className="category">
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
-                        <p className="store-location">
-                          {coupon.store?.storeCity}
-                        </p>
-                      </div>
-
+                    <div className="flex items-center justify-center h-full mt-4">
                       <Link
                         to={`/offersdetails/${coupon._id}`}
-                        className="view-offer-btn"
+                        className={`block w-[90%] text-center py-2 rounded-lg font-semibold tracking-wide text-white ${
+                          isExpired
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-violet-600 hover:bg-violet-700"
+                        }`}
                       >
-                        {isExpired ? "Expired" : "View Offer"} <span>→</span>
+                        {isExpired ? "Expired" : "VIEW COUPON →"}
                       </Link>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-
-          {showFilters && (
-            <aside className="filter-sidebar">
-              <FontAwesomeIcon
-                icon={faTimes}
-                className="close-filter-btn"
-                onClick={() => setShowFilters(false)}
-              />
-
-              <div className="filter-group-container">
-                <div className="filter-group">
-                  <h4>Search Store</h4>
-                  <input
-                    type="text"
-                    placeholder="Search by store"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                  </div>
                 </div>
-
-                <div className="filter-group">
-                  <h4>Category</h4>
-                  {categories.map((cat, i) => (
-                    <label key={i} className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        value={cat}
-                        checked={selectedCategory.includes(cat)}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setSelectedCategory((prev) =>
-                            prev.includes(value)
-                              ? prev.filter((c) => c !== value)
-                              : [...prev, value]
-                          );
-                        }}
-                      />
-                      {cat}
-                    </label>
-                  ))}
-                </div>
-
-                <div className="filter-group">
-                  <h4>City</h4>
-                  {cities.map((city, i) => (
-                    <label key={i} className="filter-checkbox">
-                      <input
-                        type="checkbox"
-                        value={city}
-                        checked={selectedCity.includes(city)}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setSelectedCity((prev) =>
-                            prev.includes(value)
-                              ? prev.filter((c) => c !== value)
-                              : [...prev, value]
-                          );
-                        }}
-                      />
-                      {city}
-                    </label>
-                  ))}
-                </div>
-
-                <button
-                  className="clear-filters-btn"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSelectedCategory([]);
-                    setSelectedCity([]);
-                  }}
-                >
-                  Clear Filters
-                </button>
-              </div>
-            </aside>
+              );
+            })
           )}
         </div>
       </div>

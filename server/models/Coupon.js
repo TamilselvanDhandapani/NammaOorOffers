@@ -52,6 +52,15 @@ const couponSchema = new mongoose.Schema(
         maxlength: 300,
       },
     ],
+    backgroundImage: {
+      type: String,
+      default: "",
+      validate: {
+        validator: (value) =>
+          !value || /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(value),
+        message: "Invalid image format. Must be a valid image file.",
+      },
+    },
     store: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "StoreInfo",

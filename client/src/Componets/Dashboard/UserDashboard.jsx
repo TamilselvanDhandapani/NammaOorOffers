@@ -48,6 +48,7 @@ const UserDashboard = ({ children }) => {
 
       <div className="user-dashboard-main">
         <h1 className="user-dashboard-header">Welcome {user?.username}</h1>
+    
         {children}
       </div>
     </div>

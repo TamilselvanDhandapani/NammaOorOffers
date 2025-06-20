@@ -20,119 +20,61 @@ const StoreAnalytics = () => {
     }
   }, [user]);
 
-  if (loading) return <p className="text-center mt-4">Loading analytics...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (loading)
+    return <p className="text-center text-gray-600 py-6">Loading analytics...</p>;
+  if (error)
+    return <p className="text-center text-red-500 py-6">{error}</p>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Store Analytics</h2>
+    <div className="max-w-5xl mx-auto p-6">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+        📊 Store Analytics
+      </h2>
 
       {storeStats && (
-        <div className="grid md:grid-rows-2 gap-6 mb-6">
-          {/* 📊 Bar Chart for Coupon Stats */}
-          <Bar
-            data={{
-              labels: ["Total Coupons", "Active", "Expired", "Redemptions"],
-              datasets: [
-                {
-                  label: "Coupon Stats",
-                  data: [
-                    storeStats?.totalCoupons || 0,
-                    storeStats?.activeCoupons || 0,
-                    storeStats?.expiredCoupons || 0,
-                    storeStats?.totalRedemptions || 0,
-                  ],
-                  backgroundColor: ["#3b82f6", "#10b981", "#ef4444", "#f59e0b"],
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+          {/* Coupon Stats Bar Chart */}
+          <div className="bg-white rounded-xl shadow-md p-5">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">Coupon Overview</h3>
+            <Bar
+              data={{
+                labels: ["Total", "Active", "Expired", "Redemptions"],
+                datasets: [
+                  {
+                    label: "Coupons",
+                    data: [
+                      storeStats.totalCoupons || 0,
+                      storeStats.activeCoupons || 0,
+                      storeStats.expiredCoupons || 0,
+                      storeStats.totalRedemptions || 0,
+                    ],
+                    backgroundColor: [
+                      "#3b82f6", // blue
+                      "#10b981", // green
+                      "#ef4444", // red
+                      "#f59e0b", // yellow
+                    ],
+                    borderRadius: 6,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
                 },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: {
-                    stepSize: 1,
-                    precision: 0,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, precision: 0 },
                   },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
 
-          {/* 🔁 Line Chart for Top Redeemed Coupon */}
-          {storeStats?.topRedeemedCoupon && (
-            <div>
-              <h3 className="text-lg font-medium mb-2 text-center">
-                Top Redeemed Coupon
-              </h3>
-              <Line
-                data={{
-                  labels: [storeStats.topRedeemedCoupon.title],
-                  datasets: [
-                    {
-                      label: "Redemptions",
-                      data: [storeStats.topRedeemedCoupon.totalRedemptions],
-                      borderColor: "#6366f1",
-                      backgroundColor: "#6366f1",
-                      tension: 0.3,
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  scales: {
-                    x: {
-                      display: false,
-                    },
-                    y: {
-                      beginAtZero: true,
-                      ticks: {
-                        stepSize: 1,
-                        precision: 0,
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 📈 Line Chart for Redemption Trends */}
-      {(trends?.length || 0) > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-medium mb-2">
-            Redemptions (Last 7 Days)
-          </h3>
-          <Line
-            data={{
-              labels: trends.map((item) => item._id),
-              datasets: [
-                {
-                  label: "Redemptions",
-                  data: trends.map((item) => item.count),
-                  fill: false,
-                  borderColor: "#0ea5e9",
-                  tension: 0.3,
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: {
-                    stepSize: 1,
-                    precision: 0,
-                  },
-                },
-              },
-            }}
-          />
+          {/* Redemption Trends Line Chart */}
+        
         </div>
       )}
     </div>

@@ -83,8 +83,9 @@ const googleLogin = async (req, res) => {
   }
 };
 
+// User Register
 const register = async (req, res) => {
-  const { username, email, password, phone, DOB, referalCode } = req.body;
+  const { username, email, password, phone, DOB, referralCode } = req.body;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -98,8 +99,8 @@ const register = async (req, res) => {
 
     // 🔍 Check referral code
     let referredBy = null;
-    if (referalCode) {
-      const referrer = await User.findOne({ myReferralCode: referalCode });
+    if (referralCode) {
+      const referrer = await User.findOne({ myReferralCode: referralCode });
       if (!referrer) {
         return res.status(400).json({ msg: "Invalid referral code" });
       }
@@ -118,7 +119,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       phone,
       DOB,
-      referalCode,
+      referralCode,
       referredBy, // Save referrer ID
       myReferralCode,
       otp,
@@ -186,7 +187,12 @@ const verifyOTP = async (req, res) => {
   const { userId, otp } = req.body;
   try {
     const user = await User.findById(userId);
-    if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+    if (
+      !user ||
+      !user.otp ||
+      user.otp !== otp ||
+      user.otpExpires < Date.now()
+    ) {
       return res.status(400).json({ msg: "Invalid or expired OTP" });
     }
 
@@ -223,6 +229,7 @@ const resendOTP = async (req, res) => {
     if (user.otpSentAt && Date.now() - user.otpSentAt.getTime() < 60 * 1000) {
       return res
         .status(429)
+        .set("Retry-After", 60)
         .json({ msg: "Please wait before requesting another OTP" });
     }
 
@@ -249,8 +256,9 @@ const forgotPassword = async (req, res) => {
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "10m",
     });
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/#/reset-password/${resetToken}`;
     await sendResetLink(email, resetLink);
+    console.log(process.env.FRONTEND_URL);
 
     res.json({ msg: "Password reset link sent to your email" });
   } catch (err) {

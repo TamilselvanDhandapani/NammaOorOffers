@@ -18,7 +18,7 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [DOB, setDOB] = useState("");
-  const [referalCode, setReferalCode] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { register, message } = useAuth();
@@ -34,7 +34,7 @@ const RegisterPage = () => {
         password,
         phone,
         DOB,
-        referalCode
+        referralCode
       );
       if (success) navigate("/verify-otp");
     } catch (err) {
@@ -134,8 +134,8 @@ const RegisterPage = () => {
             id="referal"
             label="Referral Code (optional)"
             icon={<FaGift />}
-            value={referalCode}
-            onChange={setReferalCode}
+            value={referralCode}
+            onChange={setReferralCode}
             placeholder="Referral code (if any)"
           />
 

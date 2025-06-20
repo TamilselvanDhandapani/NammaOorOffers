@@ -8,6 +8,7 @@ const AuthContext = createContext();
 const initialState = {
   isAuthenticated: false,
   user: null,
+  storeData: null,
   loading: true,
   message: "",
 };
@@ -17,9 +18,22 @@ const authReducer = (state, action) => {
     case "AUTH_START":
       return { ...state, loading: true, message: "" };
     case "AUTH_SUCCESS":
-      return { ...state, loading: false, isAuthenticated: true, user: action.payload };
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: true,
+        user: action.payload,
+      };
     case "AUTH_FAIL":
-      return { ...state, loading: false, isAuthenticated: false, user: null, message: action.payload };
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: false,
+        user: null,
+        message: action.payload,
+      };
+    case "SET_STORE_DATA":
+      return { ...state, storeData: action.payload };
     case "LOGOUT":
       return { ...initialState, loading: false };
     case "SET_MESSAGE":
@@ -34,7 +48,18 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // 🔄 Load user if token exists
+  // 🔁 Fetch store data
+  const fetchStoreData = async (storeId) => {
+    try {
+      const res = await api.get(`/store/${storeId}`);
+      dispatch({ type: "SET_STORE_DATA", payload: res.data });
+    } catch (err) {
+      console.error("Failed to fetch store data:", err);
+      toast.error("Unable to load store details.");
+    }
+  };
+
+  // 🔄 Auto-load user if token exists
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("token");
@@ -49,6 +74,10 @@ export const AuthProvider = ({ children }) => {
         const user = res.data.user;
         localStorage.setItem("user", JSON.stringify(user));
         dispatch({ type: "AUTH_SUCCESS", payload: user });
+
+        if (user.role === "store" && user.storeId) {
+          fetchStoreData(user.storeId);
+        }
       } catch (error) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -68,7 +97,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // 📝 Register
-  const register = async (username, email, password, phone, DOB, referalCode) => {
+  const register = async (
+    username,
+    email,
+    password,
+    phone,
+    DOB,
+    referalCode
+  ) => {
     dispatch({ type: "AUTH_START" });
     try {
       const res = await api.post("/auth/register", {
@@ -105,6 +141,10 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         dispatch({ type: "AUTH_SUCCESS", payload: user });
+
+        if (user.role === "store" && user.storeId) {
+          fetchStoreData(user.storeId);
+        }
       }
 
       localStorage.removeItem("pendingUserId");
@@ -130,6 +170,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       dispatch({ type: "AUTH_SUCCESS", payload: user });
+
+      if (user.role === "store" && user.storeId) {
+        fetchStoreData(user.storeId);
+      }
+
       toast.success("Login successful!");
       return { success: true, user };
     } catch (err) {
@@ -149,6 +194,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       dispatch({ type: "AUTH_SUCCESS", payload: user });
+
+      if (user.role === "store" && user.storeId) {
+        fetchStoreData(user.storeId);
+      }
+
       toast.success("Google login successful!");
       return true;
     } catch (err) {
@@ -189,7 +239,10 @@ export const AuthProvider = ({ children }) => {
   // 🔐 Reset Password
   const resetPassword = async ({ token, newPassword }) => {
     try {
-      const res = await api.post("/auth/reset-password", { token, newPassword });
+      const res = await api.post("/auth/reset-password", {
+        token,
+        newPassword,
+      });
       dispatch({ type: "SET_MESSAGE", payload: res.data.msg });
       toast.success("Password reset successful!");
       return true;
@@ -202,10 +255,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   // 🧑‍💼 Create Store User (by Super Admin)
-  const createStoreUser = async (username, email, password, role) => {
+  const createStoreUser = async (
+    username,
+    email,
+    password,
+    phone,
+    referralCode
+  ) => {
     dispatch({ type: "AUTH_START" });
     try {
-      const res = await api.post("/store/create", { username, email, password, role });
+      const res = await api.post("/store/create", {
+        username,
+        email,
+        password,
+        phone,
+        referralCode,
+      });
+      localStorage.setItem("pendingUserId", res.data.userId);
+      localStorage.setItem("pendingEmail", email);
       toast.success("Store user created successfully");
       return res.data;
     } catch (err) {
@@ -241,9 +308,10 @@ export const AuthProvider = ({ children }) => {
         resetPassword,
         googleLogin,
         createStoreUser,
+        fetchStoreData,
       }}
     >
-      {!state.loading ? children : <div className="min-h-screen flex justify-center items-center">Loading auth...</div>}
+      {children}
     </AuthContext.Provider>
   );
 };

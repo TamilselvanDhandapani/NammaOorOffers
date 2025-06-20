@@ -15,7 +15,7 @@ const {
 } = require("../controllers/storeController");
 
 // Create store user (super admin only)
-router.post("/create", protect, authorizeRoles("admin"), StoreCredentials);
+router.post("/create", StoreCredentials);
 
 // Get all users with a specific role
 router.get("/users/:role", protect, authorizeRoles("admin"), getUsersByRole);

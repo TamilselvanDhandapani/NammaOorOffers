@@ -69,6 +69,7 @@ const Navbar = () => {
             <>
               <li><Link to="/whyus" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">Why Us</Link></li>
               <li><Link to="/about" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">About Us</Link></li>
+              <li><Link to="/store-home" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">List Your Business</Link></li>
             </>
           )}
         </ul>
@@ -77,7 +78,7 @@ const Navbar = () => {
           {isAuthenticated ? (
             <div className="user-info flex items-center gap-4">
               <span className="username text-sm text-gray-600">
-              
+
                 Hi, <strong>{user.username}</strong>
               </span>
               <button
@@ -90,7 +91,7 @@ const Navbar = () => {
               <Link to="/login">
                 <button className="btn signin-btn border border-blue-600 text-blue-600 px-4 py-2 rounded-[10px] hover:bg-blue-50 flex items-center justify-center">Sign In</button>
               </Link>
-              <Link to="/register">
+              <Link to="/redirect">
                 <button className="btn signup-btn bg-blue-600 text-white px-4 py-2 rounded-[10px] hover:bg-blue-700 shadow-md flex items-center justify-center">Sign Up</button>
               </Link>
             </div>
@@ -136,6 +137,7 @@ const Navbar = () => {
                 <>
                   <li><Link to="/whyus" onClick={() => setIsOpen(false)}>Why Us</Link></li>
                   <li><Link to="/about" onClick={() => setIsOpen(false)}>About Us</Link></li>
+                  <li><Link to="/store-home" onClick={() => setIsOpen(false)}>List Your Business</Link></li>
                 </>
               )}
             </ul>
@@ -154,7 +156,7 @@ const Navbar = () => {
                   <Link to="/login">
                     <button className="btn signin-btn border border-blue-600 text-blue-600 py-2 rounded-[10px] hover:bg-blue-50 w-full flex items-center justify-center">Sign In</button>
                   </Link>
-                  <Link to="/register">
+                  <Link to="/redirect">
                     <button className="btn signup-btn bg-blue-600 text-white py-2 rounded-[10px] hover:bg-blue-700 w-full flex items-center justify-center">Sign Up</button>
                   </Link>
                 </div>

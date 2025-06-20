@@ -1,48 +1,72 @@
-const RedeemedCoupon = require("../models/RedeemedCoupon");
-const User = require("../models/User");
+const mongoose = require("mongoose");
 const Coupon = require("../models/Coupon");
 const Store = require("../models/StoreInfo");
-const mongoose = require("mongoose");
+const User = require("../models/User");
+const RedeemedCoupon = require("../models/RedeemedCoupon");
 
-
-// Utility to check if a date is in the future
+// Utility: Check if a date is in the future
 const isFutureDate = (dateStr) => {
   const date = new Date(dateStr);
   return !isNaN(date) && date > new Date();
 };
 
-// ✅ Create a new coupon
+// ✅ Create a coupon
 const createCoupon = async (req, res) => {
   try {
-    const { storeId } = req.params;
-    const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ msg: "Store not found." });
-    if (store.owner.toString() !== req.user.id) {
-      return res.status(403).json({ msg: "Unauthorized access to this store." });
-    }
-
-    const {
-      title, description, minPurchase, expiryDate,
-      issuedDate, usageLimit, redemptionCode, categories, terms,
+    let {
+      title,
+      description,
+      minPurchase,
+      expiryDate,
+      issuedDate,
+      usageLimit,
+      redemptionCode,
+      categories,
+      terms,
     } = req.body;
 
-    if (!isFutureDate(expiryDate)) {
-      return res.status(400).json({ msg: "Expiry date must be in the future." });
+    // Handle categories if sent as string
+    if (typeof categories === "string") {
+      categories = categories.split(",").map((cat) => cat.trim());
     }
 
-    const coupon = await Coupon.create({
-      title, description, minPurchase, expiryDate, issuedDate,
-      usageLimit, redemptionCode, categories, terms,
-      store: storeId,
-      createdBy: req.user.id,
+    // Handle terms if sent as string
+    if (typeof terms === "string") {
+      terms = [terms];
+    }
+
+    const storeId = req.params.storeId; // <--- this must be set in your route
+
+    if (!storeId) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Store ID is required." });
+    }
+
+    const newCoupon = new Coupon({
+      title,
+      description,
+      minPurchase,
+      expiryDate,
+      issuedDate,
+      usageLimit,
+      redemptionCode,
+      categories,
+      terms,
+      store: storeId, // ✅ this must match your schema
+      backgroundImage: req.file?.path || null,
     });
 
-    await User.findByIdAndUpdate(req.user.id, { $push: { coupons: coupon._id } });
+    await newCoupon.save();
 
-    res.status(201).json(coupon);
+    res
+      .status(201)
+      .json({ success: true, msg: "Coupon created", coupon: newCoupon });
   } catch (err) {
     console.error("Error creating coupon:", err);
-    res.status(500).json({ msg: "Server error while creating coupon." });
+    res
+      .status(500)
+      .json({ success: false, msg: "Server error", error: err.message });
   }
 };
 
@@ -52,14 +76,14 @@ const getAllCoupons = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const coupons = await Coupon.find()
+    const coupons = await Coupon.find({ expiryDate: { $gt: new Date() } })
       .skip((page - 1) * limit)
       .limit(limit)
       .populate("store", "storeName storeCity storeLogo storeWebsite");
 
     res.status(200).json(coupons);
   } catch (err) {
-    console.error("Error fetching all coupons:", err);
+    console.error("Error fetching coupons:", err);
     res.status(500).json({ msg: "Failed to fetch coupons" });
   }
 };
@@ -68,7 +92,10 @@ const getAllCoupons = async (req, res) => {
 const getCouponById = async (req, res) => {
   try {
     const { couponId } = req.params;
-    const coupon = await Coupon.findById(couponId).populate("store", "storeName storeCity storeLogo storeWebsite");
+    const coupon = await Coupon.findById(couponId).populate(
+      "store",
+      "storeName storeCity storeLogo storeWebsite"
+    );
     if (!coupon) return res.status(404).json({ msg: "Coupon not found." });
     res.status(200).json(coupon);
   } catch (err) {
@@ -100,8 +127,12 @@ const getCouponsByStore = async (req, res) => {
 const getCouponByStoreAndId = async (req, res) => {
   try {
     const { storeId, couponId } = req.params;
-    const coupon = await Coupon.findOne({ _id: couponId, store: storeId }).populate("store", "storeName storeCity");
-    if (!coupon) return res.status(404).json({ msg: "Coupon not found for this store." });
+    const coupon = await Coupon.findOne({
+      _id: couponId,
+      store: storeId,
+    }).populate("store", "storeName storeCity");
+    if (!coupon)
+      return res.status(404).json({ msg: "Coupon not found for this store." });
     res.status(200).json(coupon);
   } catch (err) {
     console.error("Error fetching coupon:", err);
@@ -140,7 +171,9 @@ const deleteCoupon = async (req, res) => {
     if (!coupon) return res.status(404).json({ msg: "Coupon not found." });
 
     if (coupon.store.toString() !== req.user.storeId) {
-      return res.status(403).json({ msg: "Unauthorized to delete this coupon." });
+      return res
+        .status(403)
+        .json({ msg: "Unauthorized to delete this coupon." });
     }
 
     await Coupon.findByIdAndDelete(couponId);
@@ -156,13 +189,7 @@ const deleteCoupon = async (req, res) => {
 // ✅ Redeem coupon
 const redeemCoupon = async (req, res) => {
   try {
-    const {
-      userId,
-      couponId,
-      storeId,
-      redemptionCode,
-      expiryDate
-    } = req.body;
+    const { userId, couponId, storeId, redemptionCode, expiryDate } = req.body;
 
     if (!userId || !couponId || !storeId || !redemptionCode || !expiryDate) {
       return res.status(400).json({ msg: "Missing required fields" });
@@ -172,7 +199,9 @@ const redeemCoupon = async (req, res) => {
       return res.status(400).json({ msg: "Coupon is expired" });
     }
 
-    // Check if already redeemed
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) return res.status(404).json({ msg: "Coupon not found." });
+
     const alreadyRedeemed = await RedeemedCoupon.findOne({
       user: userId,
       coupon: couponId,
@@ -182,7 +211,13 @@ const redeemCoupon = async (req, res) => {
       return res.status(400).json({ msg: "Coupon already redeemed" });
     }
 
-    // Create new redeemed coupon
+    const totalRedemptions = await RedeemedCoupon.countDocuments({
+      coupon: couponId,
+    });
+    if (totalRedemptions >= coupon.usageLimit) {
+      return res.status(400).json({ msg: "Coupon usage limit reached." });
+    }
+
     const redeemed = await RedeemedCoupon.create({
       user: userId,
       coupon: couponId,
@@ -191,20 +226,16 @@ const redeemCoupon = async (req, res) => {
       expiryDate,
     });
 
-    // ✅ Push couponId to user's redeemedCoupons array
     await User.findByIdAndUpdate(userId, {
       $addToSet: { redeemedCoupons: couponId },
     });
 
-    // ✅ Push redeemedCouponId to store owner's record
     const store = await Store.findById(storeId);
-    if (!store || !store.owner) {
-      return res.status(404).json({ msg: "Store owner not found" });
+    if (store?.owner) {
+      await User.findByIdAndUpdate(store.owner, {
+        $addToSet: { redeemedCoupons: redeemed._id },
+      });
     }
-
-    await User.findByIdAndUpdate(store.owner, {
-      $addToSet: { redeemedCoupons: redeemed._id },
-    });
 
     res.status(200).json({ msg: "Coupon redeemed successfully", redeemed });
   } catch (err) {
@@ -213,18 +244,13 @@ const redeemCoupon = async (req, res) => {
   }
 };
 
-
 // ✅ Get redeemed coupons by user
 const getUserRedeemedCoupons = async (req, res) => {
   try {
     const { userId } = req.params;
 
     const coupons = await RedeemedCoupon.aggregate([
-      {
-        $match: {
-          user: new mongoose.Types.ObjectId(userId),
-        },
-      },
+      { $match: { user: new mongoose.Types.ObjectId(userId) } },
       {
         $lookup: {
           from: "coupons",
@@ -233,20 +259,16 @@ const getUserRedeemedCoupons = async (req, res) => {
           as: "couponInfo",
         },
       },
-      {
-        $unwind: "$couponInfo",
-      },
+      { $unwind: "$couponInfo" },
       {
         $lookup: {
-          from: "storeinfos", // ✅ match your collection name for stores
+          from: "storeinfos",
           localField: "store",
           foreignField: "_id",
           as: "storeInfo",
         },
       },
-      {
-        $unwind: "$storeInfo",
-      },
+      { $unwind: "$storeInfo" },
       {
         $project: {
           _id: 1,
@@ -255,17 +277,16 @@ const getUserRedeemedCoupons = async (req, res) => {
           status: 1,
           redeemedAt: 1,
           expiryDate: 1,
+          usedOnDate: 1, // ✅ Include usedOnDate here
           storeName: "$storeInfo.storeName",
         },
       },
-      {
-        $sort: { redeemedAt: -1 },
-      },
+      { $sort: { redeemedAt: -1 } },
     ]);
 
     res.status(200).json(coupons);
   } catch (err) {
-    console.error("Error fetching user's redeemed coupons:", err);
+    console.error("Error fetching redeemed coupons:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
@@ -276,11 +297,7 @@ const getRedeemedCouponsByStore = async (req, res) => {
     const { storeId } = req.params;
 
     const results = await RedeemedCoupon.aggregate([
-      {
-        $match: {
-          store: new mongoose.Types.ObjectId(storeId),
-        },
-      },
+      { $match: { store: new mongoose.Types.ObjectId(storeId) } },
       {
         $lookup: {
           from: "users",
@@ -309,6 +326,7 @@ const getRedeemedCouponsByStore = async (req, res) => {
           redemptionCode: 1,
           redeemedAt: 1,
           expiryDate: 1,
+          usedOnDate: 1, // ✅ Include usedOnDate here
           status: 1,
         },
       },
@@ -316,7 +334,9 @@ const getRedeemedCouponsByStore = async (req, res) => {
     ]);
 
     if (!results.length) {
-      return res.status(404).json({ msg: "No redeemed coupons found for this store" });
+      return res
+        .status(404)
+        .json({ msg: "No redeemed coupons found for this store" });
     }
 
     res.status(200).json(results);
@@ -326,12 +346,14 @@ const getRedeemedCouponsByStore = async (req, res) => {
   }
 };
 
-
-
 // ✅ Update redeemed coupon status
 const markRedeemedCouponAsUsed = async (req, res) => {
-  const { userId, redeemedCouponId } = req.params;
-  const { status } = req.body;
+  const { redeemedCouponId } = req.params;
+  const userId = req.body.userId || req.user?.id;
+
+  if (!userId) {
+    return res.status(400).json({ msg: "User ID is required" });
+  }
 
   try {
     const redeemedCoupon = await RedeemedCoupon.findOne({
@@ -340,10 +362,20 @@ const markRedeemedCouponAsUsed = async (req, res) => {
     });
 
     if (!redeemedCoupon) {
-      return res.status(404).json({ msg: "Redeemed coupon not found" });
+      return res
+        .status(404)
+        .json({ msg: "Redeemed coupon not found for this user" });
     }
 
-    redeemedCoupon.status = status || "used";
+    const prevStatus = redeemedCoupon.status;
+    redeemedCoupon.status = req.body.status || "used";
+
+    // ✅ If changed to "used", set usedOnDate and add 20 points
+    if (redeemedCoupon.status === "used" && prevStatus !== "used") {
+      redeemedCoupon.usedOnDate = new Date(); // ✅ this must be set
+      await User.findByIdAndUpdate(userId, { $inc: { points: 20 } });
+    }
+
     await redeemedCoupon.save();
 
     res.status(200).json({
@@ -367,5 +399,5 @@ module.exports = {
   redeemCoupon,
   getUserRedeemedCoupons,
   getRedeemedCouponsByStore,
-  markRedeemedCouponAsUsed
+  markRedeemedCouponAsUsed,
 };

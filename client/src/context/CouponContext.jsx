@@ -1,5 +1,5 @@
 import { createContext, useReducer } from "react";
-import api from "../Services/api"; // centralized Axios instance with baseURL + token
+import api from "../Services/api"; // your Axios instance
 
 const CouponContext = createContext();
 
@@ -31,7 +31,6 @@ const couponReducer = (state, action) => {
 export const CouponProvider = ({ children }) => {
   const [state, dispatch] = useReducer(couponReducer, initialState);
 
-  // 🔓 Public: Fetch all coupons
   const fetchAllCoupons = async () => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -45,7 +44,6 @@ export const CouponProvider = ({ children }) => {
     }
   };
 
-  // 👨‍⚕️ Store: Get all coupons by storeId
   const fetchCouponsByStore = async (storeId) => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -59,7 +57,6 @@ export const CouponProvider = ({ children }) => {
     }
   };
 
-  // 📄 View single coupon
   const getCouponById = async (couponId) => {
     try {
       const res = await api.get(`/coupon/view/${couponId}`);
@@ -69,17 +66,28 @@ export const CouponProvider = ({ children }) => {
     }
   };
 
-  // ✅ Create new coupon
-  const createCoupon = async (storeId, data) => {
+  const getCouponByStoreAndId = async (storeId, couponId) => {
     try {
-      const res = await api.post(`/coupon/create/${storeId}`, data);
+      const res = await api.get(`/coupon/store/${storeId}/view/${couponId}`);
+      return res.data;
+    } catch (err) {
+      throw new Error(
+        err.response?.data?.msg || "Failed to fetch store-specific coupon"
+      );
+    }
+  };
+
+  const createCoupon = async (storeId, formData) => {
+    try {
+      const res = await api.post(`/coupon/create/${storeId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return res.data;
     } catch (err) {
       throw new Error(err.response?.data?.msg || "Failed to create coupon");
     }
   };
 
-  // ✏️ Edit coupon
   const editCoupon = async (couponId, data) => {
     try {
       const res = await api.put(`/coupon/edit/${couponId}`, data);
@@ -89,7 +97,6 @@ export const CouponProvider = ({ children }) => {
     }
   };
 
-  // 🗑️ Delete coupon
   const deleteCoupon = async (couponId) => {
     try {
       const res = await api.delete(`/coupon/delete/${couponId}`);
@@ -99,17 +106,17 @@ export const CouponProvider = ({ children }) => {
     }
   };
 
-  // 🎟️ Redeem a coupon
   const redeemCoupon = async (data) => {
     try {
       const res = await api.post("/coupon/redeem", data);
       return res.data;
     } catch (err) {
-      throw new Error(err.response?.data?.msg || "Redemption failed");
+      throw new Error(
+        err.response?.data?.msg || "Coupon redemption failed"
+      );
     }
   };
 
-  // 👤 User: Get redeemed coupons
   const fetchMyRedeemedCoupons = async (userId) => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -118,12 +125,12 @@ export const CouponProvider = ({ children }) => {
     } catch (err) {
       dispatch({
         type: "ERROR",
-        payload: err.response?.data?.msg || "Failed to fetch redeemed coupons",
+        payload:
+          err.response?.data?.msg || "Failed to fetch redeemed coupons",
       });
     }
   };
 
-  // 🏪 Store/Admin: View redeemed coupons by store
   const fetchRedeemedCouponsByStore = async (storeId) => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -132,28 +139,24 @@ export const CouponProvider = ({ children }) => {
     } catch (err) {
       dispatch({
         type: "ERROR",
-        payload: err.response?.data?.msg || "Failed to fetch redeemed coupons",
+        payload:
+          err.response?.data?.msg || "Failed to fetch store redemptions",
       });
     }
   };
 
-  // 🟢 Update redeemed coupon status (used/expired)
-  const updateRedeemedStatus = async (userId, redeemedCouponId, status) => {
+  // ✅ Updated route – only pass redeemedCouponId in URL
+  const updateRedeemedStatus = async (redeemedCouponId, status, userId = null) => {
     try {
-      const res = await api.put(`/coupon/redeemed/${userId}/${redeemedCouponId}`, { status });
+      const res = await api.put(
+        `/coupon/redeemed/update-status/${redeemedCouponId}`,
+        { status, userId }
+      );
       return res.data;
     } catch (err) {
-      throw new Error(err.response?.data?.msg || "Failed to update redeemed status");
-    }
-  };
-
-  // 🔍 Get specific coupon by store and ID
-  const getCouponByStoreAndId = async (storeId, couponId) => {
-    try {
-      const res = await api.get(`/coupon/store/${storeId}/coupon/${couponId}`);
-      return res.data;
-    } catch (err) {
-      throw new Error(err.response?.data?.msg || "Failed to fetch coupon details");
+      throw new Error(
+        err.response?.data?.msg || "Failed to update redeemed coupon status"
+      );
     }
   };
 
@@ -164,6 +167,7 @@ export const CouponProvider = ({ children }) => {
         fetchAllCoupons,
         fetchCouponsByStore,
         getCouponById,
+        getCouponByStoreAndId,
         createCoupon,
         editCoupon,
         deleteCoupon,
@@ -171,7 +175,6 @@ export const CouponProvider = ({ children }) => {
         fetchMyRedeemedCoupons,
         fetchRedeemedCouponsByStore,
         updateRedeemedStatus,
-        getCouponByStoreAndId,
       }}
     >
       {children}
@@ -179,4 +182,4 @@ export const CouponProvider = ({ children }) => {
   );
 };
 
-export default CouponContext; 
+export default CouponContext;

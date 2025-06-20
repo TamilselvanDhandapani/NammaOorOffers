@@ -40,6 +40,10 @@ const redeemedCouponSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+     usedOnDate: {
+      type: Date,
+      default: null, // default to null until it's used
+    },
   },
   {
     timestamps: true, // adds createdAt and updatedAt

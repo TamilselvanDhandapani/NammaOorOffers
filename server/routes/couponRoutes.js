@@ -1,10 +1,13 @@
 const express = require("express");
+const router = express.Router();
+const rateLimit = require("express-rate-limit");
+
 const {
   createCoupon,
   getAllCoupons,
   getCouponById,
   editCoupon,
-  deleteCoupon, 
+  deleteCoupon,
   getCouponsByStore,
   getCouponByStoreAndId,
   redeemCoupon,
@@ -14,26 +17,83 @@ const {
 } = require("../controllers/couponController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
-const router = express.Router();
+// ✅ Rate limiter for coupon redemption
+const redeemLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 5,
+  message: { msg: "Too many redemption attempts. Please try again later." },
+});
 
-// ✅ Protected Store-only routes
-router.post("/create/:storeId", protect, authorizeRoles("store"), createCoupon);
+// ========================= Store Coupon Management =========================
+
+router.post(
+  "/create/:storeId",
+  protect,
+  authorizeRoles("store"),
+  upload.single("backgroundImage"),
+  createCoupon
+);
+
 router.put("/edit/:couponId", protect, authorizeRoles("store"), editCoupon);
-router.delete("/delete/:couponId", protect, authorizeRoles("store"), deleteCoupon);
 
-// ✅ Store-specific routes
-router.get("/store/:storeId", protect, authorizeRoles("store"), getCouponsByStore);
-router.get("/store/:storeId/coupon/:couponId", protect, authorizeRoles("store"), getCouponByStoreAndId);
+router.delete(
+  "/delete/:couponId",
+  protect,
+  authorizeRoles("store"),
+  deleteCoupon
+);
 
-// ✅ Public routes
+router.get(
+  "/store/:storeId",
+  protect,
+  authorizeRoles("store"),
+  getCouponsByStore
+);
+
+router.get(
+  "/store/:storeId/view/:couponId",
+  protect,
+  authorizeRoles("store"),
+  getCouponByStoreAndId
+);
+
+// ========================= Public Coupon Access =========================
+
 router.get("/", getAllCoupons);
 router.get("/view/:couponId", getCouponById);
 
-// ✅ Coupon redemption routes
-router.post("/redeem", protect, authorizeRoles("user"), redeemCoupon); // userId in body
-router.get("/redeemed/user/:userId",protect, authorizeRoles("user"), getUserRedeemedCoupons);
-router.get("/redeemed/store/:storeId", protect, authorizeRoles("store", "admin"), getRedeemedCouponsByStore);
-router.put("/redeemed/:userId/:redeemedCouponId", protect, authorizeRoles("store", "admin"), markRedeemedCouponAsUsed);
+// ========================= Coupon Redemption =========================
+
+router.post(
+  "/redeem",
+  protect,
+  authorizeRoles("user"),
+  redeemLimiter,
+  redeemCoupon
+);
+
+router.get(
+  "/redeemed/user/:userId",
+  protect,
+  authorizeRoles("user"),
+  getUserRedeemedCoupons
+);
+
+router.get(
+  "/redeemed/store/:storeId",
+  protect,
+  authorizeRoles("store", "admin"),
+  getRedeemedCouponsByStore
+);
+
+// ✅ Updated route: No need to pass userId, use req.user or req.body
+router.put(
+  "/redeemed/update-status/:redeemedCouponId",
+  protect,
+  authorizeRoles("store", "admin"),
+  markRedeemedCouponAsUsed
+);
 
 module.exports = router;

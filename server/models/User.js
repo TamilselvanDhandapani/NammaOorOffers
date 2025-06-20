@@ -46,11 +46,11 @@ const userSchema = new mongoose.Schema(
     DOB: {
       type: Date,
       required: function () {
-        return !this.googleId;
+        return !this.googleId && this.role === "user";
       },
     },
 
-    referalCode: {
+    referralCode: {
       type: String,
       trim: true,
       maxlength: 20,
@@ -92,10 +92,7 @@ const userSchema = new mongoose.Schema(
 
     // OTP / Verification
     otp: String,
-    otpExpires: {
-      type: Date,
-      default: () => Date.now() + 10 * 60 * 1000,
-    },
+    otpExpires: Date,
     verificationToken: String,
     verificationTokenExpires: Date,
     resetPasswordToken: String,
