@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Float animation */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px) rotate(0deg) scale(1);
@@ -10,15 +11,28 @@
 }
 
 .animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-
-.animate-float {
   animation: float 5s ease-in-out infinite;
 }
 
-body, #root {
+/* SlideDown animation */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-in-out forwards;
+}
+
+/* Global styles */
+body,
+#root {
   height: 100%;
   font-family: 'Times New Roman', Times, serif;
 }
