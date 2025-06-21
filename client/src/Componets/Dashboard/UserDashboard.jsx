@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faTimes } from "@fortawesome/free-solid-svg-icons";
-import  useAuth  from "../../hooks/useAuth";
+import useAuth from "../../hooks/useAuth";
 
 import "../../styles/UserDashboard.css";
 
@@ -48,7 +48,7 @@ const UserDashboard = ({ children }) => {
 
       <div className="user-dashboard-main">
         <h1 className="user-dashboard-header">Welcome {user?.username}</h1>
-    
+        <p>{user?.myReferralCode}</p>
         {children}
       </div>
     </div>

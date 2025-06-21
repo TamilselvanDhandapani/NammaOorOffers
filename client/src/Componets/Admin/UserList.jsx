@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
-import  useStore from "../../hooks/useStore";
-import "../../styles/UserList.css";
+import useStore from "../../hooks/useStore";
 
 const UserList = () => {
   const [role, setRole] = useState("store");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [updating, setUpdating] = useState({}); // track which user is updating
+  const [updating, setUpdating] = useState({});
 
-  const { users, loading, error, fetchUsersByRole, changeUserRole } =
-    useStore();
+  const { users, loading, error, fetchUsersByRole, changeUserRole } = useStore();
 
-  // Fetch users when role changes
   useEffect(() => {
     fetchUsersByRole(role);
-  }, [role]); // ✅ Now clean and warning-free
+  }, [role]);
 
-  // Filter users when search term or user list changes
   useEffect(() => {
     const results = users.filter(
       (user) =>
@@ -34,15 +30,15 @@ const UserList = () => {
   };
 
   return (
-    <div className="user-management-container">
-      <h1 className="user-management-header">User Management</h1>
+    <div className="max-w-7xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">User Management</h1>
 
-      <div className="controls-container">
-        <div className="search-bar">
-          <FiSearch className="search-icon" />
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 w-full md:max-w-md">
+          <FiSearch className="text-gray-500 mr-2" />
           <input
             type="text"
-            className="search-input"
+            className="w-full outline-none text-sm text-gray-700"
             placeholder="Search by username or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -50,7 +46,7 @@ const UserList = () => {
         </div>
 
         <select
-          className="role-selector"
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700"
           value={role}
           onChange={(e) => setRole(e.target.value)}
         >
@@ -60,40 +56,36 @@ const UserList = () => {
         </select>
       </div>
 
-      {loading && <div className="loading-message">Loading users...</div>}
-      {error && <div className="error-message">{error}</div>}
+      {loading && <div className="text-center text-gray-600">Loading users...</div>}
+      {error && <div className="text-center text-red-500">{error}</div>}
 
       {!loading && !error && (
-        <div className="users-table-container">
-          <table className="users-table">
-            <thead>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+            <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
               <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Change Role</th>
+                <th className="px-4 py-3 border-b">Username</th>
+                <th className="px-4 py-3 border-b">Email</th>
+                <th className="px-4 py-3 border-b">Role</th>
+                <th className="px-4 py-3 border-b">Change Role</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <tr key={user._id}>
-                    <td>{user.username}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <span
-                        className={`role-badge ${user.role?.toLowerCase()}`}
-                      >
+                  <tr key={user._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.username}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.email}</td>
+                    <td className="px-4 py-3 border-b text-sm">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${user.role === "admin" ? "bg-blue-100 text-blue-600" : user.role === "store" ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}>
                         {user.role}
                       </span>
                     </td>
-                    <td>
+                    <td className="px-4 py-3 border-b text-sm">
                       <select
-                        className="role-selector"
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700"
                         value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user._id, e.target.value)
-                        }
+                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
                         disabled={updating[user._id]}
                       >
                         <option value="admin">Admin</option>
@@ -101,14 +93,14 @@ const UserList = () => {
                         <option value="user">User</option>
                       </select>
                       {updating[user._id] && (
-                        <span className="updating-msg">Updating...</span>
+                        <span className="ml-2 text-xs text-gray-500">Updating...</span>
                       )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="status-message">
+                  <td colSpan="4" className="px-4 py-6 text-center text-sm text-gray-500">
                     {searchTerm
                       ? "No users match your search criteria."
                       : "No users found for the selected role."}
