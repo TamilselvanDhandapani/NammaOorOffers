@@ -48,7 +48,6 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // 🔁 Fetch store data
   const fetchStoreData = async (storeId) => {
     try {
       const res = await api.get(`/store/${storeId}`);
@@ -59,7 +58,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔄 Auto-load user if token exists
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("token");
@@ -96,7 +94,6 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // 📝 Register
   const register = async (
     username,
     email,
@@ -129,7 +126,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔐 Verify OTP
   const verifyOtp = async (otp) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -161,7 +157,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔐 Login
   const login = async (email, password) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -185,7 +180,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔐 Google Login
   const googleLogin = async (tokenId) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -209,7 +203,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔁 Resend OTP
   const resendOtp = async () => {
     try {
       const email = localStorage.getItem("pendingEmail");
@@ -223,7 +216,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔐 Forgot Password
   const forgotPassword = async (email) => {
     try {
       const res = await api.post("/auth/forgot-password", { email });
@@ -236,7 +228,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔐 Reset Password
   const resetPassword = async ({ token, newPassword }) => {
     try {
       const res = await api.post("/auth/reset-password", {
@@ -254,7 +245,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🧑‍💼 Create Store User (by Super Admin)
   const createStoreUser = async (
     username,
     email,
@@ -285,7 +275,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🚪 Logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -311,7 +300,7 @@ export const AuthProvider = ({ children }) => {
         fetchStoreData,
       }}
     >
-      {children}
+      {!state.loading && children}
     </AuthContext.Provider>
   );
 };
