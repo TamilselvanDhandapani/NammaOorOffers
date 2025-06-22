@@ -5,8 +5,7 @@ import { format } from "date-fns";
 
 const RedeemedCoupons = () => {
   const { user } = useAuth();
-  const { redeemedCoupons, fetchMyRedeemedCoupons, loading, error } =
-    useCoupon();
+  const { redeemedCoupons, fetchMyRedeemedCoupons, loading, error } = useCoupon();
 
   useEffect(() => {
     if (user?._id) {
@@ -27,14 +26,8 @@ const RedeemedCoupons = () => {
     if (daysLeft === 1)
       return { text: "Last Day", color: "bg-orange-100 text-orange-600" };
     if (daysLeft <= 7)
-      return {
-        text: `${daysLeft}d left`,
-        color: "bg-yellow-100 text-yellow-700",
-      };
-    return {
-      text: format(expiry, "dd MMM yyyy"),
-      color: "bg-green-100 text-green-700",
-    };
+      return { text: `${daysLeft}d left`, color: "bg-yellow-100 text-yellow-700" };
+    return { text: format(expiry, "dd MMM yyyy"), color: "bg-green-100 text-green-700" };
   };
 
   if (loading)
@@ -43,15 +36,18 @@ const RedeemedCoupons = () => {
     return <div className="text-center text-red-500 py-10">{error}</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex justify-between items-center mb-10">
-        <div className="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold shadow-md text-sm">
-          🪙 {user?.points || 0}
+    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Points Top Right */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold shadow-lg text-sm">
+          🪙 {user?.points || 0} Points
         </div>
-        <h2 className="text-3xl font-extrabold text-gray-900">
-          🎉 Redeemed Coupons
-        </h2>
       </div>
+
+      {/* Title */}
+      <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-10">
+        🎉 Redeemed Coupons
+      </h2>
 
       {redeemedCoupons.length === 0 ? (
         <p className="text-center text-gray-500 mt-12 text-lg">
@@ -60,9 +56,7 @@ const RedeemedCoupons = () => {
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {redeemedCoupons.map((coupon) => {
-            const { text: daysLeftText, color: badgeColor } = calculateDaysLeft(
-              coupon.expiryDate
-            );
+            const { text: daysLeftText, color: badgeColor } = calculateDaysLeft(coupon.expiryDate);
 
             return (
               <div
