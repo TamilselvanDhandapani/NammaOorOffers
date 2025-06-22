@@ -49,7 +49,9 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`sticky top-0 z-50 bg-white shadow transition-shadow duration-300`}>
+    <nav
+      className={`sticky top-0 z-50 bg-white shadow transition-shadow duration-300`}
+    >
       <div className="max-w-8xl mx-auto px-6 md:px-8 h-20 flex justify-between items-center">
         <Link to="/" className="logo">
           <img
@@ -61,15 +63,57 @@ const Navbar = () => {
 
         {/* Desktop Nav */}
         <ul className="hidden md:flex gap-8 items-center font-medium text-gray-700">
-          <li><Link to="/" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">Home</Link></li>
-          <li><Link to="/offers" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">Offers</Link></li>
+          <li>
+            <Link
+              to="/"
+              className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+            >
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/offers"
+              className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+            >
+              Offers
+            </Link>
+          </li>
           {isAuthenticated ? (
-            <li><Link to={getDashboardLink()} className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">Dashboard</Link></li>
+            <li>
+              <Link
+                to={getDashboardLink()}
+                className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+              >
+                Dashboard
+              </Link>
+            </li>
           ) : (
             <>
-              <li><Link to="/whyus" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">Why Us</Link></li>
-              <li><Link to="/about" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">About Us</Link></li>
-              <li><Link to="/store-home" className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300">List Your Business</Link></li>
+              <li>
+                <Link
+                  to="/whyus"
+                  className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                >
+                  Why Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/store-home"
+                  className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                >
+                  List Your Business
+                </Link>
+              </li>
             </>
           )}
         </ul>
@@ -78,21 +122,26 @@ const Navbar = () => {
           {isAuthenticated ? (
             <div className="user-info flex items-center gap-4">
               <span className="username text-sm text-gray-600">
-
                 Hi, <strong>{user.username}</strong>
               </span>
               <button
                 onClick={handleLogout}
                 className="logout-btn bg-red-500 text-white px-4 py-2 rounded-[10px] hover:bg-red-600 shadow-md flex items-center justify-center"
-              >Logout</button>
+              >
+                Logout
+              </button>
             </div>
           ) : (
             <div className="auth-buttons flex gap-4">
               <Link to="/login">
-                <button className="btn signin-btn border border-blue-600 text-blue-600 px-4 py-2 rounded-[10px] hover:bg-blue-50 flex items-center justify-center">Sign In</button>
+                <button className="btn signin-btn border border-blue-600 text-blue-600 px-4 py-2 rounded-[10px] hover:bg-blue-50 flex items-center justify-center">
+                  Sign In
+                </button>
               </Link>
               <Link to="/redirect">
-                <button className="btn signup-btn bg-blue-600 text-white px-4 py-2 rounded-[10px] hover:bg-blue-700 shadow-md flex items-center justify-center">Sign Up</button>
+                <button className="btn signup-btn bg-blue-600 text-white px-4 py-2 rounded-[10px] hover:bg-blue-700 shadow-md flex items-center justify-center">
+                  Sign Up
+                </button>
               </Link>
             </div>
           )}
@@ -129,35 +178,76 @@ const Navbar = () => {
             </div>
 
             <ul className="flex flex-col gap-6 items-center text-gray-800 font-medium mt-4">
-              <li><Link to="/" onClick={() => setIsOpen(false)}>Home</Link></li>
-              <li><Link to="/offers" onClick={() => setIsOpen(false)}>Offers</Link></li>
+              <li>
+                <Link to="/" onClick={() => setIsOpen(false)}>
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/offers" onClick={() => setIsOpen(false)}>
+                  Offers
+                </Link>
+              </li>
               {isAuthenticated ? (
-                <li><Link to={getDashboardLink()} onClick={() => setIsOpen(false)}>Dashboard</Link></li>
+                <li>
+                  <Link
+                    to={getDashboardLink()}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
               ) : (
                 <>
-                  <li><Link to="/whyus" onClick={() => setIsOpen(false)}>Why Us</Link></li>
-                  <li><Link to="/about" onClick={() => setIsOpen(false)}>About Us</Link></li>
-                  <li><Link to="/store-home" onClick={() => setIsOpen(false)}>List Your Business</Link></li>
+                  <li>
+                    <Link to="/whyus" onClick={() => setIsOpen(false)}>
+                      Why Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/about" onClick={() => setIsOpen(false)}>
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/store-home" onClick={() => setIsOpen(false)}>
+                      List Your Business
+                    </Link>
+                  </li>
                 </>
               )}
             </ul>
 
-            <div className={`mobile-auth-section mt-8 transition-all duration-300 ${isOpen ? "open opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+            <div
+              className={`mobile-auth-section mt-8 transition-all duration-300 ${
+                isOpen
+                  ? "open opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4"
+              }`}
+            >
               {isAuthenticated ? (
                 <div className="user-info flex flex-col gap-2 text-center">
-                  <span className="text-gray-700">Hi, <strong>{user.username}</strong></span>
+                  <span className="text-gray-700">
+                    Hi, <strong>{user.username}</strong>
+                  </span>
                   <button
                     onClick={handleLogout}
                     className="logout-btn bg-red-500 text-white py-2 rounded-[10px] hover:bg-red-600 flex items-center justify-center"
-                  >Logout</button>
+                  >
+                    Logout
+                  </button>
                 </div>
               ) : (
                 <div className="auth-buttons flex flex-col gap-3">
-                  <Link to="/login">
-                    <button className="btn signin-btn border border-blue-600 text-blue-600 py-2 rounded-[10px] hover:bg-blue-50 w-full flex items-center justify-center">Sign In</button>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    <button className="btn signin-btn border border-blue-600 text-blue-600 py-2 rounded-[10px] hover:bg-blue-50 w-full flex items-center justify-center">
+                      Sign In
+                    </button>
                   </Link>
-                  <Link to="/redirect">
-                    <button className="btn signup-btn bg-blue-600 text-white py-2 rounded-[10px] hover:bg-blue-700 w-full flex items-center justify-center">Sign Up</button>
+                  <Link to="/redirect" onClick={() => setIsOpen(false)}>
+                    <button className="btn signup-btn bg-blue-600 text-white py-2 rounded-[10px] hover:bg-blue-700 w-full flex items-center justify-center">
+                      Sign Up
+                    </button>
                   </Link>
                 </div>
               )}
