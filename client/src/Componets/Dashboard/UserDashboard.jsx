@@ -56,29 +56,46 @@ const UserDashboard = ({ children }) => {
           Welcome {user?.username}
         </h1>
 
-        {/* Referral Code Box Centered */}
-        <div className="flex flex-col items-center justify-center text-gray-800 font-medium mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-base">
-              Referral Code:{" "}
-              <span className="font-semibold text-blue-700">
-                {user?.myReferralCode}
+        {/* Responsive Referral + Title */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-4 px-2">
+          {/* Referral Code & Toggle Info */}
+          <div className="flex flex-col items-center md:items-start text-gray-800 font-medium">
+            <div className="flex items-center gap-2">
+              <span className="text-base">
+                Referral Code:{" "}
+                <span className="font-semibold text-blue-700">
+                  {user?.myReferralCode}
+                </span>
               </span>
-            </span>
-            <FontAwesomeIcon
-              icon={faCircleInfo}
-              className="text-blue-600 cursor-pointer hover:text-blue-800"
-              onClick={() => setShowReferralInfo(!showReferralInfo)}
-              title="Referral Info"
-            />
+              <FontAwesomeIcon
+                icon={faCircleInfo}
+                className="text-blue-600 cursor-pointer hover:text-blue-800 transition"
+                onClick={() => setShowReferralInfo(!showReferralInfo)}
+                title="Referral Info"
+              />
+            </div>
+
+            {/* Animated Info Block */}
+            <div
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                showReferralInfo ? "max-h-40 mt-2" : "max-h-0"
+              }`}
+            >
+              {showReferralInfo && (
+                <p className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm max-w-md shadow-sm text-center md:text-left">
+                  When you refer anyone, you can earn{" "}
+                  <strong>100 points</strong> to your account.
+                </p>
+              )}
+            </div>
           </div>
 
-          {showReferralInfo && (
-            <p className="bg-blue-50 text-blue-700 mt-2 px-4 py-2 rounded-lg text-sm max-w-md shadow-sm text-center">
-              When you refer anyone, you can earn{" "}
-              <strong>100 points</strong> to your account.
-            </p>
-          )}
+          {/* Title */}
+          <div className="w-full md:w-auto text-center md:text-right">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Redeemed Coupons
+            </h2>
+          </div>
         </div>
 
         {children}
