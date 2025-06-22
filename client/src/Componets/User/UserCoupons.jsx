@@ -45,7 +45,7 @@ const RedeemedCoupons = () => {
       </div>
 
       {/* Title */}
-      <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-10">
+      <h2 className="text-3xl font-extrabold text-gray-900 text-center mt-10 mb-10">
         🎉 Redeemed Coupons
       </h2>
 
