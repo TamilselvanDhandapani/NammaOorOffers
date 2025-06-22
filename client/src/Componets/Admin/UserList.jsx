@@ -3,15 +3,19 @@ import { FiSearch } from "react-icons/fi";
 import useStore from "../../hooks/useStore";
 
 const UserList = () => {
-  const [role, setRole] = useState("store");
+  const [role, setRole] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [updating, setUpdating] = useState({});
 
-  const { users, loading, error, fetchUsersByRole, changeUserRole } = useStore();
+  const { users, loading, error, fetchUsersByRole, fetchAllUsers, changeUserRole } = useStore();
 
   useEffect(() => {
-    fetchUsersByRole(role);
+    if (role === "all") {
+      fetchAllUsers();
+    } else {
+      fetchUsersByRole(role);
+    }
   }, [role]);
 
   useEffect(() => {
@@ -50,6 +54,7 @@ const UserList = () => {
           value={role}
           onChange={(e) => setRole(e.target.value)}
         >
+          <option value="all">All</option>
           <option value="admin">Admin</option>
           <option value="store">Store</option>
           <option value="user">User</option>
@@ -66,6 +71,9 @@ const UserList = () => {
               <tr>
                 <th className="px-4 py-3 border-b">Username</th>
                 <th className="px-4 py-3 border-b">Email</th>
+                <th className="px-4 py-3 border-b">Phone</th>
+                <th className="px-4 py-3 border-b">DOB</th>
+                <th className="px-4 py-3 border-b">Referral Code</th>
                 <th className="px-4 py-3 border-b">Role</th>
                 <th className="px-4 py-3 border-b">Change Role</th>
               </tr>
@@ -76,8 +84,16 @@ const UserList = () => {
                   <tr key={user._id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 border-b text-sm text-gray-800">{user.username}</td>
                     <td className="px-4 py-3 border-b text-sm text-gray-800">{user.email}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-700">{user.phone || "-"}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-700">{user.DOB || "-"}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-700">{user.referralCode || "-"}</td>
                     <td className="px-4 py-3 border-b text-sm">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${user.role === "admin" ? "bg-blue-100 text-blue-600" : user.role === "store" ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium 
+                        ${user.role === "admin"
+                          ? "bg-blue-100 text-blue-600"
+                          : user.role === "store"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-yellow-100 text-yellow-600"}`}>
                         {user.role}
                       </span>
                     </td>
@@ -100,10 +116,10 @@ const UserList = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="px-4 py-6 text-center text-sm text-gray-500">
+                  <td colSpan="7" className="px-4 py-6 text-center text-sm text-gray-500">
                     {searchTerm
                       ? "No users match your search criteria."
-                      : "No users found for the selected role."}
+                      : "No users found."}
                   </td>
                 </tr>
               )}

@@ -10,24 +10,33 @@ const PrivateRoute = ({ role, requiredPermissions = [], children }) => {
   useEffect(() => {
     if (loading) return;
 
+    // Case 1: Not authenticated
     if (!isAuthenticated) {
       setRedirectPath("/login");
-    } else if (!user) {
+    }
+    // Case 2: Authenticated but no user object
+    else if (!user) {
       setRedirectPath("/error");
-    } else if (role && user.role !== role) {
+    }
+    // Case 3: Role mismatch
+    else if (role && user.role !== role) {
       setRedirectPath("/unauthorized");
-    } else if (
+    }
+    // Case 4: Permission check failure
+    else if (
       requiredPermissions.length > 0 &&
       !requiredPermissions.every((perm) => user.permissions?.includes(perm))
     ) {
       setRedirectPath("/unauthorized");
+    } else {
+      setRedirectPath(null); // ✅ All checks passed
     }
   }, [isAuthenticated, user, loading, role, requiredPermissions]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500" />
       </div>
     );
   }
@@ -38,7 +47,10 @@ const PrivateRoute = ({ role, requiredPermissions = [], children }) => {
         to={redirectPath}
         state={{
           from: location,
-          error: redirectPath === "/error" ? "User data not available" : undefined,
+          error:
+            redirectPath === "/error"
+              ? "User data not available"
+              : undefined,
         }}
         replace
       />

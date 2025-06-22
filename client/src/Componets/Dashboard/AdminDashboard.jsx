@@ -35,17 +35,7 @@ const AdminDashboard = ({ children }) => {
               Analytics
             </Link>
           </li>
-          <li className="admin-nav-item">
-            <Link
-              to="/infoform"
-              className={`admin-nav-link ${
-                location.pathname.startsWith("/infoform") ? "active" : ""
-              }`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              New Store Information
-            </Link>
-          </li>
+          
           <li className="admin-nav-item">
             <Link
               to="/userlist"
