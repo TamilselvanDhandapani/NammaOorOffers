@@ -4,7 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "../../assets/logo.png"
+import logo from "../../assets/Logo.png"
 
 const Navbar = () => {
   const navigate = useNavigate();
