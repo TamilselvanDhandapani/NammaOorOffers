@@ -31,7 +31,9 @@ const UserList = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">User Management</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800 text-center">
+        User Management
+      </h1>
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
         <div className="flex items-center border border-gray-300 rounded-md px-3 py-2 w-full md:max-w-md">
@@ -60,15 +62,14 @@ const UserList = () => {
       {error && <div className="text-center text-red-500">{error}</div>}
 
       {!loading && !error && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
-            <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-md">
+          <table className="min-w-full bg-white text-center">
+            <thead className="bg-gray-100 text-sm font-semibold text-gray-700">
               <tr>
                 <th className="px-4 py-3 border-b">Username</th>
                 <th className="px-4 py-3 border-b">Email</th>
                 <th className="px-4 py-3 border-b">Phone</th>
                 <th className="px-4 py-3 border-b">Referral Code</th>
-                
                 {role !== "admin" && <th className="px-4 py-3 border-b">Coupons</th>}
                 {role !== "admin" && <th className="px-4 py-3 border-b">Redeemed Coupons</th>}
                 {role !== "admin" && <th className="px-4 py-3 border-b">Used Coupons</th>}
@@ -78,21 +79,18 @@ const UserList = () => {
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.username}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.email}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.phone}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.myReferralCode}
-                    </td>
-                   
+                filteredUsers.map((user, index) => (
+                  <tr
+                    key={user._id}
+                    className={`${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } hover:bg-gray-100 transition`}
+                  >
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.username}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.email}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.phone}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.myReferralCode}</td>
+
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
                         {Array.isArray(user.coupons) ? user.coupons.length : 0}
@@ -100,7 +98,9 @@ const UserList = () => {
                     )}
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
-                        {Array.isArray(user.redeemedCoupons) ? user.redeemedCoupons.length : 0}
+                        {Array.isArray(user.redeemedCoupons)
+                          ? user.redeemedCoupons.length
+                          : 0}
                       </td>
                     )}
                     {role !== "admin" && (
@@ -108,6 +108,7 @@ const UserList = () => {
                         {user.usedCouponsCount || 0}
                       </td>
                     )}
+
                     <td className="px-4 py-3 border-b text-sm">
                       <span
                         className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
