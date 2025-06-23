@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.png"
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
