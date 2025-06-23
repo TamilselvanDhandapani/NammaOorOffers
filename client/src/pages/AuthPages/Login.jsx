@@ -2,16 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaArrowRight, FaUserCheck } from "react-icons/fa";
 import { GoogleLogin } from "@react-oauth/google";
-import useAuth from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const { login, googleLogin, message } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if message contains "verify"
   useEffect(() => {
     if (message?.toLowerCase().includes("verify")) {
       navigate("/verify-otp");
@@ -80,7 +80,10 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               Email address
             </label>
             <div className="flex items-center mt-1 border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-[#4a6bff]">
@@ -88,6 +91,7 @@ const Login = () => {
               <input
                 type="email"
                 id="email"
+                aria-label="Email"
                 className="w-full outline-none text-sm"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -98,7 +102,10 @@ const Login = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <div className="flex items-center mt-1 border border-gray-300 rounded-md px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-[#4a6bff]">
@@ -106,6 +113,7 @@ const Login = () => {
               <input
                 type="password"
                 id="password"
+                aria-label="Password"
                 className="w-full outline-none text-sm"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -127,7 +135,7 @@ const Login = () => {
             disabled={loading}
           >
             {loading ? (
-              <span className="h-5 w-5 border-2 border-white border-t-transparent animate-spin rounded-full"></span>
+              <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             ) : (
               <>
                 Sign In <FaArrowRight />
@@ -136,7 +144,9 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="text-center text-sm text-gray-500">or continue with</div>
+        <div className="text-center text-sm text-gray-500">
+          or continue with
+        </div>
 
         <div className="flex justify-center">
           <GoogleLogin

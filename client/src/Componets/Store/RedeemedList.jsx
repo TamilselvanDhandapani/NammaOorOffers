@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import useAuth from "../../hooks/useAuth";
 import useCoupon from "../../hooks/useCoupon";
+import { useAuth } from "../../context/AuthContext";
 
 const RedeemedList = () => {
   const { user } = useAuth();
@@ -29,64 +29,66 @@ const RedeemedList = () => {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-
     const filtered = redeemedCoupons.filter(
       (c) =>
         c.username?.toLowerCase().includes(value) ||
         c.redemptionCode?.toLowerCase().includes(value)
     );
-
     setFilteredCoupons(filtered);
   };
 
   const markAsUsed = async (userId, redeemedCouponId) => {
     try {
       await updateRedeemedStatus(redeemedCouponId, "used", userId);
-
-      const updateStatus = (list) =>
-        list.map((c) =>
+      setFilteredCoupons((prev) =>
+        prev.map((c) =>
           c.redeemedCouponId === redeemedCouponId && c.userId === userId
-            ? { ...c, status: "used", usedOnDate: new Date().toISOString() } // ✅ Ensure this line exists
+            ? { ...c, status: "used", usedOnDate: new Date().toISOString() }
             : c
-        );
-
-      setFilteredCoupons((prev) => updateStatus(prev));
+        )
+      );
     } catch (error) {
       console.error("Error updating coupon status:", error);
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <p className="text-center py-8 text-xl text-gray-700 font-medium">
         Loading coupons...
       </p>
     );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-sans">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
         <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-teal-500 pb-1 text-center sm:text-left">
-          Redeemed Coupons for {user?.storeId?.storeName || "Your Store"}
+          Redeemed Coupons for{" "}
+          {typeof user?.storeId === "object"
+            ? user?.storeId?.storeName
+            : "Your Store"}
         </h2>
         <div className="w-full sm:w-auto">
           <input
             type="text"
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Search name or code"
+            placeholder="Search by name or code"
             className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-500 transition-all"
           />
         </div>
       </div>
 
+      {/* Table or message */}
       {filteredCoupons.length === 0 ? (
         <p className="text-center text-gray-500 py-10 text-lg">
           No redeemed coupons found.
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm shadow-md border border-gray-200">
+          <table className="w-full text-sm shadow-md border border-gray-200 rounded-md overflow-hidden">
             <thead className="bg-gray-800 text-white">
               <tr>
                 <th className="px-4 py-3 text-center">User</th>
@@ -110,7 +112,9 @@ const RedeemedList = () => {
                     {coupon.redemptionCode}
                   </td>
                   <td className="px-4 py-3 text-gray-600">
-                    {new Date(coupon.redeemedAt).toLocaleString()}
+                    {coupon.redeemedAt
+                      ? new Date(coupon.redeemedAt).toLocaleString()
+                      : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -124,20 +128,17 @@ const RedeemedList = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600">
-                    {coupon.status === "used"
-                      ? coupon.usedOnDate
-                        ? new Date(coupon.usedOnDate).toLocaleString()
-                        : "—"
+                    {coupon.status === "used" && coupon.usedOnDate
+                      ? new Date(coupon.usedOnDate).toLocaleString()
                       : "Not Used"}
                   </td>
-
                   <td className="px-4 py-3">
                     <button
                       onClick={() =>
                         markAsUsed(coupon.userId, coupon.redeemedCouponId)
                       }
                       disabled={coupon.status !== "active"}
-                      className={`px-4 py-2 rounded-md font-medium transition-all duration-150 text-white ${
+                      className={`px-4 py-2 rounded-md font-medium transition-all text-white ${
                         coupon.status === "active"
                           ? "bg-teal-500 hover:bg-teal-600 active:scale-95"
                           : "bg-gray-400 cursor-not-allowed opacity-70"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import { useAuth } from "../context/AuthContext";
 
 const PrivateRoute = ({ role, requiredPermissions = [], children }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -10,26 +10,26 @@ const PrivateRoute = ({ role, requiredPermissions = [], children }) => {
   useEffect(() => {
     if (loading) return;
 
-    // Case 1: Not authenticated
+    // 1. Not authenticated
     if (!isAuthenticated) {
       setRedirectPath("/login");
     }
-    // Case 2: Authenticated but no user object
+    // 2. Authenticated but no user data
     else if (!user) {
       setRedirectPath("/error");
     }
-    // Case 3: Role mismatch
+    // 3. Role mismatch
     else if (role && user.role !== role) {
       setRedirectPath("/unauthorized");
     }
-    // Case 4: Permission check failure
+    // 4. Permission check failed
     else if (
       requiredPermissions.length > 0 &&
       !requiredPermissions.every((perm) => user.permissions?.includes(perm))
     ) {
       setRedirectPath("/unauthorized");
     } else {
-      setRedirectPath(null); // ✅ All checks passed
+      setRedirectPath(null); // ✅ Access granted
     }
   }, [isAuthenticated, user, loading, role, requiredPermissions]);
 
@@ -50,6 +50,8 @@ const PrivateRoute = ({ role, requiredPermissions = [], children }) => {
           error:
             redirectPath === "/error"
               ? "User data not available"
+              : redirectPath === "/unauthorized"
+              ? "Unauthorized access"
               : undefined,
         }}
         replace

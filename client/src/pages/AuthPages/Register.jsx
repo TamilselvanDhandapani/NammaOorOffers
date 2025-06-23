@@ -10,7 +10,7 @@ import {
   FaGift,
   FaArrowRight,
 } from "react-icons/fa";
-import useAuth from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
@@ -45,7 +45,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className=" bg-white flex items-center justify-center min-h-[80vh] px-4">
+    <div className="bg-white flex items-center justify-center min-h-[80vh] px-4">
       <Helmet>
         <title>Register | Namma Ooru Offers</title>
         <meta
@@ -54,7 +54,7 @@ const RegisterPage = () => {
         />
       </Helmet>
 
-      <div className="bg-white shadow-md rounded-lg w-full max-w-md  py-4 px-6 space-y-6 border border-gray-200 mt-2 mb-4">
+      <div className="bg-white shadow-md rounded-lg w-full max-w-md py-4 px-6 space-y-6 border border-gray-200 mt-2 mb-4">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-[#4a6bff]">
             Create Your Account
@@ -131,7 +131,7 @@ const RegisterPage = () => {
           />
 
           <InputField
-            id="referal"
+            id="referral"
             label="Referral Code (optional)"
             icon={<FaGift />}
             value={referralCode}
@@ -179,12 +179,21 @@ const InputField = ({
   required = false,
 }) => (
   <div>
-    
-    <div className="flex items-center border border-gray-300 rounded px-3 py-2 bg-white">
+    {label && (
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        {label}
+      </label>
+    )}
+    <div className="flex items-center border border-gray-300 rounded px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-[#4a6bff]">
       <span className="text-gray-500 mr-2">{icon}</span>
       <input
         type={type}
         id={id}
+        name={id}
+        aria-label={label}
         className="w-full bg-transparent focus:outline-none text-gray-800"
         placeholder={placeholder}
         value={value}

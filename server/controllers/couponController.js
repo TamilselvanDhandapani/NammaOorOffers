@@ -35,14 +35,17 @@ const createCoupon = async (req, res) => {
       terms = [terms];
     }
 
-    const storeId = req.params.storeId; // <--- this must be set in your route
-
+    const storeId = req.params.storeId;
     if (!storeId) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Store ID is required." });
+      return res.status(400).json({ success: false, msg: "Store ID is required." });
     }
 
+    const store = await Store.findById(storeId);
+    if (!store) {
+      return res.status(404).json({ success: false, msg: "Store not found." });
+    }
+
+    // ✅ Create new coupon
     const newCoupon = new Coupon({
       title,
       description,
@@ -53,20 +56,24 @@ const createCoupon = async (req, res) => {
       redemptionCode,
       categories,
       terms,
-      store: storeId, // ✅ this must match your schema
+      store: storeId,
       backgroundImage: req.file?.path || null,
+      createdBy: store.owner, // optional: track who created it
     });
 
     await newCoupon.save();
 
-    res
-      .status(201)
-      .json({ success: true, msg: "Coupon created", coupon: newCoupon });
+    // ✅ Add coupon ID to store owner’s user document
+    if (store.owner) {
+      await User.findByIdAndUpdate(store.owner, {
+        $addToSet: { coupons: newCoupon._id }, // $addToSet avoids duplicates
+      });
+    }
+
+    res.status(201).json({ success: true, msg: "Coupon created", coupon: newCoupon });
   } catch (err) {
     console.error("Error creating coupon:", err);
-    res
-      .status(500)
-      .json({ success: false, msg: "Server error", error: err.message });
+    res.status(500).json({ success: false, msg: "Server error", error: err.message });
   }
 };
 

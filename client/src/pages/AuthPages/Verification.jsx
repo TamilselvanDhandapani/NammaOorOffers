@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 
 const Verification = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -15,14 +15,13 @@ const Verification = () => {
 
   // Countdown timer
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev === 1) clearInterval(interval);
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
 
   const handleChange = (element, index) => {
     if (isNaN(element.value)) return;
@@ -89,7 +88,10 @@ const Verification = () => {
               <input
                 key={index}
                 type="text"
+                inputMode="numeric"
                 maxLength="1"
+                aria-label={`OTP digit ${index + 1}`}
+                autoFocus={index === 0}
                 value={digit}
                 onChange={(e) => handleChange(e.target, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}

@@ -6,19 +6,16 @@ import {
   FaEnvelope,
   FaLock,
   FaPhoneAlt,
-  FaBirthdayCake,
   FaGift,
   FaArrowRight,
 } from "react-icons/fa";
-import useAuth from "../../hooks/useAuth";
-
+import { useAuth } from "../../context/AuthContext"; // ✅ fixed import
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  
   const [referralCode, setReferralCode] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +31,6 @@ const RegisterPage = () => {
         email,
         password,
         phone,
-        
         referralCode
       );
       if (success) navigate("/verify-otp");
@@ -46,7 +42,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className=" bg-white flex items-center justify-center min-h-[80vh] px-4">
+    <div className="bg-white flex items-center justify-center min-h-[80vh] px-4">
       <Helmet>
         <title>Register | Namma Ooru Offers</title>
         <meta
@@ -55,13 +51,13 @@ const RegisterPage = () => {
         />
       </Helmet>
 
-      <div className="bg-white shadow-md rounded-lg w-full max-w-md  py-4 px-6 space-y-6 border border-gray-200 mt-2 mb-4">
+      <div className="bg-white shadow-md rounded-lg w-full max-w-md py-4 px-6 space-y-6 border border-gray-200 mt-2 mb-4">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-[#4a6bff]">
             Create Your Store Account
           </h1>
           <p className="text-sm text-gray-600">
-            Join us today to Grow your business!
+            Join us today to grow your business!
           </p>
         </div>
 
@@ -121,9 +117,8 @@ const RegisterPage = () => {
             required
           />
 
-         
           <InputField
-            id="referal"
+            id="referral"
             label="Referral Code (optional)"
             icon={<FaGift />}
             value={referralCode}
@@ -137,7 +132,10 @@ const RegisterPage = () => {
             className="w-full flex items-center justify-center gap-2 bg-[#4a6bff] text-white py-2 px-4 rounded hover:bg-[rgb(50,137,255)] transition duration-200"
           >
             {loading ? (
-              <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-5 h-5"></span>
+              <span
+                className="animate-spin border-2 border-white border-t-transparent rounded-full w-5 h-5"
+                aria-label="Loading"
+              ></span>
             ) : (
               <>
                 Register <FaArrowRight />
@@ -171,7 +169,9 @@ const InputField = ({
   required = false,
 }) => (
   <div>
-    
+    <label htmlFor={id} className="sr-only">
+      {label}
+    </label>
     <div className="flex items-center border border-gray-300 rounded px-3 py-2 bg-white">
       <span className="text-gray-500 mr-2">{icon}</span>
       <input

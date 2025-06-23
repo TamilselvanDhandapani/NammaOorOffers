@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import useAuth from "../../hooks/useAuth";
 import useCoupon from "../../hooks/useCoupon";
 import { format } from "date-fns";
+import { useAuth } from "../../context/AuthContext";
 
 const RedeemedCoupons = () => {
   const { user } = useAuth();
@@ -16,17 +16,20 @@ const RedeemedCoupons = () => {
   const calculateDaysLeft = (expiryDate) => {
     if (!expiryDate)
       return { text: "No Expiry", color: "bg-gray-300 text-gray-800" };
+
     const expiry = new Date(expiryDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const timeDiff = expiry - today;
     const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
     if (daysLeft <= 0)
       return { text: "Expired", color: "bg-red-100 text-red-600" };
     if (daysLeft === 1)
       return { text: "Last Day", color: "bg-orange-100 text-orange-600" };
     if (daysLeft <= 7)
       return { text: `${daysLeft}d left`, color: "bg-yellow-100 text-yellow-700" };
+
     return { text: format(expiry, "dd MMM yyyy"), color: "bg-green-100 text-green-700" };
   };
 
@@ -39,7 +42,10 @@ const RedeemedCoupons = () => {
     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Points Top Right */}
       <div className="absolute top-4 right-4 z-10">
-        <div className="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold shadow-lg text-sm">
+        <div
+          className="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold shadow-lg text-sm"
+          title="Earn more by redeeming or referring"
+        >
           🪙 {user?.points || 0} Points
         </div>
       </div>
@@ -64,11 +70,12 @@ const RedeemedCoupons = () => {
                 className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition duration-300 p-6 border border-gray-100"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">
+                  <h3 className="text-xl font-semibold text-gray-800 truncate">
                     {coupon.title || "Untitled"}
                   </h3>
                   <span
                     className={`text-xs px-2 py-1 rounded-full font-medium ${badgeColor}`}
+                    title={`Expires on ${coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleDateString() : "N/A"}`}
                   >
                     🕒 {daysLeftText}
                   </span>
@@ -95,7 +102,7 @@ const RedeemedCoupons = () => {
                     <span className="font-semibold">Status:</span>
                     <span
                       className={`inline-block ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        coupon.status === "Used"
+                        coupon.status?.toLowerCase() === "used"
                           ? "bg-green-100 text-green-600"
                           : "bg-yellow-100 text-yellow-700"
                       }`}
@@ -105,7 +112,9 @@ const RedeemedCoupons = () => {
                   </p>
                   <p>
                     <span className="font-semibold">Used On:</span>{" "}
-                    {coupon.usedOnDate || "Not Used"}
+                    {coupon.usedOnDate
+                      ? new Date(coupon.usedOnDate).toLocaleDateString()
+                      : "Not Used"}
                   </p>
                 </div>
               </div>

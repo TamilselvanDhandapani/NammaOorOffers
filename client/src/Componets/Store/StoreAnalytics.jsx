@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import useAnalytics from "../../hooks/useAnalytics";
-import useAuth from "../../hooks/useAuth";
 import { Bar, Line } from "react-chartjs-2";
 import "chart.js/auto";
+import { useAuth } from "../../context/AuthContext";
 
 const StoreAnalytics = () => {
   const { user } = useAuth();
@@ -26,7 +26,7 @@ const StoreAnalytics = () => {
     return <p className="text-center text-red-500 py-6">{error}</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
         📊 Store Analytics
       </h2>
@@ -35,7 +35,9 @@ const StoreAnalytics = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
           {/* Coupon Stats Bar Chart */}
           <div className="bg-white rounded-xl shadow-md p-5">
-            <h3 className="text-xl font-semibold text-gray-700 mb-4">Coupon Overview</h3>
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              Coupon Overview
+            </h3>
             <Bar
               data={{
                 labels: ["Total", "Active", "Expired", "Redemptions"],
@@ -74,7 +76,40 @@ const StoreAnalytics = () => {
           </div>
 
           {/* Redemption Trends Line Chart */}
-        
+          <div className="bg-white rounded-xl shadow-md p-5">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              Redemption Trends (Last 7 Days)
+            </h3>
+            <Line
+              data={{
+                labels: trends?.map((t) => t.date) || [],
+                datasets: [
+                  {
+                    label: "Redemptions",
+                    data: trends?.map((t) => t.count) || [],
+                    fill: true,
+                    tension: 0.3,
+                    backgroundColor: "rgba(16, 185, 129, 0.1)", // teal-500 alpha
+                    borderColor: "#10b981", // teal-500
+                    pointBackgroundColor: "#10b981",
+                    borderWidth: 2,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: true, position: "top" },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                  },
+                },
+              }}
+            />
+          </div>
         </div>
       )}
     </div>

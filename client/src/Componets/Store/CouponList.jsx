@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
 import useCoupon from "../../hooks/useCoupon";
+import { useAuth } from "../../context/AuthContext";
 
 const CouponList = () => {
   const { user, loading: authLoading } = useAuth();
@@ -20,30 +20,34 @@ const CouponList = () => {
 
   if (authLoading || couponLoading) {
     return (
-      <p className="text-center text-gray-600 text-lg mt-4">
-        Loading coupons...
-      </p>
+      <div className="text-center py-8">
+        <p className="text-gray-500 text-lg animate-pulse">Loading coupons...</p>
+      </div>
     );
   }
 
   if (!user || !user.storeId) {
     return (
-      <p className="text-center text-red-600 text-lg mt-4">
-        Store information not available. Add store info and re-login.
-      </p>
+      <div className="text-center py-8">
+        <p className="text-red-600 font-medium text-base">
+          🚫 Store information not available. Please add store details and re-login.
+        </p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <p className="text-center text-red-600 text-lg mt-4">{error}</p>
+      <div className="text-center py-8">
+        <p className="text-red-600 font-medium text-base">{error}</p>
+      </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md my-6">
-      <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-        My Store Coupons
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md my-6">
+      <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        🏷️ My Store Coupons
       </h2>
 
       {storeCoupons.length === 0 ? (
@@ -51,33 +55,35 @@ const CouponList = () => {
           No coupons found for your store.
         </p>
       ) : (
-        <ul className="grid gap-5">
+        <ul className="grid gap-6 sm:grid-cols-1 md:grid-cols-2">
           {storeCoupons.map((coupon) => (
             <li
               key={coupon._id}
-              className="border border-gray-200 bg-gray-100 rounded-md p-4 transition duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1"
+              className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-transform duration-300 hover:-translate-y-1"
             >
-              <div>
-                <h3 className="text-xl font-medium text-gray-800 mb-1">
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-gray-800">
                   {coupon.title}
                 </h3>
-                <p className="text-gray-600 mb-2">{coupon.description}</p>
-                <p className="text-sm">
+                <p className="text-gray-700 text-sm">{coupon.description}</p>
+                <p className="text-sm text-gray-600">
                   <span className="font-semibold">Code:</span>{" "}
-                  {coupon.redemptionCode}
+                  <span className="bg-gray-200 px-2 py-0.5 rounded text-gray-800 font-mono">
+                    {coupon.redemptionCode}
+                  </span>
                 </p>
-                <p className="text-sm mb-3">
+                <p className="text-sm text-gray-600">
                   <span className="font-semibold">Expires:</span>{" "}
                   {new Date(coupon.expiryDate).toLocaleDateString()}
                 </p>
-                <div className="flex justify-end">
-                  <Link
-                    to={`/coupondetails/${coupon._id}`}
-                    className="bg-teal-500 hover:bg-teal-600 text-white font-medium px-4 py-2 rounded-md text-sm transition"
-                  >
-                    View Details
-                  </Link>
-                </div>
+              </div>
+              <div className="mt-4 text-right">
+                <Link
+                  to={`/coupondetails/${coupon._id}`}
+                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
+                >
+                  View Details
+                </Link>
               </div>
             </li>
           ))}
