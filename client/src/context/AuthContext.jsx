@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     password,
     phone,
     DOB,
-    referalCode
+    referralCode,
   ) => {
     dispatch({ type: "AUTH_START" });
     try {
@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }) => {
         password,
         phone,
         DOB,
-        referalCode,
+        referralCode,
       });
 
       localStorage.setItem("pendingUserId", res.data.userId);
