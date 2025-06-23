@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,8 +14,23 @@ const UserDashboard = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showReferralInfo, setShowReferralInfo] = useState(false);
+  const referralRef = useRef(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Close referral info on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        referralRef.current &&
+        !referralRef.current.contains(event.target)
+      ) {
+        setShowReferralInfo(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="user-dashboard-container">
@@ -59,7 +74,10 @@ const UserDashboard = ({ children }) => {
         {/* Responsive Referral + Title */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-4 px-2">
           {/* Referral Code & Toggle Info */}
-          <div className="flex flex-col items-center md:items-start text-gray-800 font-medium">
+          <div
+            ref={referralRef}
+            className="flex flex-col items-center md:items-start text-gray-800 font-medium"
+          >
             <div className="flex items-center gap-2">
               <span className="text-base">
                 Referral Code:{" "}
