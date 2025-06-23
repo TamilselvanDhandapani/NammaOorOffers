@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaLock, FaArrowRight, FaUserCheck } from "react-icons/fa";
 import { GoogleLogin } from "@react-oauth/google";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../hooks/useAuth";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");

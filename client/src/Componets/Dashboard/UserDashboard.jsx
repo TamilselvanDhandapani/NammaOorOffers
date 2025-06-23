@@ -6,7 +6,7 @@ import {
   faTimes,
   faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
-import { useAuth } from "../../context/AuthContext"; // ✅ use named import
+import useAuth from "../../hooks/useAuth";
 import "../../styles/UserDashboard.css";
 
 const UserDashboard = ({ children }) => {
@@ -68,7 +68,7 @@ const UserDashboard = ({ children }) => {
       {/* Main Content */}
       <div className="user-dashboard-main">
         <h1 className="user-dashboard-header text-center">
-          Welcome {user?.username || "User"}
+          Welcome {user?.username}
         </h1>
 
         {/* Responsive Referral + Title */}
@@ -82,7 +82,7 @@ const UserDashboard = ({ children }) => {
               <span className="text-base">
                 Referral Code:{" "}
                 <span className="font-semibold text-blue-700">
-                  {user?.myReferralCode || "N/A"}
+                  {user?.myReferralCode}
                 </span>
               </span>
               <FontAwesomeIcon
@@ -98,7 +98,6 @@ const UserDashboard = ({ children }) => {
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
                 showReferralInfo ? "max-h-40 mt-2" : "max-h-0"
               }`}
-              aria-hidden={!showReferralInfo}
             >
               {showReferralInfo && (
                 <p className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm max-w-md shadow-sm text-center md:text-left">
@@ -109,7 +108,7 @@ const UserDashboard = ({ children }) => {
             </div>
           </div>
 
-          {/* Section Title */}
+          {/* Title */}
           <div className="w-full md:w-auto text-center md:text-right">
             <h2 className="text-xl font-semibold text-gray-800">
               Redeemed Coupons

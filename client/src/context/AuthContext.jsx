@@ -1,15 +1,10 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useReducer, useEffect } from "react";
 import api from "../Services/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// ✅ Create Context
- const AuthContext = createContext();
+const AuthContext = createContext();
 
-// ✅ Custom Hook
- const useAuth = () => useContext(AuthContext);
-
-// ✅ Initial State
 const initialState = {
   isAuthenticated: false,
   user: null,
@@ -18,7 +13,6 @@ const initialState = {
   message: "",
 };
 
-// ✅ Reducer
 const authReducer = (state, action) => {
   switch (action.type) {
     case "AUTH_START":
@@ -51,11 +45,19 @@ const authReducer = (state, action) => {
   }
 };
 
-// ✅ Provider Component
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // ✅ Load user on initial app load
+  const fetchStoreData = async (storeId) => {
+    try {
+      const res = await api.get(`/store/${storeId}`);
+      dispatch({ type: "SET_STORE_DATA", payload: res.data });
+    } catch (err) {
+      console.error("Failed to fetch store data:", err);
+      toast.error("Unable to load store details.");
+    }
+  };
+
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("token");
@@ -92,18 +94,14 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // ✅ Helper Methods
-  const fetchStoreData = async (storeId) => {
-    try {
-      const res = await api.get(`/store/${storeId}`);
-      dispatch({ type: "SET_STORE_DATA", payload: res.data });
-    } catch (err) {
-      console.error("Failed to fetch store data:", err);
-      toast.error("Unable to load store details.");
-    }
-  };
-
-  const register = async (username, email, password, phone, DOB, referalCode) => {
+  const register = async (
+    username,
+    email,
+    password,
+    phone,
+    DOB,
+    referalCode
+  ) => {
     dispatch({ type: "AUTH_START" });
     try {
       const res = await api.post("/auth/register", {
@@ -307,5 +305,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-
-export { AuthContext, AuthProvider, useAuth };
+export default AuthContext;

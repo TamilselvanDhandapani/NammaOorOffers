@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Helmet } from "react-helmet";
 import { format } from "date-fns";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../hooks/useAuth";
 import useCoupon from "../../hooks/useCoupon";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -36,7 +36,6 @@ const OffersDetails = () => {
       try {
         const data = await getCouponById(id);
         setCoupon(data);
-
         const expiry = new Date(data.expiryDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -55,8 +54,8 @@ const OffersDetails = () => {
           });
         }
 
-        if (user?._id) {
-          await fetchMyRedeemedCoupons(user._id);
+        if (user?.id) {
+          await fetchMyRedeemedCoupons(user.id);
           const found = redeemedCoupons.some((item) => item.coupon?._id === id);
           setAlreadyRedeemed(found);
           if (found) setShowCode(true);
@@ -69,7 +68,7 @@ const OffersDetails = () => {
     };
 
     fetchDetails();
-  }, [id, user?._id]);
+  }, [id, user?.id]);
 
   const handleRedeem = async () => {
     if (!user) {
@@ -80,7 +79,7 @@ const OffersDetails = () => {
 
     try {
       await redeemCoupon({
-        userId: user._id,
+        userId: user.id,
         couponId: coupon._id,
         storeId: coupon.store?._id,
         redemptionCode: coupon.redemptionCode,
@@ -131,10 +130,7 @@ const OffersDetails = () => {
     <>
       <Helmet>
         <title>
-          {coupon?.title
-            ? `${coupon.title} | ${coupon?.store?.storeName}`
-            : "Offer Details"}{" "}
-          - Namma Ooru Offers
+          {coupon?.title} | {coupon?.store?.storeName} - Namma Ooru Offers
         </title>
       </Helmet>
 
@@ -207,11 +203,9 @@ const OffersDetails = () => {
               <strong>Website:</strong>{" "}
               <a
                 href={coupon?.store?.storeWebsite || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-black-600 "
               >
-                {coupon?.store?.storeWebsite || "No Website"}
+                {coupon.store?.storeName || "No Website"}
               </a>
             </p>
           </div>

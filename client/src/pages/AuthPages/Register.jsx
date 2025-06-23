@@ -10,7 +10,8 @@ import {
   FaGift,
   FaArrowRight,
 } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../hooks/useAuth";
+
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");

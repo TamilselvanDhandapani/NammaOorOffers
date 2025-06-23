@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import useAnalytics from "../../hooks/useAnalytics";
-import { useAuth } from "../../context/AuthContext"; // ✅ Fixed
+import useAnalytics  from "../../hooks/useAnalytics";
+import  useAuth  from "../../hooks/useAuth";
 import { Bar, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 
@@ -15,12 +15,13 @@ const AdminAnalyticsPage = () => {
 
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user?.role === "admin") {
-      fetchAdminStats();
-      if (user.storeId) fetchStoreStats(user.storeId);
-    }
-  }, [user, fetchAdminStats, fetchStoreStats]); // ✅ Improved
+useEffect(() => {
+  if (user?.role === "admin") {
+    fetchAdminStats();
+    if (user.storeId) fetchStoreStats(user.storeId);
+  }
+}, [user]); // ✅ no warning now
+
 
   if (loading) return <p className="text-center mt-6">Loading analytics...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -82,7 +83,7 @@ const AdminAnalyticsPage = () => {
                   beginAtZero: true,
                   ticks: {
                     stepSize: 1,
-                    precision: 0,
+                    precision: 0, // ensure no decimals
                   },
                 },
               },

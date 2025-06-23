@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../hooks/useAuth";
 import useCoupon from "../../hooks/useCoupon";
 
 const CouponDetail = () => {
@@ -33,10 +33,9 @@ const CouponDetail = () => {
       }
     };
     fetchCoupon();
-  }, [user?.storeId, id]);
+  }, [user?.storeId]);
 
-  const formatDate = (dateStr) =>
-    dateStr ? new Date(dateStr).toISOString().split("T")[0] : "N/A";
+  const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "N/A";
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this coupon?")) return;
@@ -71,13 +70,9 @@ const CouponDetail = () => {
           {isEditing ? (
             <input
               type="text"
-              value={editedCoupon.title || ""}
-              onChange={(e) =>
-                setEditedCoupon({ ...editedCoupon, title: e.target.value })
-              }
+              value={editedCoupon.title}
+              onChange={(e) => setEditedCoupon({ ...editedCoupon, title: e.target.value })}
               className="w-full border border-gray-300 px-3 py-2 rounded-md"
-              placeholder="Coupon Title"
-              required
             />
           ) : (
             coupon.title
@@ -86,50 +81,68 @@ const CouponDetail = () => {
 
         <div className="space-y-5 text-gray-700">
           {/* Description */}
-          <FieldBlock
-            label="Description"
-            isEditing={isEditing}
-            value={editedCoupon.description}
-            onChange={(e) =>
-              setEditedCoupon({ ...editedCoupon, description: e.target.value })
-            }
-            type="textarea"
-          />
+          <div>
+            <label className="font-semibold text-gray-700 block">Description:</label>
+            {isEditing ? (
+              <textarea
+                value={editedCoupon.description}
+                onChange={(e) => setEditedCoupon({ ...editedCoupon, description: e.target.value })}
+                className="w-full border border-gray-300 px-3 py-2 rounded-md resize-y"
+              />
+            ) : (
+              <p>{coupon.description || "N/A"}</p>
+            )}
+          </div>
 
           {/* Expiry Date */}
-          <FieldBlock
-            label="Expiry Date"
-            isEditing={isEditing}
-            value={formatDate(editedCoupon.expiryDate)}
-            onChange={(e) =>
-              setEditedCoupon({ ...editedCoupon, expiryDate: e.target.value })
-            }
-            type="date"
-            min={formatDate(new Date())}
-          />
+          <div>
+            <label className="font-semibold text-gray-700 block">Expiry Date:</label>
+            {isEditing ? (
+              <input
+                type="date"
+                value={formatDate(editedCoupon.expiryDate)}
+                onChange={(e) => setEditedCoupon({ ...editedCoupon, expiryDate: e.target.value })}
+                className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              />
+            ) : (
+              <p>{formatDate(coupon.expiryDate)}</p>
+            )}
+          </div>
 
           {/* Issued Date */}
-          <FieldBlock label="Issued Date" value={formatDate(coupon.issuedDate)} />
+          <div>
+            <label className="font-semibold text-gray-700 block">Issued Date:</label>
+            <p>{formatDate(coupon.issuedDate)}</p>
+          </div>
 
           {/* Usage Limit */}
-          <FieldBlock label="Usage Limit" value={coupon.usageLimit || "Unlimited"} />
+          <div>
+            <label className="font-semibold text-gray-700 block">Usage Limit:</label>
+            <p>{coupon.usageLimit || "Unlimited"}</p>
+          </div>
 
           {/* Redemption Code */}
-          <FieldBlock
-            label="Redemption Code"
-            isEditing={isEditing}
-            value={editedCoupon.redemptionCode}
-            onChange={(e) =>
-              setEditedCoupon({ ...editedCoupon, redemptionCode: e.target.value })
-            }
-            placeholder="ABC123"
-          />
+          <div>
+            <label className="font-semibold text-gray-700 block">Redemption Code:</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedCoupon.redemptionCode}
+                onChange={(e) =>
+                  setEditedCoupon({ ...editedCoupon, redemptionCode: e.target.value })
+                }
+                className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              />
+            ) : (
+              <p>{coupon.redemptionCode}</p>
+            )}
+          </div>
 
           {/* Categories */}
-          <FieldBlock
-            label="Categories"
-            value={coupon.categories?.join(", ") || "N/A"}
-          />
+          <div>
+            <label className="font-semibold text-gray-700 block">Categories:</label>
+            <p>{coupon.categories?.join(", ") || "N/A"}</p>
+          </div>
 
           {/* Terms */}
           <div>
@@ -152,14 +165,14 @@ const CouponDetail = () => {
             <>
               <button
                 onClick={handleEdit}
-                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all"
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all transform hover:-translate-y-0.5 active:scale-95"
               >
                 <FontAwesomeIcon icon={faSave} className="mr-2" />
                 Save
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all transform hover:-translate-y-0.5 active:scale-95"
               >
                 <FontAwesomeIcon icon={faTimes} className="mr-2" />
                 Cancel
@@ -168,7 +181,7 @@ const CouponDetail = () => {
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all transform hover:-translate-y-0.5 active:scale-95"
             >
               <FontAwesomeIcon icon={faEdit} className="mr-2" />
               Edit
@@ -177,14 +190,14 @@ const CouponDetail = () => {
 
           <button
             onClick={handleDelete}
-            className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all"
+            className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all transform hover:-translate-y-0.5 active:scale-95"
           >
             <FontAwesomeIcon icon={faTrash} className="mr-2" />
             Delete
           </button>
 
           <Link to="/couponlist">
-            <button className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all">
+            <button className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-md shadow transition-all transform hover:-translate-y-0.5 active:scale-95">
               Back to Coupons
             </button>
           </Link>
@@ -193,41 +206,5 @@ const CouponDetail = () => {
     </>
   );
 };
-
-// Reusable Field Component
-const FieldBlock = ({
-  label,
-  isEditing = false,
-  value,
-  onChange,
-  type = "text",
-  placeholder = "",
-  min,
-}) => (
-  <div>
-    <label className="font-semibold text-gray-700 block">{label}:</label>
-    {isEditing && onChange ? (
-      type === "textarea" ? (
-        <textarea
-          value={value || ""}
-          onChange={onChange}
-          className="w-full border border-gray-300 px-3 py-2 rounded-md resize-y"
-          placeholder={placeholder}
-        />
-      ) : (
-        <input
-          type={type}
-          value={value || ""}
-          onChange={onChange}
-          placeholder={placeholder}
-          min={min}
-          className="w-full border border-gray-300 px-3 py-2 rounded-md"
-        />
-      )
-    ) : (
-      <p>{value || "N/A"}</p>
-    )}
-  </div>
-);
 
 export default CouponDetail;

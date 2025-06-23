@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import useAuth from "../../hooks/useAuth";
 import useCoupon from "../../hooks/useCoupon";
-import { useAuth } from "../../context/AuthContext";
 
 const RedeemedList = () => {
   const { user } = useAuth();

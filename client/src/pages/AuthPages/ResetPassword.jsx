@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+
 
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const { resetPassword, message, error } = useAuth();
-
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);

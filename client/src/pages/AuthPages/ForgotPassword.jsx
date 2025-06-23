@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FaEnvelope } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import useAuth from "../../hooks/useAuth";
+
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
