@@ -4,10 +4,10 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // ✅ Create Context
-export const AuthContext = createContext();
+ const AuthContext = createContext();
 
 // ✅ Custom Hook
-export const useAuth = () => useContext(AuthContext);
+ const useAuth = () => useContext(AuthContext);
 
 // ✅ Initial State
 const initialState = {
