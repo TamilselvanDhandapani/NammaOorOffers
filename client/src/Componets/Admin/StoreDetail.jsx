@@ -16,7 +16,6 @@ import {
   faTwitter,
   faFacebook,
 } from "@fortawesome/free-brands-svg-icons";
-import "../../styles/StoreDetail.css";
 
 const StoreDetails = () => {
   const { id } = useParams();
@@ -26,22 +25,29 @@ const StoreDetails = () => {
     if (id) fetchStoreById(id);
   }, [id]);
 
-  if (loading) return <p className="loading-text">Loading store information...</p>;
+  if (loading)
+    return <p className="text-center text-gray-600 mt-10 animate-pulse">Loading store information...</p>;
+
   if (error)
     return (
-      <div className="error-box">
-        <p className="error-text">{error}</p>
-        <button onClick={() => fetchStoreById(id)} className="retry-btn">
+      <div className="text-center mt-10">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button
+          onClick={() => fetchStoreById(id)}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+        >
           Retry
         </button>
       </div>
     );
-  if (!storeDetails) return <p className="error-text">Store not found.</p>;
+
+  if (!storeDetails)
+    return <p className="text-center text-gray-500 mt-10">Store not found.</p>;
 
   const shop = storeDetails;
 
   return (
-    <div className="store-detail-container">
+    <div className="max-w-5xl mx-auto p-6">
       <Helmet>
         <title>{shop.storeName} | Namma Ooru Offers</title>
         <meta
@@ -69,12 +75,14 @@ const StoreDetails = () => {
         />
       </Helmet>
 
-      <h2 className="shop-heading">
-        <FontAwesomeIcon icon={faStore} /> Shop Profile
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+        <FontAwesomeIcon icon={faStore} className="mr-2" />
+        Shop Profile
       </h2>
 
-      <div className="shop-profile-wrapper">
-        <div className="shop-image-section">
+      <div className="flex flex-col lg:flex-row items-start gap-8 bg-white shadow-md rounded-xl p-6">
+        {/* Logo + Social */}
+        <div className="flex flex-col items-center w-full lg:w-1/3 text-center">
           <img
             src={
               shop.storeLogo?.startsWith("http")
@@ -83,18 +91,18 @@ const StoreDetails = () => {
             }
             onError={(e) => (e.target.src = "/placeholder.png")}
             alt={shop.storeName || "Store Logo"}
-            className="shop-image"
+            className="w-40 h-40 object-cover rounded-lg border border-gray-300 mb-4"
           />
 
-          <div className="social-links-wrapper">
+          <div className="flex gap-4 justify-center mt-2">
             {shop.socialMedia?.instagram && (
               <a
                 href={shop.socialMedia.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="social-link insta"
+                className="text-pink-600 hover:text-pink-700"
               >
-                <FontAwesomeIcon icon={faInstagram} size="2x" />
+                <FontAwesomeIcon icon={faInstagram} size="lg" />
               </a>
             )}
             {shop.socialMedia?.youtube && (
@@ -102,9 +110,9 @@ const StoreDetails = () => {
                 href={shop.socialMedia.youtube}
                 target="_blank"
                 rel="noreferrer"
-                className="social-link yt"
+                className="text-red-600 hover:text-red-700"
               >
-                <FontAwesomeIcon icon={faYoutube} size="2x" />
+                <FontAwesomeIcon icon={faYoutube} size="lg" />
               </a>
             )}
             {shop.socialMedia?.twitter && (
@@ -112,9 +120,9 @@ const StoreDetails = () => {
                 href={shop.socialMedia.twitter}
                 target="_blank"
                 rel="noreferrer"
-                className="social-link tw"
+                className="text-blue-400 hover:text-blue-500"
               >
-                <FontAwesomeIcon icon={faTwitter} size="2x" />
+                <FontAwesomeIcon icon={faTwitter} size="lg" />
               </a>
             )}
             {shop.socialMedia?.facebook && (
@@ -122,46 +130,50 @@ const StoreDetails = () => {
                 href={shop.socialMedia.facebook}
                 target="_blank"
                 rel="noreferrer"
-                className="social-link fb"
+                className="text-blue-600 hover:text-blue-700"
               >
-                <FontAwesomeIcon icon={faFacebook} size="2x" />
+                <FontAwesomeIcon icon={faFacebook} size="lg" />
               </a>
             )}
           </div>
         </div>
 
-        <div className="shop-details-section">
-          <p className="shop-detail">
+        {/* Details */}
+        <div className="w-full lg:w-2/3 space-y-4">
+          <p className="text-lg text-gray-700">
             <strong>Name:</strong> {shop.storeName || "N/A"}
           </p>
 
           {shop.storeWebsite && (
-            <p className="shop-detail">
+            <p className="text-lg text-gray-700">
               <strong>
-                <FontAwesomeIcon icon={faGlobe} /> Website:
+                <FontAwesomeIcon icon={faGlobe} className="mr-1" />
+                Website:
               </strong>{" "}
               <a
                 href={shop.storeWebsite}
                 target="_blank"
                 rel="noreferrer"
-                className="website-url"
+                className="text-blue-600 hover:underline"
               >
                 {shop.storeWebsite.replace(/^https?:\/\//, "")}
               </a>
             </p>
           )}
 
-          <p className="shop-detail">
+          <p className="text-lg text-gray-700">
             <strong>
-              <FontAwesomeIcon icon={faMapMarkerAlt} /> Address:
+              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1" />
+              Address:
             </strong>{" "}
             {shop.storeAddress || "N/A"}
           </p>
 
           {shop.storeDescription && (
-            <p className="shop-detail">
+            <p className="text-lg text-gray-700">
               <strong>
-                <FontAwesomeIcon icon={faInfoCircle} /> Description:
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
+                Description:
               </strong>{" "}
               {shop.storeDescription}
             </p>
@@ -169,9 +181,15 @@ const StoreDetails = () => {
         </div>
       </div>
 
-      <Link to="/allstore" className="return-link">
-        <FontAwesomeIcon icon={faArrowLeft} /> Return to Shops
-      </Link>
+      <div className="mt-10 text-center">
+        <Link
+          to="/allstore"
+          className="inline-flex items-center text-blue-600 hover:underline"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+          Return to Shops
+        </Link>
+      </div>
     </div>
   );
 };
