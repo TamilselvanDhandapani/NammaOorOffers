@@ -72,7 +72,6 @@ const StoreCredentials = async (req, res) => {
       msg: "Store user created successfully",
       userId: user._id,
     });
-    
   } catch (err) {
     console.error("Error creating store user:", err);
     res.status(500).json({ msg: "Server error, please try again later" });
@@ -220,8 +219,6 @@ const getStoreById = async (req, res) => {
   }
 };
 // ✅ Get all users by role (e.g., user, store, admin)
-
-
 const getUsersByRole = async (req, res) => {
   const { role } = req.params;
 
@@ -260,7 +257,9 @@ const getUsersByRole = async (req, res) => {
       ]);
     } else if (role === "store") {
       usedCounts = await RedeemedCoupon.aggregate([
-        { $match: { status: "used", store: { $in: storeIds.map(id => id) } } },
+        {
+          $match: { status: "used", store: { $in: storeIds.map((id) => id) } },
+        },
         { $group: { _id: "$store", usedCouponsCount: { $sum: 1 } } },
       ]);
     }
@@ -275,15 +274,20 @@ const getUsersByRole = async (req, res) => {
         usedCountMap[id] = entry.usedCouponsCount;
       } else if (role === "store" && storeIdMap[id]) {
         const userId = storeIdMap[id];
-        usedCountMap[userId] = (usedCountMap[userId] || 0) + entry.usedCouponsCount;
+        usedCountMap[userId] =
+          (usedCountMap[userId] || 0) + entry.usedCouponsCount;
       }
     });
 
     // Attach counts to users
-    const usersWithCounts = users.map((user) => ({
-      ...user.toObject(),
-      usedCouponsCount: usedCountMap[user._id.toString()] || 0,
-    }));
+    const usersWithCounts = users.map((user) => {
+      const plainUser = user.toObject();
+      return {
+        ...plainUser,
+        usedCouponsCount: usedCountMap[user._id.toString()] || 0,
+        storeId: plainUser.storeId || null, // ✅ attach storeId for linking in frontend
+      };
+    });
 
     res.status(200).json({
       count: usersWithCounts.length,
@@ -294,9 +298,6 @@ const getUsersByRole = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
-
-
-
 
 // ✅ Change a user's role
 const updateUserRole = async (req, res) => {

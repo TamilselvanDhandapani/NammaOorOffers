@@ -134,6 +134,7 @@ const Offers = () => {
                         src={coupon.store?.storeLogo || "https://via.placeholder.com/40"}
                         alt="Store Logo"
                         className="w-10 h-10 rounded-full"
+                        loading="lazy"
                       />
                     </div>
                     <span
@@ -145,11 +146,11 @@ const Offers = () => {
 
                   <div className="p-4 bg-gray-50">
                     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                      <FaTags className="text-violet-500" /> {coupon.title}
+                      <FaTags className="text-pink-500" /> {coupon.title}
                     </h3>
                     {(coupon.categories || []).map((cat, idx) => (
                       <p key={idx} className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                        <BiSolidCategory className="text-violet-500" /> {cat}
+                        <BiSolidCategory className="text-pink-500" /> {cat}
                       </p>
                     ))}
                     <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">

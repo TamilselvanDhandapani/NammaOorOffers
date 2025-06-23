@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
 import useStore from "../../hooks/useStore";
+import {Link} from "react-router-dom"
 
 const UserList = () => {
   const [role, setRole] = useState("store");
@@ -74,6 +75,7 @@ const UserList = () => {
                 {role !== "admin" && <th className="px-4 py-3 border-b">Coupons</th>}
                 {role !== "admin" && <th className="px-4 py-3 border-b">Redeemed Coupons</th>}
                 {role !== "admin" && <th className="px-4 py-3 border-b">Used Coupons</th>}
+                {role === "store" && <th className="px-4 py-3 border-b">Store Link</th>}
                 <th className="px-4 py-3 border-b">Role</th>
                 <th className="px-4 py-3 border-b">Change Role</th>
               </tr>
@@ -110,6 +112,23 @@ const UserList = () => {
                       </td>
                     )}
 
+                    {role === "store" && (
+                      <td className="px-4 py-3 border-b text-sm">
+                        {user.store?._id || user.storeId ? (
+                          <Link
+                            href={`/storedetail/${user.store?._id || user.storeId}`}
+                            className="text-blue-600 hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View Store
+                          </Link>
+                        ) : (
+                          <span className="text-gray-400 italic">No store linked</span>
+                        )}
+                      </td>
+                    )}
+
                     <td className="px-4 py-3 border-b text-sm">
                       <span
                         className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
@@ -123,6 +142,7 @@ const UserList = () => {
                         {user.role}
                       </span>
                     </td>
+
                     <td className="px-4 py-3 border-b text-sm">
                       <select
                         className="border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700"
@@ -142,10 +162,7 @@ const UserList = () => {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="10"
-                    className="px-4 py-6 text-center text-sm text-gray-500"
-                  >
+                  <td colSpan="10" className="px-4 py-6 text-center text-sm text-gray-500">
                     {searchTerm
                       ? "No users match your search criteria."
                       : "No users found for the selected role."}
