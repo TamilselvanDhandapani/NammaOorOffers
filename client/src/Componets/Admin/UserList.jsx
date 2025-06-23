@@ -72,8 +72,18 @@ const UserList = () => {
                 <th className="px-4 py-3 border-b">Phone</th>
                 <th className="px-4 py-3 border-b">Referral Code</th>
                 <th className="px-4 py-3 border-b">Referred By</th>
-                <th className="px-4 py-3 border-b"> Coupons</th>
-                <th className="px-4 py-3 border-b">Redeemed Coupons</th>
+
+                {role !== "admin" && (
+                  <th className="px-4 py-3 border-b"> Coupons</th>
+                )}
+                {role !== "admin" && (
+                  <th className="px-4 py-3 border-b">Redeemed Coupons</th>
+                )}
+
+                {role !== "admin" && (
+                  <th className="px-4 py-3 border-b">Used Coupons</th>
+                )}
+
                 <th className="px-4 py-3 border-b">Role</th>
                 <th className="px-4 py-3 border-b">Change Role</th>
               </tr>
@@ -97,14 +107,25 @@ const UserList = () => {
                     <td className="px-4 py-3 border-b text-sm text-gray-800">
                       {user.referredBy || "N/A"}
                     </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {Array.isArray(user.coupons) ? user.coupons.length : 0}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {Array.isArray(user.redeemedCoupons)
-                        ? user.redeemedCoupons.length
-                        : 0}
-                    </td>
+
+                    {role !== "admin" && (
+                      <td className="px-4 py-3 border-b text-sm text-gray-800">
+                        {Array.isArray(user.coupons) ? user.coupons.length : 0}
+                      </td>
+                    )}
+                    {role !== "admin" && (
+                      <td className="px-4 py-3 border-b text-sm text-gray-800">
+                        {Array.isArray(user.redeemedCoupons)
+                          ? user.redeemedCoupons.length
+                          : 0}
+                      </td>
+                    )}
+
+                    {role !== "admin" && (
+                      <td className="px-4 py-3 border-b text-sm text-gray-800">
+                        {user.usedCouponsCount || 0}
+                      </td>
+                    )}
                     <td className="px-4 py-3 border-b text-sm">
                       <span
                         className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${

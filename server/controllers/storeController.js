@@ -1,5 +1,6 @@
 const StoreInfo = require("../models/StoreInfo");
 const User = require("../models/User");
+const RedeemedCoupon = require("../models/RedeemedCoupon");
 const Counter = require("../models/Counter");
 const bcrypt = require("bcryptjs");
 const { sendOTP } = require("../utils/sendEmail");
@@ -227,13 +228,37 @@ const getUsersByRole = async (req, res) => {
   }
 
   try {
-    const users = await User.find({ role }).select("-password"); // omit password
+    const users = await User.find({ role }).select("-password");
 
     if (!users.length) {
       return res.status(404).json({ msg: `No users found with role: ${role}` });
     }
 
-    res.status(200).json({ count: users.length, users });
+    // Fetch used coupon count for each user
+    const userIds = users.map((user) => user._id);
+
+    // Aggregate used coupon counts
+    const usedCounts = await RedeemedCoupon.aggregate([
+      { $match: { status: "used", user: { $in: userIds } } },
+      { $group: { _id: "$user", usedCouponsCount: { $sum: 1 } } },
+    ]);
+
+    // Convert to lookup map
+    const usedCountMap = usedCounts.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr.usedCouponsCount;
+      return acc;
+    }, {});
+
+    // Attach count to each user
+    const usersWithCounts = users.map((user) => ({
+      ...user.toObject(),
+      usedCouponsCount: usedCountMap[user._id.toString()] || 0,
+    }));
+
+    res.status(200).json({
+      count: usersWithCounts.length,
+      users: usersWithCounts,
+    });
   } catch (err) {
     console.error("Error fetching users by role:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
