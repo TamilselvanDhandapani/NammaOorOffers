@@ -116,7 +116,7 @@ const UserList = () => {
                       <td className="px-4 py-3 border-b text-sm">
                         {user.store?._id || user.storeId ? (
                           <Link
-                            href={`/storedetail/${user.store?._id || user.storeId}`}
+                            to={`/storedetail/${user.store?._id || user.storeId}`}
                             className="text-blue-600 hover:underline"
                             target="_blank"
                             rel="noopener noreferrer"
