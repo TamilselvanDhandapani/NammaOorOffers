@@ -8,8 +8,7 @@ const UserList = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [updating, setUpdating] = useState({});
 
-  const { users, loading, error, fetchUsersByRole, changeUserRole } =
-    useStore();
+  const { users, loading, error, fetchUsersByRole, changeUserRole } = useStore();
 
   useEffect(() => {
     fetchUsersByRole(role);
@@ -57,9 +56,7 @@ const UserList = () => {
         </select>
       </div>
 
-      {loading && (
-        <div className="text-center text-gray-600">Loading users...</div>
-      )}
+      {loading && <div className="text-center text-gray-600">Loading users...</div>}
       {error && <div className="text-center text-red-500">{error}</div>}
 
       {!loading && !error && (
@@ -72,18 +69,9 @@ const UserList = () => {
                 <th className="px-4 py-3 border-b">Phone</th>
                 <th className="px-4 py-3 border-b">Referral Code</th>
                 <th className="px-4 py-3 border-b">Referred By</th>
-
-                {role !== "admin" && (
-                  <th className="px-4 py-3 border-b"> Coupons</th>
-                )}
-                {role !== "admin" && (
-                  <th className="px-4 py-3 border-b">Redeemed Coupons</th>
-                )}
-
-                {role !== "admin" && (
-                  <th className="px-4 py-3 border-b">Used Coupons</th>
-                )}
-
+                {role !== "admin" && <th className="px-4 py-3 border-b">Coupons</th>}
+                {role !== "admin" && <th className="px-4 py-3 border-b">Redeemed Coupons</th>}
+                {role !== "admin" && <th className="px-4 py-3 border-b">Used Coupons</th>}
                 <th className="px-4 py-3 border-b">Role</th>
                 <th className="px-4 py-3 border-b">Change Role</th>
               </tr>
@@ -107,7 +95,6 @@ const UserList = () => {
                     <td className="px-4 py-3 border-b text-sm text-gray-800">
                       {user.referredBy || "N/A"}
                     </td>
-
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
                         {Array.isArray(user.coupons) ? user.coupons.length : 0}
@@ -115,12 +102,9 @@ const UserList = () => {
                     )}
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
-                        {Array.isArray(user.redeemedCoupons)
-                          ? user.redeemedCoupons.length
-                          : 0}
+                        {Array.isArray(user.redeemedCoupons) ? user.redeemedCoupons.length : 0}
                       </td>
                     )}
-
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
                         {user.usedCouponsCount || 0}
@@ -143,9 +127,7 @@ const UserList = () => {
                       <select
                         className="border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700"
                         value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user._id, e.target.value)
-                        }
+                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
                         disabled={updating[user._id]}
                       >
                         <option value="admin">Admin</option>
@@ -153,9 +135,7 @@ const UserList = () => {
                         <option value="user">User</option>
                       </select>
                       {updating[user._id] && (
-                        <span className="ml-2 text-xs text-gray-500">
-                          Updating...
-                        </span>
+                        <span className="ml-2 text-xs text-gray-500">Updating...</span>
                       )}
                     </td>
                   </tr>
@@ -163,7 +143,7 @@ const UserList = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="4"
+                    colSpan="10"
                     className="px-4 py-6 text-center text-sm text-gray-500"
                   >
                     {searchTerm

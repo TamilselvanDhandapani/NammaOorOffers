@@ -220,6 +220,8 @@ const getStoreById = async (req, res) => {
   }
 };
 // ✅ Get all users by role (e.g., user, store, admin)
+
+
 const getUsersByRole = async (req, res) => {
   const { role } = req.params;
 
@@ -234,22 +236,50 @@ const getUsersByRole = async (req, res) => {
       return res.status(404).json({ msg: `No users found with role: ${role}` });
     }
 
-    // Fetch used coupon count for each user
+    // Prepare user IDs and/or store IDs
     const userIds = users.map((user) => user._id);
+    const storeIdMap = {};
+    const storeIds = [];
+
+    if (role === "store") {
+      users.forEach((user) => {
+        if (user.storeId) {
+          storeIds.push(user.storeId);
+          storeIdMap[user.storeId.toString()] = user._id.toString(); // map storeId -> userId
+        }
+      });
+    }
 
     // Aggregate used coupon counts
-    const usedCounts = await RedeemedCoupon.aggregate([
-      { $match: { status: "used", user: { $in: userIds } } },
-      { $group: { _id: "$user", usedCouponsCount: { $sum: 1 } } },
-    ]);
+    let usedCounts = [];
 
-    // Convert to lookup map
-    const usedCountMap = usedCounts.reduce((acc, curr) => {
-      acc[curr._id.toString()] = curr.usedCouponsCount;
-      return acc;
-    }, {});
+    if (role === "user") {
+      usedCounts = await RedeemedCoupon.aggregate([
+        { $match: { status: "used", user: { $in: userIds } } },
+        { $group: { _id: "$user", usedCouponsCount: { $sum: 1 } } },
+      ]);
+    } else if (role === "store") {
+      usedCounts = await RedeemedCoupon.aggregate([
+        { $match: { status: "used", store: { $in: storeIds.map(id => id) } } },
+        { $group: { _id: "$store", usedCouponsCount: { $sum: 1 } } },
+      ]);
+    }
 
-    // Attach count to each user
+    // Map used counts back to user
+    const usedCountMap = {};
+
+    usedCounts.forEach((entry) => {
+      const id = entry._id.toString();
+
+      if (role === "user") {
+        usedCountMap[id] = entry.usedCouponsCount;
+      } else if (role === "store" && storeIdMap[id]) {
+        const userId = storeIdMap[id];
+        usedCountMap[userId] = (usedCountMap[userId] || 0) + entry.usedCouponsCount;
+      }
+    });
+
+    // Attach counts to users
     const usersWithCounts = users.map((user) => ({
       ...user.toObject(),
       usedCouponsCount: usedCountMap[user._id.toString()] || 0,
@@ -264,6 +294,9 @@ const getUsersByRole = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
+
+
+
 
 // ✅ Change a user's role
 const updateUserRole = async (req, res) => {
