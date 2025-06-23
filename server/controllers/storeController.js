@@ -233,7 +233,6 @@ const getUsersByRole = async (req, res) => {
       return res.status(404).json({ msg: `No users found with role: ${role}` });
     }
 
-    // Prepare user IDs and/or store IDs
     const userIds = users.map((user) => user._id);
     const storeIdMap = {};
     const storeIds = [];
@@ -242,9 +241,19 @@ const getUsersByRole = async (req, res) => {
       users.forEach((user) => {
         if (user.storeId) {
           storeIds.push(user.storeId);
-          storeIdMap[user.storeId.toString()] = user._id.toString(); // map storeId -> userId
+          storeIdMap[user.storeId.toString()] = user._id.toString();
         }
       });
+    }
+
+    // Fetch store names
+    let storeNameMap = {};
+    if (role === "store" && storeIds.length > 0) {
+      const stores = await StoreInfo.find({ _id: { $in: storeIds } }, "_id storeName");
+      storeNameMap = stores.reduce((acc, store) => {
+        acc[store._id.toString()] = store.storeName;
+        return acc;
+      }, {});
     }
 
     // Aggregate used coupon counts
@@ -266,26 +275,25 @@ const getUsersByRole = async (req, res) => {
 
     // Map used counts back to user
     const usedCountMap = {};
-
     usedCounts.forEach((entry) => {
       const id = entry._id.toString();
-
       if (role === "user") {
         usedCountMap[id] = entry.usedCouponsCount;
       } else if (role === "store" && storeIdMap[id]) {
         const userId = storeIdMap[id];
-        usedCountMap[userId] =
-          (usedCountMap[userId] || 0) + entry.usedCouponsCount;
+        usedCountMap[userId] = (usedCountMap[userId] || 0) + entry.usedCouponsCount;
       }
     });
 
-    // Attach counts to users
+    // Final user list with coupon count and store name
     const usersWithCounts = users.map((user) => {
       const plainUser = user.toObject();
+      const sid = plainUser.storeId?.toString();
       return {
         ...plainUser,
-        usedCouponsCount: usedCountMap[user._id.toString()] || 0,
-        storeId: plainUser.storeId || null, // ✅ attach storeId for linking in frontend
+        usedCouponsCount: usedCountMap[plainUser._id.toString()] || 0,
+        storeId: sid || null,
+        storeName: storeNameMap[sid] || null, // ✅ fetched from Store collection
       };
     });
 

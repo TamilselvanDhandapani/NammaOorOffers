@@ -18,7 +18,7 @@ const {
 router.post("/create", StoreCredentials);
 
 // Get all users with a specific role
-router.get("/users/:role", protect, authorizeRoles("admin"), getUsersByRole);
+router.get("/users/:role", getUsersByRole);
 
 // Update user roles
 router.put("/:userId/role", protect, authorizeRoles("admin"), updateUserRole);

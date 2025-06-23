@@ -145,7 +145,7 @@ const UserList = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            {user.store?.storeName || user.storeId}
+                            {user.store?.storeName ||"Null"}
                           </Link>
                         ) : (
                           <span className="text-gray-400 italic">
