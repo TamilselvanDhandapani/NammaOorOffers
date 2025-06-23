@@ -300,7 +300,7 @@ export const AuthProvider = ({ children }) => {
         fetchStoreData,
       }}
     >
-      {!state.loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
