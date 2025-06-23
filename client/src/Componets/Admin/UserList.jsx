@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
-import useStore from "../../hooks/useStore";
 import { Link } from "react-router-dom";
+import useStore from "../../hooks/useStore";
 
 const UserList = () => {
   const [role, setRole] = useState("store");
@@ -9,8 +9,7 @@ const UserList = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [updating, setUpdating] = useState({});
 
-  const { users, loading, error, fetchUsersByRole, changeUserRole } =
-    useStore();
+  const { users, loading, error, fetchUsersByRole, changeUserRole } = useStore();
 
   useEffect(() => {
     fetchUsersByRole(role);
@@ -61,9 +60,7 @@ const UserList = () => {
         </select>
       </div>
 
-      {loading && (
-        <div className="text-center text-gray-600">Loading users...</div>
-      )}
+      {loading && <div className="text-center text-gray-600">Loading users...</div>}
       {error && <div className="text-center text-red-500">{error}</div>}
 
       {!loading && !error && (
@@ -75,18 +72,10 @@ const UserList = () => {
                 <th className="px-4 py-3 border-b">Email</th>
                 <th className="px-4 py-3 border-b">Phone</th>
                 <th className="px-4 py-3 border-b">Referral Code</th>
-                {role !== "admin" && (
-                  <th className="px-4 py-3 border-b">Coupons</th>
-                )}
-                {role !== "admin" && (
-                  <th className="px-4 py-3 border-b">Redeemed Coupons</th>
-                )}
-                {role !== "admin" && (
-                  <th className="px-4 py-3 border-b">Used Coupons</th>
-                )}
-                {role === "store" && (
-                  <th className="px-4 py-3 border-b">Store Link</th>
-                )}
+                {role !== "admin" && <th className="px-4 py-3 border-b">Coupons</th>}
+                {role !== "admin" && <th className="px-4 py-3 border-b">Redeemed Coupons</th>}
+                {role !== "admin" && <th className="px-4 py-3 border-b">Used Coupons</th>}
+                {role === "store" && <th className="px-4 py-3 border-b">Store</th>}
                 <th className="px-4 py-3 border-b">Role</th>
                 <th className="px-4 py-3 border-b">Change Role</th>
               </tr>
@@ -100,21 +89,10 @@ const UserList = () => {
                       index % 2 === 0 ? "bg-white" : "bg-gray-50"
                     } hover:bg-gray-100 transition`}
                   >
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.username}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.email}
-                    </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.phone}
-                    </td>
-
-                    {role !== "store" && (
-                      <td className="px-4 py-3 border-b text-sm text-gray-800">
-                        {user.myReferralCode}
-                      </td>
-                    )}
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.username}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.email}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.phone}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.myReferralCode}</td>
 
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
@@ -136,21 +114,17 @@ const UserList = () => {
 
                     {role === "store" && (
                       <td className="px-4 py-3 border-b text-sm">
-                        {user.store?._id || user.storeId ? (
+                        {user.storeId ? (
                           <Link
-                            to={`/storedetail/${
-                              user.store?._id || user.storeId
-                            }`}
+                            to={`/storedetail/${user.storeId}`}
                             className="text-blue-600 hover:underline"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            {user.store?.storeName ||"Null"}
+                            {user.storeName || "View Store"}
                           </Link>
                         ) : (
-                          <span className="text-gray-400 italic">
-                            No store linked
-                          </span>
+                          <span className="text-gray-400 italic">No store linked</span>
                         )}
                       </td>
                     )}
@@ -173,9 +147,7 @@ const UserList = () => {
                       <select
                         className="border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700"
                         value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user._id, e.target.value)
-                        }
+                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
                         disabled={updating[user._id]}
                       >
                         <option value="admin">Admin</option>
@@ -183,19 +155,14 @@ const UserList = () => {
                         <option value="user">User</option>
                       </select>
                       {updating[user._id] && (
-                        <span className="ml-2 text-xs text-gray-500">
-                          Updating...
-                        </span>
+                        <span className="ml-2 text-xs text-gray-500">Updating...</span>
                       )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="10"
-                    className="px-4 py-6 text-center text-sm text-gray-500"
-                  >
+                  <td colSpan="10" className="px-4 py-6 text-center text-sm text-gray-500">
                     {searchTerm
                       ? "No users match your search criteria."
                       : "No users found for the selected role."}
