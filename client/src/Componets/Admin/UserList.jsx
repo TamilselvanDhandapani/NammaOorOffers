@@ -68,7 +68,7 @@ const UserList = () => {
                 <th className="px-4 py-3 border-b">Email</th>
                 <th className="px-4 py-3 border-b">Phone</th>
                 <th className="px-4 py-3 border-b">Referral Code</th>
-                <th className="px-4 py-3 border-b">Referred By</th>
+                
                 {role !== "admin" && <th className="px-4 py-3 border-b">Coupons</th>}
                 {role !== "admin" && <th className="px-4 py-3 border-b">Redeemed Coupons</th>}
                 {role !== "admin" && <th className="px-4 py-3 border-b">Used Coupons</th>}
@@ -92,9 +92,7 @@ const UserList = () => {
                     <td className="px-4 py-3 border-b text-sm text-gray-800">
                       {user.myReferralCode}
                     </td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">
-                      {user.referredBy || "N/A"}
-                    </td>
+                   
                     {role !== "admin" && (
                       <td className="px-4 py-3 border-b text-sm text-gray-800">
                         {Array.isArray(user.coupons) ? user.coupons.length : 0}
