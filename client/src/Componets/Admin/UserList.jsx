@@ -8,7 +8,8 @@ const UserList = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [updating, setUpdating] = useState({});
 
-  const { users, loading, error, fetchUsersByRole, changeUserRole } = useStore();
+  const { users, loading, error, fetchUsersByRole, changeUserRole } =
+    useStore();
 
   useEffect(() => {
     fetchUsersByRole(role);
@@ -56,7 +57,9 @@ const UserList = () => {
         </select>
       </div>
 
-      {loading && <div className="text-center text-gray-600">Loading users...</div>}
+      {loading && (
+        <div className="text-center text-gray-600">Loading users...</div>
+      )}
       {error && <div className="text-center text-red-500">{error}</div>}
 
       {!loading && !error && (
@@ -69,6 +72,7 @@ const UserList = () => {
                 <th className="px-4 py-3 border-b">Phone</th>
                 <th className="px-4 py-3 border-b">Referral Code</th>
                 <th className="px-4 py-3 border-b">Referred By</th>
+                <th className="px-4 py-3 border-b"> Coupons</th>
                 <th className="px-4 py-3 border-b">Redeemed Coupons</th>
                 <th className="px-4 py-3 border-b">Role</th>
                 <th className="px-4 py-3 border-b">Change Role</th>
@@ -78,14 +82,39 @@ const UserList = () => {
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.username}</td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.email}</td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.phone}</td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.myReferralCode}</td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.referredBy || "N/A"}</td>
-                    <td className="px-4 py-3 border-b text-sm text-gray-800">{user.redeemedCoupons || "N/A"}</td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {user.username}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {user.email}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {user.phone}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {user.myReferralCode}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {user.referredBy || "N/A"}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {Array.isArray(user.coupons) ? user.coupons.length : 0}
+                    </td>
+                    <td className="px-4 py-3 border-b text-sm text-gray-800">
+                      {Array.isArray(user.redeemedCoupons)
+                        ? user.redeemedCoupons.length
+                        : 0}
+                    </td>
                     <td className="px-4 py-3 border-b text-sm">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${user.role === "admin" ? "bg-blue-100 text-blue-600" : user.role === "store" ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}>
+                      <span
+                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          user.role === "admin"
+                            ? "bg-blue-100 text-blue-600"
+                            : user.role === "store"
+                            ? "bg-green-100 text-green-600"
+                            : "bg-yellow-100 text-yellow-600"
+                        }`}
+                      >
                         {user.role}
                       </span>
                     </td>
@@ -93,7 +122,9 @@ const UserList = () => {
                       <select
                         className="border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700"
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                        onChange={(e) =>
+                          handleRoleChange(user._id, e.target.value)
+                        }
                         disabled={updating[user._id]}
                       >
                         <option value="admin">Admin</option>
@@ -101,14 +132,19 @@ const UserList = () => {
                         <option value="user">User</option>
                       </select>
                       {updating[user._id] && (
-                        <span className="ml-2 text-xs text-gray-500">Updating...</span>
+                        <span className="ml-2 text-xs text-gray-500">
+                          Updating...
+                        </span>
                       )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="px-4 py-6 text-center text-sm text-gray-500">
+                  <td
+                    colSpan="4"
+                    className="px-4 py-6 text-center text-sm text-gray-500"
+                  >
                     {searchTerm
                       ? "No users match your search criteria."
                       : "No users found for the selected role."}
