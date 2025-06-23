@@ -108,12 +108,8 @@ const UserDashboard = ({ children }) => {
             </div>
           </div>
 
-          {/* Title */}
-          <div className="w-full md:w-auto text-center md:text-right">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Redeemed Coupons
-            </h2>
-          </div>
+
+         
         </div>
 
         {children}

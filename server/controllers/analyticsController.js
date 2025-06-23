@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const getAdminAnalytics = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
+
     const userCountsByRole = await User.aggregate([
       { $group: { _id: "$role", count: { $sum: 1 } } }
     ]);
@@ -15,6 +16,10 @@ const getAdminAnalytics = async (req, res) => {
     const totalStores = await Store.countDocuments();
     const totalCoupons = await Coupon.countDocuments();
     const totalRedemptions = await RedeemedCoupon.countDocuments();
+    const usedCouponsCount = await RedeemedCoupon.countDocuments({ status: "used" });
+
+    const activeCouponsCount = await Coupon.countDocuments({ expiryDate: { $gt: new Date() } });
+    const expiredCouponsCount = await Coupon.countDocuments({ expiryDate: { $lt: new Date() } });
 
     res.status(200).json({
       totalUsers,
@@ -22,6 +27,9 @@ const getAdminAnalytics = async (req, res) => {
       totalStores,
       totalCoupons,
       totalRedemptions,
+      usedCouponsCount,
+      activeCouponsCount,
+      expiredCouponsCount,
     });
   } catch (err) {
     console.error("Admin Analytics Error:", err);
@@ -36,6 +44,10 @@ const getStoreAnalytics = async (req, res) => {
 
     const totalCoupons = await Coupon.countDocuments({ store: storeId });
     const totalRedemptions = await RedeemedCoupon.countDocuments({ store: storeId });
+    const usedCouponsCount = await RedeemedCoupon.countDocuments({
+      store: storeId,
+      status: "used",
+    });
 
     const activeCoupons = await Coupon.countDocuments({
       store: storeId,
@@ -72,6 +84,7 @@ const getStoreAnalytics = async (req, res) => {
     res.status(200).json({
       totalCoupons,
       totalRedemptions,
+      usedCouponsCount,
       activeCoupons,
       expiredCoupons,
       topRedeemedCoupon: topRedeemed[0] || null,
