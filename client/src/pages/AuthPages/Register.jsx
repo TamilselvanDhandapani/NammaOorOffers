@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
 
-
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -29,11 +28,12 @@ const RegisterPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      const sanitizedPhone = phone.replace(/\s+/g, ""); // ✅ remove spaces
       const success = await register(
         username,
         email,
         password,
-        phone,
+        sanitizedPhone,
         DOB,
         referralCode
       );

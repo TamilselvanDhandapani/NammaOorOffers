@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     password,
     phone,
     DOB,
-    referralCode
+    referralCode,
   ) => {
     dispatch({ type: "AUTH_START" });
     try {
