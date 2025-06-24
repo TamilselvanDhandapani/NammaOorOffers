@@ -22,6 +22,13 @@ const Verification = () => {
     }
   }, [loading, navigate]);
 
+  // ✅ Focus first input after component mounts
+  useEffect(() => {
+    if (inputsRef.current[0]) {
+      inputsRef.current[0].focus();
+    }
+  }, []);
+
   // ✅ Countdown timer
   useEffect(() => {
     if (timer > 0) {
@@ -33,11 +40,14 @@ const Verification = () => {
   }, [timer]);
 
   const handleChange = (element, index) => {
-    if (isNaN(element.value)) return;
+    const value = element.value.replace(/\D/g, ""); // allow only digits
+    if (!value) return;
+
     const newOtp = [...otp];
-    newOtp[index] = element.value;
+    newOtp[index] = value;
     setOtp(newOtp);
-    if (element.value && index < 5) {
+
+    if (value && index < 5) {
       inputsRef.current[index + 1].focus();
     }
   };
@@ -67,9 +77,9 @@ const Verification = () => {
     setOtp(new Array(6).fill(""));
     setTimer(60);
     setResending(false);
+    inputsRef.current[0]?.focus();
   };
 
-  // ✅ Show loader while AuthContext is initializing
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[80vh]">
@@ -108,7 +118,6 @@ const Verification = () => {
                 type="text"
                 inputMode="numeric"
                 maxLength="1"
-                autoFocus={index === 0}
                 value={digit}
                 onChange={(e) => handleChange(e.target, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
