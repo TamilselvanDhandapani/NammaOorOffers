@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import useAuth from "../../hooks/useAuth";
 
-
 const Verification = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timer, setTimer] = useState(60);
@@ -12,9 +11,18 @@ const Verification = () => {
   const inputsRef = useRef([]);
   const navigate = useNavigate();
 
-  const { verifyOtp, resendOtp, user, message } = useAuth();
+  const { verifyOtp, resendOtp, user, message, loading } = useAuth();
 
-  // Countdown timer
+  // ✅ Redirect if no pending registration
+  useEffect(() => {
+    const pendingUserId = localStorage.getItem("pendingUserId");
+    if (!pendingUserId && !loading) {
+      toast.info("Please register first.");
+      navigate("/register");
+    }
+  }, [loading, navigate]);
+
+  // ✅ Countdown timer
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
@@ -61,6 +69,15 @@ const Verification = () => {
     setResending(false);
   };
 
+  // ✅ Show loader while AuthContext is initializing
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[80vh]">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex justify-center items-center min-h-[80vh] bg-gray-50 px-4">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 space-y-6">
@@ -91,7 +108,6 @@ const Verification = () => {
                 type="text"
                 inputMode="numeric"
                 maxLength="1"
-                aria-label={`OTP digit ${index + 1}`}
                 autoFocus={index === 0}
                 value={digit}
                 onChange={(e) => handleChange(e.target, index)}
