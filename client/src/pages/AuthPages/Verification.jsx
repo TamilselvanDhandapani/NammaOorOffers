@@ -15,13 +15,17 @@ const Verification = () => {
 
   // ✅ Redirect if no pending registration
   useEffect(() => {
-    const pendingUserId = localStorage.getItem("pendingUserId");
-    if (!pendingUserId && !loading) {
-      toast.info("Please register first.");
-      navigate("/register");
-    }
-  }, [loading, navigate]);
+    const checkPendingUser = () => {
+      const pendingUserId = localStorage.getItem("pendingUserId");
+      if (!pendingUserId && !loading) {
+        toast.info("Please register first.");
+        navigate("/register");
+      }
+    };
 
+    // Delay check slightly for hydration safety
+    setTimeout(checkPendingUser, 100);
+  }, [loading, navigate]);
   // ✅ Focus first input after component mounts
   useEffect(() => {
     if (inputsRef.current[0]) {

@@ -32,11 +32,27 @@ const RegisterPage = () => {
         username,
         email,
         password,
-        phone.replace(/\s+/g, ""), // Remove spaces from phone number
+        phone.replace(/\s+/g, ""),
         DOB,
         referralCode
       );
-      if (success) navigate("/verify-otp");
+
+      if (success) {
+        // Wait for localStorage to be available
+        const checkPendingId = () =>
+          new Promise((resolve) => {
+            const interval = setInterval(() => {
+              const pendingUserId = localStorage.getItem("pendingUserId");
+              if (pendingUserId) {
+                clearInterval(interval);
+                resolve(true);
+              }
+            }, 50);
+          });
+
+        await checkPendingId(); // ✅ wait for localStorage to have the value
+        navigate("/verify-otp");
+      }
     } catch (err) {
       console.error("Registration failed:", err);
     } finally {
