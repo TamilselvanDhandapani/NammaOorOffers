@@ -28,31 +28,16 @@ const RegisterPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      const sanitizedPhone = phone.replace(/\s+/g, ""); // ✅ remove spaces
       const success = await register(
         username,
         email,
         password,
-        phone.replace(/\s+/g, ""),
+        sanitizedPhone,
         DOB,
         referralCode
       );
-
-      if (success) {
-        // Wait for localStorage to be available
-        const checkPendingId = () =>
-          new Promise((resolve) => {
-            const interval = setInterval(() => {
-              const pendingUserId = localStorage.getItem("pendingUserId");
-              if (pendingUserId) {
-                clearInterval(interval);
-                resolve(true);
-              }
-            }, 50);
-          });
-
-        await checkPendingId(); // ✅ wait for localStorage to have the value
-        navigate("/verify-otp");
-      }
+      if (success) navigate("/verify-otp");
     } catch (err) {
       console.error("Registration failed:", err);
     } finally {
@@ -70,7 +55,7 @@ const RegisterPage = () => {
         />
       </Helmet>
 
-      <div className="bg-white shadow-md rounded-lg w-full max-w-md py-6 px-6 space-y-6 border border-gray-200 mt-2 mb-6">
+      <div className="bg-white shadow-md rounded-lg w-full max-w-md py-4 px-6 space-y-6 border border-gray-200 mt-2 mb-4">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-[#4a6bff]">
             Create Your Account
@@ -82,7 +67,7 @@ const RegisterPage = () => {
 
         {message && (
           <div
-            className={`text-sm p-2 rounded text-center ${
+            className={`text-sm p-2 rounded ${
               message.includes("Error")
                 ? "bg-red-100 text-red-700"
                 : "bg-green-100 text-green-700"
@@ -184,7 +169,6 @@ const RegisterPage = () => {
   );
 };
 
-// ✅ Reusable Input Field Component
 const InputField = ({
   id,
   label,

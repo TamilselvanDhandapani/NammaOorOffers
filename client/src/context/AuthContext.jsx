@@ -122,7 +122,9 @@ export const AuthProvider = ({ children }) => {
       const msg = err.response?.data?.msg || "Register failed!";
       dispatch({ type: "AUTH_FAIL", payload: msg });
       toast.error(msg);
-      return false;
+      throw new Error(msg);
+    } finally {
+      dispatch({ type: "STOP_LOADING" });
     }
   };
 
