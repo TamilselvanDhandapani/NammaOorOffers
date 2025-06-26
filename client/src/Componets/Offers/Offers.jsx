@@ -12,7 +12,6 @@ import {
 import { BiSolidCategory } from "react-icons/bi";
 import useCoupon from "../../hooks/useCoupon";
 
-/* ────────────────────────────────────────────────────────── */
 /* ✅ Drawer (slide-in from right)                            */
 const Drawer = ({
   open,
@@ -32,7 +31,7 @@ const Drawer = ({
     />
     {/* panel */}
     <div
-      className={`fixed top-17 right-0 z-50 h-full w-72 bg-white shadow-lg
+      className={`fixed top-0 right-0 z-50 h-full w-72 bg-white shadow-lg
                   transform transition-transform duration-300
                   ${open ? "translate-x-0" : "translate-x-full"}`}
     >
@@ -45,30 +44,47 @@ const Drawer = ({
       </div>
 
       <div className="p-4 overflow-y-auto space-y-2">
-        {options.length === 0 && (
+        {options.length === 0 ? (
           <p className="text-sm text-gray-500">No options available.</p>
+        ) : (
+          options.map((opt) => (
+            <button
+              key={opt}
+              onClick={() => {
+                onSelect([opt]);
+                onClose();
+              }}
+              className={`w-full text-left px-4 py-2 rounded-md
+                          ${
+                            selected.includes(opt)
+                              ? "bg-violet-100 font-medium"
+                              : "hover:bg-gray-100"
+                          }`}
+            >
+              {opt}
+            </button>
+          ))
         )}
-        {options.map((opt) => (
-          <button
-            key={opt}
-            onClick={() => {
-              onSelect([opt]);
-              onClose();
-            }}
-            className={`w-full text-left px-4 py-2 rounded-md
-                        ${
-                          selected.includes(opt)
-                            ? "bg-violet-100 font-medium"
-                            : "hover:bg-gray-100"
-                        }`}
-          >
-            {opt}
-          </button>
-        ))}
+
+        {/* Clear selection */}
+        {selected.length > 0 && (
+          <div className="pt-6">
+            <button
+              onClick={() => {
+                onSelect([]);
+                onClose();
+              }}
+              className="w-full text-sm px-4 py-2 rounded-md text-red-600 border border-red-200 hover:bg-red-50 transition"
+            >
+              Clear Selection
+            </button>
+          </div>
+        )}
       </div>
     </div>
   </>
 );
+
 
 /* ✅ Button that triggers the drawer                       */
 const CustomButton = ({ label, icon, filled = false, onClick }) => (
