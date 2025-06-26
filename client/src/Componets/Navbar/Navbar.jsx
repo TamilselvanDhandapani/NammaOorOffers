@@ -52,7 +52,7 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 bg-white shadow transition-shadow duration-300`}
     >
-      <div className="max-w-8xl mx-auto px-6 md:px-8 h-20 flex justify-between items-center">
+      <div className="max-w-8xl mx-auto px-6 md:px-8 h-18 flex justify-between items-center">
         <Link to="/" className="logo">
           <img
             src={logo}

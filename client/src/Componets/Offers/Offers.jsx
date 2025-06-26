@@ -27,7 +27,7 @@ const CustomDropdown = ({
       className={`flex items-center gap-2 justify-center h-10 w-full px-4
                   rounded-md shadow-sm text-sm uppercase
                   border border-none
-                  ${filled ? "bg-[#8B735B] text-white" : "bg-white text-gray-900"}`}
+                  ${filled ? "bg-violet-700 text-white" : "bg-white text-gray-900"}`}
     >
       {icon} <span>{label}</span>
     </div>

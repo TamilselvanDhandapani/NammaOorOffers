@@ -163,7 +163,7 @@ const Home = () => {
                       >
                         <Link
                           to="/offers"
-                          className="inline-flex items-center gap-2 bg-[#ff4d6d] hover:bg-[#e73a5d] text-white px-6 py-3 font-medium rounded-md shadow-md transition-all"
+                          className="inline-flex items-center gap-2 bg-violet-700 hover:bg-violet-600 text-white px-6 py-3 font-medium rounded-md shadow-md transition-all"
                         >
                           Explore Deals <FaArrowRight />
                         </Link>
@@ -234,9 +234,7 @@ const Home = () => {
                     <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-indigo-100 text-indigo-600">
                       {step.icon}
                     </div>
-                    <div className="flex items-center justify-center w-8 h-8 mb-2 rounded-full bg-white border-2 border-indigo-600 text-indigo-600 font-bold text-sm md:hidden">
-                      {step.id}
-                    </div>
+                  
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {step.title}
                     </h3>
