@@ -19,12 +19,36 @@ import Two from "../../assets/2.png";
 
 const Home = () => {
   const categories = [
-    { emoji: "🍲", name: "Food & Restaurants", bg: "bg-gradient-to-br from-amber-100 to-amber-50" },
-    { emoji: "🛍️", name: "Fashion & Lifestyle", bg: "bg-gradient-to-br from-pink-100 to-pink-50" },
-    { emoji: "🛒", name: "Grocery & Essentials", bg: "bg-gradient-to-br from-green-100 to-green-50" },
-    { emoji: "📱", name: "Mobile & Electronics", bg: "bg-gradient-to-br from-blue-100 to-blue-50" },
-    { emoji: "💄", name: "Health & Beauty", bg: "bg-gradient-to-br from-purple-100 to-purple-50" },
-    { emoji: "🏠", name: "Home & Living", bg: "bg-gradient-to-br from-indigo-100 to-indigo-50" },
+    {
+      emoji: "🍲",
+      name: "Food & Restaurants",
+      bg: "bg-gradient-to-br from-amber-100 to-amber-50",
+    },
+    {
+      emoji: "🛍️",
+      name: "Fashion & Lifestyle",
+      bg: "bg-gradient-to-br from-pink-100 to-pink-50",
+    },
+    {
+      emoji: "🛒",
+      name: "Grocery & Essentials",
+      bg: "bg-gradient-to-br from-green-100 to-green-50",
+    },
+    {
+      emoji: "📱",
+      name: "Mobile & Electronics",
+      bg: "bg-gradient-to-br from-blue-100 to-blue-50",
+    },
+    {
+      emoji: "💄",
+      name: "Health & Beauty",
+      bg: "bg-gradient-to-br from-purple-100 to-purple-50",
+    },
+    {
+      emoji: "🏠",
+      name: "Home & Living",
+      bg: "bg-gradient-to-br from-indigo-100 to-indigo-50",
+    },
   ];
 
   const steps = [
@@ -43,7 +67,7 @@ const Home = () => {
     {
       id: 3,
       title: "Show & Redeem",
-      description: "Use a QR code or promo code for instant savings.",
+      description: "Use the redemtion code for instant savings.",
       icon: <FiSmartphone className="w-6 h-6" />,
     },
     {
@@ -210,7 +234,7 @@ const Home = () => {
         </section>
 
         {/* How It Works */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 ">
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -221,27 +245,34 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="relative">
-              {/* Progress line (hidden on mobile) */}
-              
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
-                {steps.map((step) => (
-                  <div
-                    key={step.id}
-                    className="flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
-                  >
-                    <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-indigo-100 text-indigo-600">
-                      {step.icon}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              {steps.map((step, index) => {
+                const bgColors = [
+                  "bg-green-100",
+                  "bg-orange-100",
+                  "bg-purple-100",
+                  "bg-green-100",
+                ];
+                const iconColors = [
+                  "text-green-600",
+                  "text-orange-600",
+                  "text-purple-600",
+                  "text-green-700",
+                ];
+                return (
+                  <div key={step.id} className="flex flex-col items-center p-6">
+                    <div
+                      className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${bgColors[index]}`}
+                    >
+                      <div className={`${iconColors[index]}`}>{step.icon}</div>
                     </div>
-                  
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-gray-600">{step.description}</p>
+                    <p className="text-gray-600 text-sm">{step.description}</p>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </section>
