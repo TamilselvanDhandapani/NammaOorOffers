@@ -1,4 +1,4 @@
-/* src/pages/Offers.jsx (full, drop-in replacement) */
+/* src/pages/Offers.jsx */
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -7,45 +7,79 @@ import {
   FaMapMarkerAlt,
   FaTags,
   FaSearch,
+  FaTimes,          // NEW
 } from "react-icons/fa";
 import { BiSolidCategory } from "react-icons/bi";
 import useCoupon from "../../hooks/useCoupon";
 
 /* ────────────────────────────────────────────────────────── */
-/* ✅  Re-usable dropdown — only style updates                */
-const CustomDropdown = ({
-  options,
-  value,
-  onChange,
-  icon,
-  label,
-  filled = false,        // pass true for brown-filled style
+/* ✅ Drawer (slide-in from right)                            */
+const Drawer = ({
+  open,
+  title,
+  options = [],
+  selected = [],
+  onSelect,
+  onClose,
 }) => (
-  <div className="relative inline-block w-full max-w-[200px]">
-    {/* visible “button” */}
+  <>
+    {/* overlay */}
     <div
-      className={`flex items-center gap-2 justify-center h-10 w-full px-4
-                  rounded-md shadow-sm text-sm uppercase
-                  border border-none
-                  ${filled ? "bg-violet-700 text-white" : "bg-white text-gray-900"}`}
+      onClick={onClose}
+      className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${
+        open ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+    />
+    {/* panel */}
+    <div
+      className={`fixed top-17 right-0 z-50 h-full w-72 bg-white shadow-lg
+                  transform transition-transform duration-300
+                  ${open ? "translate-x-0" : "translate-x-full"}`}
     >
-      {icon} <span>{label}</span>
-    </div>
+      <div className="flex items-center justify-between px-4 py-4 border-b">
+        <h3 className="font-semibold text-lg">{title}</h3>
+        <FaTimes
+          className="cursor-pointer text-gray-600 hover:text-gray-800"
+          onClick={onClose}
+        />
+      </div>
 
-    {/* transparent native select */}
-    <select
-      value={value[0] || ""}
-      onChange={(e) => onChange(e.target.value ? [e.target.value] : [])}
-      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-    >
-      <option value="">{label}</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
-      ))}
-    </select>
-  </div>
+      <div className="p-4 overflow-y-auto space-y-2">
+        {options.length === 0 && (
+          <p className="text-sm text-gray-500">No options available.</p>
+        )}
+        {options.map((opt) => (
+          <button
+            key={opt}
+            onClick={() => {
+              onSelect([opt]);
+              onClose();
+            }}
+            className={`w-full text-left px-4 py-2 rounded-md
+                        ${
+                          selected.includes(opt)
+                            ? "bg-violet-100 font-medium"
+                            : "hover:bg-gray-100"
+                        }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  </>
+);
+
+/* ✅ Button that triggers the drawer                       */
+const CustomButton = ({ label, icon, filled = false, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2 justify-center h-10 w-full max-w-[200px] px-4
+                rounded-md shadow-sm text-sm uppercase
+                ${filled ? "bg-violet-700 text-white" : "bg-white text-gray-900"}`}
+  >
+    {icon} <span>{label}</span>
+  </button>
 );
 /* ────────────────────────────────────────────────────────── */
 
@@ -59,18 +93,20 @@ const Offers = () => {
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
 
+  /* drawer visibility */
+  const [isCatOpen, setCatOpen] = useState(false);
+  const [isCityOpen, setCityOpen] = useState(false);
+
   /* fetch once */
   useEffect(() => {
     fetchAllCoupons();
   }, []);
 
-  /* derive filter lists */
+  /* derive lists */
   useEffect(() => {
     const valid = coupons.filter((c) => typeof c === "object");
     setCategories([...new Set(valid.flatMap((c) => c.categories || []))]);
-    setCities([
-      ...new Set(valid.map((c) => c.store?.storeCity).filter(Boolean)),
-    ]);
+    setCities([...new Set(valid.map((c) => c.store?.storeCity).filter(Boolean))]);
   }, [coupons]);
 
   /* filtered list */
@@ -87,7 +123,7 @@ const Offers = () => {
     });
   }, [coupons, selectedCategory, selectedCity, searchTerm]);
 
-  /* date badge helper */
+  /* helper for badge */
   const calculateDaysLeft = (expiryDate) => {
     if (!expiryDate)
       return { text: "No Expiry", color: "bg-gray-300 text-gray-800" };
@@ -106,7 +142,7 @@ const Offers = () => {
     };
   };
 
-  /* shimmer placeholder */
+  /* shimmer card */
   const ShimmerCard = () => (
     <div className="w-full max-w-sm mx-auto rounded-2xl overflow-hidden shadow-lg bg-white animate-pulse">
       <div className="h-40 bg-gray-300" />
@@ -122,15 +158,37 @@ const Offers = () => {
   return (
     <>
       <Helmet>
-        <title>Explore Local Store Offers &amp; Coupons | Namma Ooru Offers</title>
+        <title>
+          Explore Local Store Offers &amp; Coupons | Namma Ooru Offers
+        </title>
         <meta
           name="description"
           content="Find and redeem exclusive coupons from trusted local stores across your city."
         />
       </Helmet>
 
+      {/* Drawers */}
+      <Drawer
+        open={isCatOpen}
+        title="Select Category"
+        options={categories}
+        selected={selectedCategory}
+        onSelect={setSelectedCategory}
+        onClose={() => setCatOpen(false)}
+      />
+
+      <Drawer
+        open={isCityOpen}
+        title="Select Location"
+        options={cities}
+        selected={selectedCity}
+        onSelect={setSelectedCity}
+        onClose={() => setCityOpen(false)}
+      />
+
+      {/* Page content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* ───────── filter bar ───────── */}
+        {/* filter bar */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8">
           {/* search */}
           <div className="flex items-center w-full max-w-md h-10 px-4
@@ -145,29 +203,21 @@ const Offers = () => {
             />
           </div>
 
-          {/* dropdowns */}
-          <div className="flex flex-row gap-4  justify-center">
-            {/* brown FILLED style */}
-            <CustomDropdown
-              options={categories}
-              value={selectedCategory}
-              onChange={setSelectedCategory}
+          {/* buttons that open drawers */}
+          <div className="flex flex-row gap-4">
+            <CustomButton
               label="Category"
-             
-              filled={true}
+              icon={<BiSolidCategory />}
+              filled
+              onClick={() => setCatOpen(true)}
             />
-
-            {/* white OUTLINED style */}
-            <CustomDropdown
-              options={cities}
-              value={selectedCity}
-              onChange={setSelectedCity}
+            <CustomButton
               label="Location"
-           
+              icon={<FaMapMarkerAlt />}
+              onClick={() => setCityOpen(true)}
             />
           </div>
         </div>
-        {/* ───────────────────────────── */}
 
         {/* coupon grid */}
         {loading ? (
