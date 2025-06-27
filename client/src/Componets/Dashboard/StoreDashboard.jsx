@@ -1,22 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaStore,
   FaTags,
   FaListAlt,
-  FaCheckCircle
+  FaCheckCircle,
 } from "react-icons/fa";
 import { IoAnalytics } from "react-icons/io5";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faTimes } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/StoreDashboard.css";
 
-
 const StoreDashboard = ({ children }) => {
-   
   const location = useLocation();
+
+  /* sidebar state + ref */
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const sidebarRef = useRef(null);
+
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+
+  /* 🔐 close sidebar on outside click */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        sidebarOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(e.target)
+      ) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [sidebarOpen]);
 
   return (
     <div className="store-dashboard-container">
@@ -30,7 +48,10 @@ const StoreDashboard = ({ children }) => {
       </div>
 
       {/* Sidebar */}
-      <div className={`store-dashboard-sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
+      <div
+        ref={sidebarRef}
+        className={`store-dashboard-sidebar ${sidebarOpen ? "open" : "collapsed"}`}
+      >
         <h2>Store Dashboard</h2>
         <ul className="store-nav-menu">
           <li className="store-nav-item">
@@ -104,7 +125,7 @@ const StoreDashboard = ({ children }) => {
 
       {/* Main Content */}
       <div className="store-dashboard-main">
-        <h1 className="store-dashboard-header">  Dashboard</h1>
+        <h1 className="store-dashboard-header">Dashboard</h1>
         {children}
       </div>
     </div>

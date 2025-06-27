@@ -12,13 +12,17 @@ import "../../styles/UserDashboard.css";
 const UserDashboard = ({ children }) => {
   const { user } = useAuth();
   const location = useLocation();
+
+  /* Sidebar */
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef(null);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+
+  /* Referral info */
   const [showReferralInfo, setShowReferralInfo] = useState(false);
   const referralRef = useRef(null);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-  // Close referral info on outside click
+  /* Close referral info on outside click */
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -31,6 +35,21 @@ const UserDashboard = ({ children }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  /* Close sidebar on outside click */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sidebarOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target)
+      ) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [sidebarOpen]);
 
   return (
     <div className="user-dashboard-container">
@@ -45,9 +64,8 @@ const UserDashboard = ({ children }) => {
 
       {/* Sidebar */}
       <div
-        className={`user-dashboard-sidebar ${
-          sidebarOpen ? "open" : "collapsed"
-        }`}
+        ref={sidebarRef}
+        className={`user-dashboard-sidebar ${sidebarOpen ? "open" : "collapsed"}`}
       >
         <h2>User Dashboard</h2>
         <ul className="user-nav-menu">
@@ -88,7 +106,7 @@ const UserDashboard = ({ children }) => {
               <FontAwesomeIcon
                 icon={faCircleInfo}
                 className="text-blue-600 cursor-pointer hover:text-blue-800 transition"
-                onClick={() => setShowReferralInfo(!showReferralInfo)}
+                onClick={() => setShowReferralInfo((prev) => !prev)}
                 title="Referral Info"
               />
             </div>
@@ -107,9 +125,6 @@ const UserDashboard = ({ children }) => {
               )}
             </div>
           </div>
-
-
-         
         </div>
 
         {children}

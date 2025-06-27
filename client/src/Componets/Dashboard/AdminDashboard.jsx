@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -6,8 +6,28 @@ import "../../styles/AdminDashboard.css";
 
 const AdminDashboard = ({ children }) => {
   const location = useLocation();
+
+  /* sidebar state + ref */
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const sidebarRef = useRef(null);
+
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+
+  /* 🔐 close sidebar when clicking outside */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        sidebarOpen &&                    // only when open
+        sidebarRef.current &&             // ref is ready
+        !sidebarRef.current.contains(e.target) // click is outside
+      ) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [sidebarOpen]);
 
   return (
     <div className="admin-dashboard-container">
@@ -21,7 +41,10 @@ const AdminDashboard = ({ children }) => {
       </div>
 
       {/* Sidebar */}
-      <div className={`admin-dashboard-sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
+      <div
+        ref={sidebarRef}
+        className={`admin-dashboard-sidebar ${sidebarOpen ? "open" : "collapsed"}`}
+      >
         <h2>Admin Dashboard</h2>
         <ul className="admin-nav-menu">
           <li className="admin-nav-item">
@@ -35,7 +58,7 @@ const AdminDashboard = ({ children }) => {
               Analytics
             </Link>
           </li>
-          
+
           <li className="admin-nav-item">
             <Link
               to="/userlist"
@@ -47,6 +70,7 @@ const AdminDashboard = ({ children }) => {
               Users List
             </Link>
           </li>
+
           <li className="admin-nav-item">
             <Link
               to="/allstore"
