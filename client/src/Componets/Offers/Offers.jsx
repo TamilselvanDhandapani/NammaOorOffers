@@ -3,12 +3,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { format } from "date-fns";
-import {
-  FaMapMarkerAlt,
-  FaTags,
-  FaSearch,
-  FaTimes,
-} from "react-icons/fa";
+import { FaMapMarkerAlt, FaTags, FaSearch, FaTimes } from "react-icons/fa";
 import { BiSolidCategory } from "react-icons/bi";
 import useCoupon from "../../hooks/useCoupon";
 
@@ -93,7 +88,9 @@ const CustomButton = ({ label, icon, filled = false, onClick }) => (
     className={`flex items-center gap-2 justify-center h-10 w-full max-w-[190px] px-4
                 rounded-md shadow-sm uppercase
                 text-[0.75rem] sm:text-[0.8rem] md:text-[0.85rem]
-                ${filled ? "bg-violet-700 text-white" : "bg-white text-gray-900"}`}
+                ${
+                  filled ? "bg-violet-700 text-white" : "bg-white text-gray-900"
+                }`}
   >
     {icon} <span>{label}</span>
   </button>
@@ -122,7 +119,9 @@ const Offers = () => {
   useEffect(() => {
     const valid = coupons.filter((c) => typeof c === "object");
     setCategories([...new Set(valid.flatMap((c) => c.categories || []))]);
-    setCities([...new Set(valid.map((c) => c.store?.storeCity).filter(Boolean))]);
+    setCities([
+      ...new Set(valid.map((c) => c.store?.storeCity).filter(Boolean)),
+    ]);
   }, [coupons]);
 
   /* filtered list */
@@ -133,8 +132,9 @@ const Offers = () => {
         (c.categories || []).some((cat) => selectedCategory.includes(cat));
       const matchCity =
         !selectedCity.length || selectedCity.includes(c.store?.storeCity);
-      const matchSearch =
-        c.title?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchSearch = c.title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
       return matchCategory && matchCity && matchSearch;
     });
   }, [coupons, selectedCategory, selectedCity, searchTerm]);
@@ -174,7 +174,9 @@ const Offers = () => {
   return (
     <>
       <Helmet>
-        <title>Explore Local Store Offers &amp; Coupons | Namma Ooru Offers</title>
+        <title>
+          Explore Local Store Offers &amp; Coupons | Namma Ooru Offers
+        </title>
         <meta
           name="description"
           content="Find and redeem exclusive coupons from trusted local stores across your city."
@@ -202,22 +204,23 @@ const Offers = () => {
       {/* Page content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* filter bar */}
-        <div className="flex flex-col gap-4 sm:items-center sm:justify-center sm:gap-6  md:items-center md:justify-center md:gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
-          
-          {/* search */}
-          <div className="flex items-center w-full max-w-md h-10 px-4 rounded-md shadow-sm bg-white border border-white">
-            <FaSearch className="text-gray-500 mr-2" />
-            <input
-              type="text"
-              placeholder="Search coupons..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 outline-none text-sm"
-            />
+        <div className="flex flex-col gap-6 items-center justify-center lg:flex-row lg:justify-between mb-8">
+          {/* Search Input */}
+          <div className="w-full max-w-md">
+            <div className="flex items-center h-10 px-4 rounded-md shadow-sm bg-white border border-white w-full">
+              <FaSearch className="text-gray-500 mr-2" />
+              <input
+                type="text"
+                placeholder="Search coupons..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 outline-none text-sm"
+              />
+            </div>
           </div>
 
-          {/* buttons that open drawers */}
-          <div className="flex flex-row gap-4">
+          {/* Category and Location Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
             <CustomButton
               label="Category"
               icon={<BiSolidCategory />}
@@ -242,7 +245,9 @@ const Offers = () => {
         ) : error ? (
           <p className="text-center text-red-500">Error: {error}</p>
         ) : filteredCoupons.length === 0 ? (
-          <p className="text-center text-gray-500">No matching coupons found.</p>
+          <p className="text-center text-gray-500">
+            No matching coupons found.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredCoupons.map((c) => {
@@ -266,7 +271,9 @@ const Offers = () => {
                     {/* store logo */}
                     <div className="absolute top-3 left-3 bg-white rounded-full p-1 shadow">
                       <img
-                        src={c.store?.storeLogo || "https://via.placeholder.com/40"}
+                        src={
+                          c.store?.storeLogo || "https://via.placeholder.com/40"
+                        }
                         alt="Logo"
                         className="w-10 h-10 rounded-full"
                         loading="lazy"
