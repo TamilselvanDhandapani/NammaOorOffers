@@ -202,35 +202,35 @@ const Offers = () => {
       {/* Page content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* filter bar */}
-      <div className="flex flex-col md:items-center md:justify-center md:gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
-  {/* search */}
-  <div className="flex items-center w-full max-w-md h-10 px-4 rounded-md shadow-sm bg-white border border-white">
-    <FaSearch className="text-gray-500 mr-2" />
-    <input
-      type="text"
-      placeholder="Search coupons..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="flex-1 outline-none text-sm"
-    />
-  </div>
+        <div className="flex flex-col gap-4 md:items-center md:justify-center md:gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
+          
+          {/* search */}
+          <div className="flex items-center w-full max-w-md h-10 px-4 rounded-md shadow-sm bg-white border border-white">
+            <FaSearch className="text-gray-500 mr-2" />
+            <input
+              type="text"
+              placeholder="Search coupons..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 outline-none text-sm"
+            />
+          </div>
 
-  {/* buttons that open drawers */}
-  <div className="flex flex-col md:flex-row gap-4 w-full md:justify-center">
-    <CustomButton
-      label="Category"
-      icon={<BiSolidCategory />}
-      filled
-      onClick={() => setCatOpen(true)}
-    />
-    <CustomButton
-      label="Location"
-      icon={<FaMapMarkerAlt />}
-      onClick={() => setCityOpen(true)}
-    />
-  </div>
-</div>
-
+          {/* buttons that open drawers */}
+          <div className="flex flex-row gap-4">
+            <CustomButton
+              label="Category"
+              icon={<BiSolidCategory />}
+              filled
+              onClick={() => setCatOpen(true)}
+            />
+            <CustomButton
+              label="Location"
+              icon={<FaMapMarkerAlt />}
+              onClick={() => setCityOpen(true)}
+            />
+          </div>
+        </div>
 
         {/* coupon grid */}
         {loading ? (
