@@ -2,9 +2,12 @@ import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import useStore from "../../hooks/useStore";
 import useCoupon from "../../hooks/useCoupon";
+import { FaTags, FaMapMarkerAlt } from "react-icons/fa";
+import { BiSolidCategory } from "react-icons/bi";
+import { format } from "date-fns";
 
 const StoresDetails = () => {
-  const { id } = useParams();                               // storeId
+  const { id } = useParams();
   const { storeDetails, fetchStoreById, loading, error } = useStore();
   const {
     storeCoupons,
@@ -13,7 +16,6 @@ const StoresDetails = () => {
     error: couponError,
   } = useCoupon();
 
-  /* ───────────────────────── Fetch data on mount / id change ───────────────────────── */
   useEffect(() => {
     if (id) {
       fetchStoreById(id);
@@ -21,166 +23,112 @@ const StoresDetails = () => {
     }
   }, [id]);
 
-  /* ───────────────────────── Loading & error guards ───────────────────────── */
-  if (loading)
-    return <div className="text-center py-10">Loading store details…</div>;
-  if (error)
-    return <div className="text-center py-10 text-red-500">{error}</div>;
-  if (!storeDetails)
-    return <div className="text-center py-10">Store not found.</div>;
+  const calculateDaysLeft = (expiryDate) => {
+    if (!expiryDate)
+      return { text: "No Expiry", color: "bg-gray-300 text-gray-800" };
+    const expiry = new Date(expiryDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = Math.ceil((expiry - today) / 864e5);
+    if (days <= 0) return { text: "Expired", color: "bg-red-100 text-red-600" };
+    if (days === 1)
+      return { text: "Last Day", color: "bg-orange-100 text-orange-600" };
+    if (days <= 7)
+      return { text: `${days}d left`, color: "bg-yellow-100 text-yellow-700" };
+    return {
+      text: format(expiry, "dd MMM yyyy"),
+      color: "bg-green-100 text-green-700",
+    };
+  };
 
-  /* ───────────────────────── Destructure store data ───────────────────────── */
+  if (loading) return <div className="text-center py-10">Loading store details…</div>;
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
+  if (!storeDetails) return <div className="text-center py-10">Store not found.</div>;
+
   const {
     storeName,
     storeLogo,
     storeCity,
     storeDescription,
-    storeWebsite,
-    storeAddress,
-    socialMedia,
-    owner,
   } = storeDetails;
 
-  /* ───────────────────────── JSX ───────────────────────── */
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* ============ STORE HEADER ============ */}
-      <div className="flex flex-col items-center text-center">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="text-center mb-12">
         <img
           src={storeLogo || "https://via.placeholder.com/150"}
           alt={storeName}
-          className="w-32 h-32 object-cover rounded-full mb-4 border"
+          className="w-24 h-24 object-cover rounded-full mx-auto border mb-4"
         />
-        <h1 className="text-3xl font-bold mb-2">{storeName}</h1>
-        <p className="text-gray-500 mb-1">{storeCity}</p>
-        <p className="text-sm text-gray-400 mb-4">{storeAddress}</p>
-
-        {storeWebsite && (
-          <a
-            href={storeWebsite}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline mb-4"
-          >
-            Visit Website
-          </a>
-        )}
-
-        <p className="text-gray-700 leading-relaxed mb-6">{storeDescription}</p>
-
-        {/* Social links */}
-        <div className="flex gap-4 justify-center mt-4">
-          {socialMedia?.instagram && (
-            <a
-              href={socialMedia.instagram}
-              target="_blank"
-              rel="noreferrer"
-              className="text-pink-500"
-            >
-              Instagram
-            </a>
-          )}
-          {socialMedia?.facebook && (
-            <a
-              href={socialMedia.facebook}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-700"
-            >
-              Facebook
-            </a>
-          )}
-          {socialMedia?.twitter && (
-            <a
-              href={socialMedia.twitter}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sky-400"
-            >
-              Twitter
-            </a>
-          )}
-          {socialMedia?.youtube && (
-            <a
-              href={socialMedia.youtube}
-              target="_blank"
-              rel="noreferrer"
-              className="text-red-600"
-            >
-              YouTube
-            </a>
-          )}
-        </div>
-
-        <div className="mt-6 text-sm text-gray-500">
-          <p>
-            Owner: <span className="font-medium">{owner?.username}</span>
-          </p>
-          <p>Email: {owner?.email}</p>
-        </div>
+        <h1 className="text-3xl font-bold">{storeName}</h1>
+        <p className="text-gray-500">{storeCity}</p>
+        <p className="mt-4 text-gray-600 max-w-2xl mx-auto">{storeDescription}</p>
       </div>
 
-      {/* ============ COUPONS SECTION ============ */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-6">Available Coupons</h2>
+      <h2 className="text-2xl font-semibold mb-6 text-center">Available Coupons</h2>
 
-        {couponLoading ? (
-          <div className="text-center text-gray-400">Loading coupons…</div>
-        ) : couponError ? (
-          <div className="text-center text-red-500">{couponError}</div>
-        ) : storeCoupons.length === 0 ? (
-          <p className="text-gray-500">No coupons available for this store.</p>
-        ) : (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-            {storeCoupons.map((coupon) => (
+      {couponLoading ? (
+        <p className="text-center text-gray-400">Loading coupons…</p>
+      ) : couponError ? (
+        <p className="text-center text-red-500">{couponError}</p>
+      ) : storeCoupons.length === 0 ? (
+        <p className="text-center text-gray-500">No coupons available for this store.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          {storeCoupons.map((c) => {
+            const { text: daysLeft, color } = calculateDaysLeft(c.expiryDate);
+            const expired = daysLeft === "Expired";
+            return (
               <div
-                key={coupon._id}
-                className="relative h-64 rounded-lg overflow-hidden shadow-lg group"
+                key={c._id}
+                className="w-full rounded-2xl overflow-hidden shadow-lg bg-white hover:shadow-xl transition duration-300"
               >
-                {/* Background image */}
-                <div
-                  className="absolute inset-0 bg-cover bg-center transform group-hover:scale-105 transition duration-300"
-                  style={{
-                    backgroundImage: `url(${
-                      coupon.backgroundImage ||
-                      "https://via.placeholder.com/400x250"
-                    })`,
-                  }}
-                />
-
-                {/* gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
-
-                {/* Store logo badge */}
-                {coupon.store?.storeLogo && (
+                <div className="relative">
                   <img
-                    src={coupon.store.storeLogo}
-                    alt="store logo"
-                    className="absolute top-4 left-4 w-10 h-10 rounded-full border-2 border-white z-30 bg-white object-cover"
+                    src={c.backgroundImage || "https://images.unsplash.com/photo-1596797038530-2f2f47d192ad"}
+                    alt="Coupon"
+                    className="w-full h-40 object-cover"
                   />
-                )}
-
-                {/* Content */}
-                <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-between items-end">
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold">{coupon.title}</h3>
-                    <p className="text-sm text-gray-200">
-                      {coupon.store?.storeCity}
-                    </p>
+                  <div className="absolute top-3 left-3 bg-white rounded-full p-1 shadow">
+                    <img
+                      src={c.store?.storeLogo || "https://via.placeholder.com/40"}
+                      alt="Logo"
+                      className="w-10 h-10 rounded-full"
+                      loading="lazy"
+                    />
                   </div>
-
-                  <Link
-                    to={`/coupon/${coupon._id}`}
-                    className="inline-block bg-white text-black text-sm px-4 py-1.5 rounded-full font-medium hover:bg-black hover:text-white transition"
-                  >
-                    View Coupon
-                  </Link>
+                  <span className={`absolute top-3 right-3 px-3 py-1 rounded-xl text-xs font-semibold ${color}`}>
+                    {daysLeft}
+                  </span>
+                </div>
+                <div className="p-4 bg-gray-50">
+                  <h3 className="text-[1rem] font-semibold text-gray-800 flex items-center gap-2 text-center sm:text-left">
+                    <FaTags className="text-pink-500" /> {c.title}
+                  </h3>
+                  {(c.categories || []).map((cat) => (
+                    <p key={cat} className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1">
+                      <BiSolidCategory className="text-pink-500" /> {cat}
+                    </p>
+                  ))}
+                  <p className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1">
+                    <FaMapMarkerAlt className="text-pink-500" /> {c.store?.storeCity}
+                  </p>
+                  <div className="mt-4">
+                    <Link
+                      to={`/offersdetails/${c._id}`}
+                      className={`block w-full text-center py-2 rounded-lg font-medium text-white transition-all duration-300 ${
+                        expired ? "bg-gray-400 cursor-not-allowed" : "bg-violet-600 hover:bg-violet-700"
+                      }`}
+                    >
+                      {expired ? "Expired" : "VIEW COUPON →"}
+                    </Link>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
