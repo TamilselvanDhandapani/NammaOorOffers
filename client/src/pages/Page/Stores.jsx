@@ -47,12 +47,18 @@ const Stores = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
 
                   {/* Content */}
-                  <div className="absolute bottom-4 left-4 z-20">
-                    <h2 className="text-white text-xl font-bold drop-shadow-md">{store.storeName}</h2>
-                    <p className="text-white text-sm drop-shadow-sm">{store.storeCity}</p>
+                  <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-between items-end">
+                    <div>
+                      <h2 className="text-white text-xl font-bold drop-shadow-md">
+                        {store.storeName}
+                      </h2>
+                      <p className="text-white text-sm drop-shadow-sm">
+                        {store.storeCity}
+                      </p>
+                    </div>
                     <Link
                       to={`/store/${store._id}`}
-                      className="mt-3 inline-block bg-white text-black px-4 py-1.5 text-sm rounded-full font-medium hover:bg-black hover:text-white transition duration-300"
+                      className="inline-block bg-white text-black px-4 py-1.5 text-sm rounded-full font-medium hover:bg-black hover:text-white transition duration-300"
                     >
                       View Store
                     </Link>
