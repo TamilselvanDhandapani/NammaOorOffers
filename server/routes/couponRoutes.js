@@ -39,15 +39,13 @@ router.delete(
 
 router.get(
   "/store/:storeId",
-  protect,
-  authorizeRoles("store"),
+ 
   getCouponsByStore
 );
 
 router.get(
   "/store/:storeId/view/:couponId",
-  protect,
-  authorizeRoles("store"),
+ 
   getCouponByStoreAndId
 );
 

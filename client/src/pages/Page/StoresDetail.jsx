@@ -34,7 +34,7 @@ const StoresDetails = () => {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex flex-col items-center text-center">
         <img
-          src={storeLogo || "https://via.placeholder.com/150"}
+          src={storeLogo}
           alt={storeName}
           className="w-32 h-32 object-cover rounded-full mb-4 border"
         />
