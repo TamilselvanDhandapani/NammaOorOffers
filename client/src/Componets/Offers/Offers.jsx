@@ -288,13 +288,13 @@ const Offers = () => {
                     {(c.categories || []).map((cat) => (
                       <p
                         key={cat}
-                        className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1 justify-center sm:justify-start"
+                        className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1 justify-start"
                       >
                         <BiSolidCategory className="text-pink-500" /> {cat}
                       </p>
                     ))}
 
-                    <p className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1 justify-center sm:justify-start">
+                    <p className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1 justify-start">
                       <FaMapMarkerAlt className="text-pink-500" />{" "}
                       {c.store?.storeCity}
                     </p>
