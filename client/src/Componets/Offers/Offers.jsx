@@ -202,7 +202,7 @@ const Offers = () => {
       {/* Page content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* filter bar */}
-        <div className="flex flex-col gap-4 md:items-center md:justify-center md:gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
+        <div className="flex flex-col gap-4 sm:items-center sm:justify-center sm:gap-6  md:items-center md:justify-center md:gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
           
           {/* search */}
           <div className="flex items-center w-full max-w-md h-10 px-4 rounded-md shadow-sm bg-white border border-white">
