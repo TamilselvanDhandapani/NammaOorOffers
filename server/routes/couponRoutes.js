@@ -39,13 +39,14 @@ router.delete(
 
 router.get(
   "/store/:storeId",
- 
+
+  
   getCouponsByStore
 );
 
 router.get(
   "/store/:storeId/view/:couponId",
- 
+
   getCouponByStoreAndId
 );
 
