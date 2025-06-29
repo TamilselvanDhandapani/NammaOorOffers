@@ -149,7 +149,7 @@ const Home = () => {
                     >
                       <Link
                         to="/offers"
-                        className="inline-block px-6 py-2 mt-2 bg-[#4C5C9E] hover:bg-[#3c4b86] text-white font-medium rounded-[12PX] transition duration-300"
+                        className="inline-block px-6 py-2 mt-2 bg-[#00b4d8] hover:bg-[#48cae4] text-white font-medium rounded-[12PX] transition duration-300"
                       >
                         EXPLORE
                       </Link>
@@ -163,7 +163,7 @@ const Home = () => {
       </section>
 
       {/* ───────────── Categories ───────────── */}
-      <section className="py-16 px-4 max-w-7xl mx-auto">
+      <section className="py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
             Popular Categories
@@ -198,7 +198,7 @@ const Home = () => {
       </section>
 
       {/* ───────────── How It Works ───────────── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -210,7 +210,7 @@ const Home = () => {
           </div>
 
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8"
             variants={container}
             initial="hidden"
             whileInView="visible"
