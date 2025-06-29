@@ -19,7 +19,7 @@ const StoresDetails = () => {
       fetchStoreById(id);
       fetchCouponsByStore(id);
     }
-  }, [id, fetchStoreById, fetchCouponsByStore]);
+  }, [id]);
 
   /* ───────────────────────── Loading & error guards ───────────────────────── */
   if (loading)
