@@ -6,7 +6,10 @@ import Home from "./pages/Page/Home";
 import About from "./pages/Page/About";
 import Contact from "./pages/Page/Contact";
 import Whyus from "./pages/Page/Whyus";
+import Stores from "./pages/Page/Stores";
+import StoresDetails from "./pages/Page/StoresDetail";
 import Offers from "./Componets/Offers/Offers";
+
 import OffersDetails from "./Componets/Offers/OffersDetails";
 
 // Auth Pages
@@ -78,6 +81,9 @@ const App = () => {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/whyus" element={<Whyus />} />
+              <Route path="/stores" element={<Stores/>} />
+              <Route path="/store/:id" element={<StoresDetails />} />
+
               <Route path="/offers" element={<Offers />} />
               <Route path="/offersdetails/:id" element={<OffersDetails />} />
 

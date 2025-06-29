@@ -52,12 +52,12 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 bg-white shadow transition-shadow duration-300`}
     >
-      <div className="max-w-8xl mx-auto px-6 md:px-8 h-18 flex justify-between items-center">
+      <div className="max-w-8xl mx-auto px-4 py-10 md:px-8 md:py-8 h-18 flex justify-between items-center">
         <Link to="/" className="logo">
           <img
             src={logo}
             alt="Logo"
-            className="h-12 w-auto rounded-full object-contain transition-transform duration-300 hover:scale-105"
+            className="h-18 w-auto rounded-full object-contain transition-transform duration-300 hover:scale-105"
           />
         </Link>
 
@@ -66,7 +66,7 @@ const Navbar = () => {
           <li>
             <Link
               to="/"
-              className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+              className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
             >
               Home
             </Link>
@@ -74,16 +74,25 @@ const Navbar = () => {
           <li>
             <Link
               to="/offers"
-              className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+              className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
             >
               Offers
             </Link>
+          </li>
+          <li>
+            <Link
+              to="/stores"
+              className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
+            >
+              Stores
+            </Link>
+
           </li>
           {isAuthenticated ? (
             <li>
               <Link
                 to={getDashboardLink()}
-                className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
               >
                 Dashboard
               </Link>
@@ -93,7 +102,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/whyus"
-                  className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                  className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
                 >
                   Why Us
                 </Link>
@@ -101,7 +110,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/about"
-                  className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                  className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
                 >
                   About Us
                 </Link>
@@ -109,7 +118,7 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/store-home"
-                  className="relative hover:text-blue-600 after:content-[''] after:block after:w-0 after:h-[2px] after:bg-blue-600 hover:after:w-full after:transition-all after:duration-300"
+                  className="relative hover:text-[#4C5C9E] after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#4C5C9E] hover:after:w-full after:transition-all after:duration-300"
                 >
                   List Your Business
                 </Link>
@@ -134,12 +143,12 @@ const Navbar = () => {
           ) : (
             <div className="auth-buttons flex gap-4">
               <Link to="/login">
-                <button className="btn signin-btn border border-blue-600 text-blue-600 px-4 py-2 rounded-[10px] hover:bg-blue-50 flex items-center justify-center">
+                <button className="btn signin-btn border border-[#4C5C9E] text-[#4C5C9E] px-4 py-2 rounded-[10px] hover:bg-[#4C5C9E]/10 flex items-center justify-center">
                   Sign In
                 </button>
               </Link>
               <Link to="/redirect">
-                <button className="btn signup-btn bg-blue-600 text-white px-4 py-2 rounded-[10px] hover:bg-blue-700 shadow-md flex items-center justify-center">
+                <button className="btn signup-btn bg-[#4C5C9E] text-white px-4 py-2 rounded-[10px] hover:bg-[#4C5C9E]/90 shadow-md flex items-center justify-center">
                   Sign Up
                 </button>
               </Link>
@@ -186,6 +195,11 @@ const Navbar = () => {
               <li>
                 <Link to="/offers" onClick={() => setIsOpen(false)}>
                   Offers
+                </Link>
+              </li>
+              <li>
+                <Link to="/stores" onClick={() => setIsOpen(false)}>
+                  Stores
                 </Link>
               </li>
               {isAuthenticated ? (
@@ -240,12 +254,12 @@ const Navbar = () => {
               ) : (
                 <div className="auth-buttons flex flex-col gap-3">
                   <Link to="/login" onClick={() => setIsOpen(false)}>
-                    <button className="btn signin-btn border border-blue-600 text-blue-600 py-2 rounded-[10px] hover:bg-blue-50 w-full flex items-center justify-center">
+                    <button className="btn signin-btn border border-[#4C5C9E] text-[#4C5C9E] py-2 rounded-[10px] hover:bg-[#4C5C9E]/10 w-full flex items-center justify-center">
                       Sign In
                     </button>
                   </Link>
                   <Link to="/redirect" onClick={() => setIsOpen(false)}>
-                    <button className="btn signup-btn bg-blue-600 text-white py-2 rounded-[10px] hover:bg-blue-700 w-full flex items-center justify-center">
+                    <button className="btn signup-btn bg-[#4C5C9E] text-white py-2 rounded-[10px] hover:bg-[#4C5C9E]/90 w-full flex items-center justify-center">
                       Sign Up
                     </button>
                   </Link>
