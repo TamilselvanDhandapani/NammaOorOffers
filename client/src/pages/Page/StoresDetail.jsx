@@ -1,16 +1,19 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import useStore from "../../hooks/useStore";
-
+import useCoupon from "../../hooks/useCoupon";
 
 const StoresDetails = () => {
   const { id } = useParams();
- const { storeDetails, fetchStoreById, loading, error } = useStore();
-
+  const { storeDetails, fetchStoreById, loading, error } = useStore();
+  const { storeCoupons, fetchCouponsByStore, loading: couponLoading } = useCoupon();
 
   useEffect(() => {
-    if (id) fetchStoreById(id);
-  }, [id, fetchStoreById]);
+    if (id) {
+      fetchStoreById(id);
+      fetchCouponsByStore(id);
+    }
+  }, [id, fetchStoreById, fetchCouponsByStore]);
 
   if (loading) return <div className="text-center py-10">Loading store details...</div>;
   if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
@@ -28,7 +31,7 @@ const StoresDetails = () => {
   } = storeDetails;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex flex-col items-center text-center">
         <img
           src={storeLogo || "https://via.placeholder.com/150"}
@@ -77,6 +80,29 @@ const StoresDetails = () => {
           <p>Owner: <span className="font-medium">{owner?.username}</span></p>
           <p>Email: {owner?.email}</p>
         </div>
+      </div>
+
+      {/* 🎟️ Store Coupons Section */}
+      <div className="mt-10">
+        <h2 className="text-2xl font-semibold mb-4">Available Coupons</h2>
+
+        {couponLoading ? (
+          <div className="text-center text-gray-400">Loading coupons...</div>
+        ) : storeCoupons.length > 0 ? (
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            {storeCoupons.map((coupon) => (
+              <div key={coupon._id} className="bg-white p-4 rounded-lg shadow-md">
+                <h3 className="text-lg font-bold text-gray-800">{coupon.title}</h3>
+                <p className="text-gray-600 mt-1">{coupon.description}</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Min Purchase: ₹{coupon.minPurchase} | Expires on: {new Date(coupon.expiryDate).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500">No coupons available for this store.</p>
+        )}
       </div>
     </div>
   );
