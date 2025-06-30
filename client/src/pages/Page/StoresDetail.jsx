@@ -122,7 +122,7 @@ const StoresDetails = () => {
                   <Link
                     to={`/offersdetails/${c._id}`}
                     className={`block w-full text-center py-2 rounded-lg font-medium text-white transition-all duration-300 ${
-                      expired ? "bg-gray-400 cursor-not-allowed" : "bg-violet-600 hover:bg-violet-700"
+                      expired ? "bg-gray-400 cursor-not-allowed" : "bg-#316AB5"
                     }`}
                   >
                     {expired ? "Expired" : "VIEW COUPON →"}

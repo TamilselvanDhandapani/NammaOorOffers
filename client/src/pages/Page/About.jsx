@@ -58,28 +58,6 @@ const About = () => {
     },
   ];
 
-  const steps = [
-    {
-      icon: <FaFilter />,
-      title: "Browse Stores & Categories",
-      desc: "Use filters to explore food, retail, and service offers by location and deal amount.",
-    },
-    {
-      icon: <FaInfoCircle />,
-      title: "View Offer Details",
-      desc: "Check discount amounts, restrictions, store hours, and expiration dates.",
-    },
-    {
-      icon: <FaShoppingBag />,
-      title: "Claim & Redeem",
-      desc: "Show your coupon in-store or use the provided online promo links.",
-    },
-    {
-      icon: <FaRedo />,
-      title: "Save More Over Time",
-      desc: "Create an account and get notified when new offers match your interests.",
-    },
-  ];
 
   return (
     <>
@@ -140,50 +118,7 @@ const About = () => {
           </div>
         </motion.section>
 
-        {/* How It Works */}
-        <motion.section
-          className="bg-[#f4f7fe] px-6 py-12 rounded-xl max-w-6xl mx-auto mb-20"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={stagger}
-        >
-          <motion.h2
-            className="text-3xl font-bold text-center text-black mb-4"
-            variants={fadeInUp}
-            custom={0}
-          >
-            How It Works
-          </motion.h2>
-          <motion.p
-            className="text-center text-gray-600 mb-10 max-w-2xl mx-auto"
-            variants={fadeInUp}
-            custom={1}
-          >
-            Start saving money at local businesses in just a few simple steps.
-          </motion.p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-8">
-            {steps.map((step, i) => (
-              <motion.div
-                key={i}
-                className="bg-white rounded-lg shadow p-6 hover:shadow-md transition"
-                variants={fadeInUp}
-                custom={i + 2}
-              >
-                <div className="flex flex-col  items-center gap-3 mb-3">
-                  <span className="text-lg font-bold text-[#4a6bff]">
-                    {step.icon}
-                  </span>
-                  <h3 className="text-md font-semibold text-black text-center">
-                    {step.title}
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-600 text-center">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
+       
 
         {/* Our Mission */}
         <motion.section

@@ -53,7 +53,7 @@ const Drawer = ({
               className={`w-full text-left px-4 py-2 rounded-md
                           ${
                             selected.includes(opt)
-                              ? "bg-[#316AB5] font-medium"
+                              ? "bg-[#396eb2] font-medium"
                               : "hover:bg-gray-100"
                           }`}
             >
@@ -89,7 +89,7 @@ const CustomButton = ({ label, icon, filled = false, onClick }) => (
                 rounded-md shadow-sm uppercase
                 text-[0.75rem] sm:text-[0.8rem] md:text-[0.85rem]
                 ${
-                  filled ? "bg-[#316AB5] text-white" : "bg-white text-gray-900"
+                  filled ? "bg-[#48bfee] text-white" : "bg-white text-[#48bfee]"
                 }`}
   >
     {icon} <span>{label}</span>
@@ -290,7 +290,7 @@ const Offers = () => {
                   {/* details */}
                   <div className="p-4 bg-gray-50">
                     <h3 className="text-[1rem] font-semibold text-gray-800 flex items-center gap-2 text-center sm:text-left">
-                      <FaTags className="text-pink-500" /> {c.title}
+                      <FaTags className="text-[#396eb2]" /> {c.title}
                     </h3>
 
                     {(c.categories || []).map((cat) => (
@@ -298,12 +298,12 @@ const Offers = () => {
                         key={cat}
                         className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1 justify-start"
                       >
-                        <BiSolidCategory className="text-pink-500" /> {cat}
+                        <BiSolidCategory className="text-[#396eb2]" /> {cat}
                       </p>
                     ))}
 
                     <p className="text-[0.85rem] text-gray-600 flex items-center gap-2 mt-1 justify-start">
-                      <FaMapMarkerAlt className="text-pink-500" />{" "}
+                      <FaMapMarkerAlt className="text-[#396eb2]" />{" "}
                       {c.store?.storeCity}
                     </p>
 
@@ -315,7 +315,7 @@ const Offers = () => {
                           ${
                             expired
                               ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-[#316AB5] hover:bg-[#5A87C3]"
+                              : "bg-[#48bfee]"
                           }`}
                       >
                         {expired ? "Expired" : "VIEW COUPON →"}
