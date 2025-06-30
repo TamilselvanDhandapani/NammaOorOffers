@@ -53,7 +53,7 @@ const Drawer = ({
               className={`w-full text-left px-4 py-2 rounded-md
                           ${
                             selected.includes(opt)
-                              ? "bg-violet-100 font-medium"
+                              ? "bg-[#023e8a] font-medium"
                               : "hover:bg-gray-100"
                           }`}
             >
@@ -89,7 +89,7 @@ const CustomButton = ({ label, icon, filled = false, onClick }) => (
                 rounded-md shadow-sm uppercase
                 text-[0.75rem] sm:text-[0.8rem] md:text-[0.85rem]
                 ${
-                  filled ? "bg-violet-700 text-white" : "bg-white text-gray-900"
+                  filled ? "bg-[#023e8a] text-white" : "bg-white text-gray-900"
                 }`}
   >
     {icon} <span>{label}</span>
@@ -220,7 +220,7 @@ const Offers = () => {
           </div>
 
           {/* Category and Location Buttons */}
-          <div className="flex flex-row gap-4 w-full max-w-md justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
             <CustomButton
               label="Category"
               icon={<BiSolidCategory />}
@@ -315,7 +315,7 @@ const Offers = () => {
                           ${
                             expired
                               ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-violet-600 hover:bg-violet-700"
+                              : "bg-[#023e8a] hover:bg-[#0096c7]"
                           }`}
                       >
                         {expired ? "Expired" : "VIEW COUPON →"}
