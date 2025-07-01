@@ -31,7 +31,7 @@
 }
 body{
   font-family: 'Times New Roman', Times, serif;
-  background: #ffffff;
+background: linear-gradient(to bottom right, #e0f2fe, #fff7ed);
 }
 
 /* Global styles */

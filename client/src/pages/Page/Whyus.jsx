@@ -81,9 +81,9 @@ const WhyUs = () => {
   ];
 
   return (
-    <div className="bg-white text-gray-900">
+    <div className=" text-gray-900">
       {/* Hero */}
-      <section className="py-12 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 text-center relative overflow-hidden">
+      <section className="py-12  text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           <div className="inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur rounded-full text-sm font-semibold text-gray-700 mb-8 shadow border border-white/50">
             <Sparkles className="w-5 h-5 text-purple-500 mr-2" />
@@ -126,7 +126,7 @@ const WhyUs = () => {
       </section>
 
       {/* Benefits */}
-      <section className="py-4 bg-white mb-10">
+      <section className="py-4  mb-10">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-green-50 rounded-full text-sm text-green-700 border border-green-200 mb-4">
@@ -148,7 +148,7 @@ const WhyUs = () => {
             {benefits.map((b, idx) => (
               <div
                 key={idx}
-                className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow-[0px_0px_10px_5px_#00000024] transition flex flex-col items-center justify-center "
+                className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow-[0px_0px_8px_2px_#00000024] transition flex flex-col items-center justify-center "
               >
                 <div className="flex items-center mb-6 ">
                   <div

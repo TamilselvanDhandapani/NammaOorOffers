@@ -86,9 +86,9 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen ">
       {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-br from-[#e0f2fe] to-[#fff7ed]">
+      <section className="py-24  ">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">Namma Ooru Offers</span>
@@ -103,7 +103,7 @@ const About = () => {
 
       {/* What We Offer */}
       <motion.section
-        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
+        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 "
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -128,7 +128,7 @@ const About = () => {
           {features.map((item, i) => (
             <motion.div
               key={i}
-              className="bg-white p-6 rounded-xl shadow-[0px_0px_8px_2px_#00000024] transition-all duration-300 flex flex-col items-center text-center gap-4"
+              className="bg-white p-6 rounded-xl shadow-[0px_0px_6px_1px_#00000024] transition-all duration-300 flex flex-col items-center text-center gap-4"
               variants={fadeInUp}
               custom={i + 2}
             >
@@ -149,7 +149,7 @@ const About = () => {
       </motion.section>
 
       {/* Story Section */}
-      <section className="py-16 bg-white">
+      <section className="py-10 ">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center" >
           <h2 className="  px-4 text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Our Story
@@ -174,7 +174,7 @@ const About = () => {
       </section>
 
       {/* Our Values */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-16 ">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
