@@ -90,18 +90,21 @@ const WhyUs = () => {
             Why Choose Us
           </div>
           <h1 className="text-5xl md:text-5xl font-bold leading-tight mb-6">
-            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">Namma Ooru Offers?</span>
+            Why Choose{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+              Namma Ooru Offers?
+            </span>
           </h1>
           <p className="text-xl md:text-xl text-gray-600">
-            We’re your local community’s trusted partner for authentic savings and meaningful connections.
+            We’re your local community’s trusted partner for authentic savings
+            and meaningful connections.
           </p>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-24">
+      <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
-         
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f, idx) => (
               <div
@@ -109,7 +112,9 @@ const WhyUs = () => {
                 className="bg-white rounded-3xl shadow-sm hover:shadow-xl text-center transition p-8 flex flex-col items-center justify-between relative"
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-bl-3xl opacity-20" />
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-6 shadow`}>
+                <div
+                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-6 shadow`}
+                >
                   <f.icon className="text-white w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
@@ -121,27 +126,34 @@ const WhyUs = () => {
       </section>
 
       {/* Benefits */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-4 bg-white mb-10">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-green-50 rounded-full text-sm text-green-700 border border-green-200 mb-4">
               <Users className="w-4 h-4 mr-2" />
               Win-Win Solution
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Benefits for <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">Everyone</span>
+              Benefits for{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">
+                Everyone
+              </span>
             </h2>
-            <p className="text-lg text-gray-600">Creating value for both customers and local businesses</p>
+            <p className="text-lg text-gray-600">
+              Creating value for both customers and local businesses
+            </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12">
             {benefits.map((b, idx) => (
               <div
                 key={idx}
-                className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow hover:shadow-xl transition"
+                className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-10 shadow-[0px_0px_10px_5px_#00000024] transition flex flex-col items-center justify-center "
               >
-                <div className="flex items-center mb-6">
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${b.gradient} flex items-center justify-center mr-4`}>
+                <div className="flex items-center mb-6 ">
+                  <div
+                    className={`w-14 h-14 rounded-xl bg-gradient-to-br ${b.gradient} flex items-center justify-center mr-4`}
+                  >
                     <b.icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold">{b.title}</h3>
@@ -163,29 +175,26 @@ const WhyUs = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-12 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white text-center">
+      <section className="py-10 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white text-center">
         <div className="max-w-4xl mx-auto px-4">
           <div className="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold text-white mb-8 border border-white/30">
             <Sparkles className="w-5 h-5 mr-2" />
             Ready to Get Started?
           </div>
           <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Experience the <span className="text-yellow-300">Difference</span> Today
+            Experience the <span className="text-yellow-300">Difference</span>{" "}
+            Today
           </h2>
           <p className="text-xl md:text-2xl text-blue-100 mb-10">
-            Join our growing community and start saving while supporting local businesses.
+            Join our growing community and start saving while supporting local
+            businesses.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <button className="bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold shadow hover:shadow-xl hover:scale-105 transition">
-            <Link to="/register">
-              
-                Start Saving Now
-            </Link>
+              <Link to="/register">Start Saving Now</Link>
             </button>
             <button className="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white hover:text-blue-600 transition hover:scale-105">
-           <Link to="/register-store">
-               Partner With Us
-           </Link>
+              <Link to="/register-store">Partner With Us</Link>
             </button>
           </div>
         </div>
