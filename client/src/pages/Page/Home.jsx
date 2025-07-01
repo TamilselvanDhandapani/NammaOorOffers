@@ -222,23 +222,33 @@ const Home = () => {
       </section>
 
       {/* CTA BANNERS */}
-      <section className="py-14 ">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-6">
-            <img
-              src={BannerOne}
-              
-              alt="Grab the hottest local offers"
-              className="w-full md:w-1/2 rounded-xl shadow-md hover:shadow-lg transition"
-            />
-            <img
-              src={BannerTwo}
-              alt="Save big on every purchase"
-              className="w-full md:w-1/2 rounded-xl shadow-md hover:shadow-lg transition"
-            />
-          </div>
-        </div>
-      </section>
+
+
+<section className="py-14">
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+      
+      {/* First Image Link */}
+      <Link to="/referral" className="w-full md:w-1/2">
+        <img
+          src={BannerOne}
+          alt="Grab the hottest local offers"
+          className="w-full rounded-xl shadow-md hover:shadow-lg transition"
+        />
+      </Link>
+
+      {/* Second Image Link */}
+      <Link to="/offers" className="w-full md:w-1/2">
+        <img
+          src={BannerTwo}
+          alt="Save big on every purchase"
+          className="w-full rounded-xl shadow-md hover:shadow-lg transition"
+        />
+      </Link>
+    </div>
+  </div>
+</section>
+
       {/* HOW IT WORKS */}
       <section className="py-14 ">
         <div className="max-w-6xl mx-auto px-4">
