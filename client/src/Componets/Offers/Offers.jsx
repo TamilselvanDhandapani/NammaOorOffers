@@ -314,8 +314,8 @@ const Offers = () => {
                         className={`block w-full text-center py-2 rounded-lg font-medium text-white transition-all duration-300
                           ${
                             expired
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-[#48bfee]"
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-blue-600 text-white hover:bg-blue-700"
                           }`}
                       >
                         {expired ? "Expired" : "VIEW COUPON →"}
