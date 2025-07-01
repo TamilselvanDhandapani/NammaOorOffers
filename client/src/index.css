@@ -2,7 +2,8 @@
 
 /* Float animation */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg) scale(1);
   }
   50% {
@@ -29,16 +30,25 @@
 .animate-slideDown {
   animation: slideDown 0.3s ease-in-out forwards;
 }
-body{
-  font-family: 'Times New Roman', Times, serif;
-background: linear-gradient(to bottom right, #e0f2fe, #fff7ed);
+body {
+  font-family: "Inter", sans-serif;
+
+  background: linear-gradient(to bottom right, #e0f2fe, #fff7ed);
+}
+/* Navbar */
+.navbar {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* Global styles */
 body,
 #root {
   height: 100%;
-
 }
 
 li {

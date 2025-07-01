@@ -191,7 +191,7 @@ const Home = () => {
       </section>
 
       {/* CATEGORY SECTION */}
-      <section className="py-20 bg-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -205,7 +205,7 @@ const Home = () => {
             {categories.map(({ name, icon: Icon, gradient }) => (
               <div
                 key={name}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl p-3 text-center transition group"
+                className="bg-white rounded-xl shadow-md hover:shadow-xl p-4 text-center transition group"
               >
                 <div
                   className={`w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition`}
@@ -222,11 +222,12 @@ const Home = () => {
       </section>
 
       {/* CTA BANNERS */}
-      <section>
+      <section className="py-14 ">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row gap-6">
             <img
               src={BannerOne}
+              
               alt="Grab the hottest local offers"
               className="w-full md:w-1/2 rounded-xl shadow-md hover:shadow-lg transition"
             />
@@ -277,9 +278,7 @@ const Home = () => {
                   <h3 className="text-lg md:text-base lg:text-lg font-semibold text-gray-900 mb-2">
                     {title}
                   </h3>
-                  <p className="text-sm text-gray-600">
-                    {description}
-                  </p>
+                  <p className="text-sm text-gray-600">{description}</p>
                 </motion.div>
               );
             })}
