@@ -151,7 +151,7 @@ const Home = () => {
                   className="absolute inset-0 bg-cover bg-center max-sm:bg-right"
                   style={{ backgroundImage: `url(${url})` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
                 <div className="relative z-10 w-full h-full flex items-center px-6 sm:px-12 lg:px-24">
                   <div className="max-w-xl space-y-3">
                     <motion.h2
@@ -166,7 +166,7 @@ const Home = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6 }}
-                      className="text-white text-sm sm:text-base lg:text-lg"
+                      className="text-white text-[1rem] sm:text-base lg:text-lg"
                     >
                       {subtitle}
                     </motion.p>
@@ -177,7 +177,7 @@ const Home = () => {
                     >
                       <Link
                         to="/offers"
-                        className="inline-block px-6 py-2 mt-2 bg-[#1d4ed8]  text-white font-medium rounded-[12px] transition duration-300"
+                        className="inline-block px-6 py-2 mt-4 font-semibold text-white bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 rounded-[12px] shadow-md hover:brightness-110 transition duration-300"
                       >
                         EXPLORE
                       </Link>
@@ -274,10 +274,10 @@ const Home = () => {
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </span>
-                  <h3 className="text-sm md:text-base lg:text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg md:text-base lg:text-lg font-semibold text-gray-900 mb-2">
                     {title}
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600">
+                  <p className="text-sm text-gray-600">
                     {description}
                   </p>
                 </motion.div>

@@ -151,7 +151,7 @@ const About = () => {
       {/* Story Section */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center" >
-          <h2 className="  px-4text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+          <h2 className="  px-4 text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Our Story
           </h2>
           <div className="space-y-5 text-gray-600 leading-relaxed">
