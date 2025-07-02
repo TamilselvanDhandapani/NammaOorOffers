@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import useProduct from "../../hooks/useProduct";
 import { useNavigate } from "react-router-dom";
+import { FaPlusCircle } from "react-icons/fa";
 
 const CreateProduct = () => {
   const [form, setForm] = useState({
@@ -45,7 +46,6 @@ const CreateProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Conditional validations for expiry products
     if (form.isExpiryProduct) {
       if (!form.manufacturingDate || !form.expiryDate) {
         alert("Please fill both manufacturing and expiry dates.");
@@ -76,136 +76,109 @@ const CreateProduct = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow p-6 rounded mt-10">
-      <h2 className="text-2xl font-semibold mb-4">Add Product</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {[
-          "name",
-          "brand",
-          "category",
-          "subcategory",
-          "sku",
-          "barcode",
-          "batchNumber",
-          "fssaiNumber",
-          "licenseNumber",
-        ].map((field) => (
-          <input
-            key={field}
-            type="text"
-            name={field}
-            placeholder={field}
-            value={form[field] || ""}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded"
-          />
-        ))}
+    <div className="max-w-5xl mx-auto bg-white shadow-lg p-8 rounded-lg mt-10 animate-fadeIn">
+      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">Create New Product</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {["name", "brand", "category", "subcategory", "sku", "barcode", "batchNumber", "fssaiNumber", "licenseNumber"].map((field) => (
+            <input
+              key={field}
+              type="text"
+              name={field}
+              placeholder={field.replace(/([A-Z])/g, ' $1')}
+              value={form[field] || ""}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded focus:outline-blue-500"
+            />
+          ))}
+        </div>
 
         <textarea
           name="description"
-          placeholder="Description"
+          placeholder="Product Description"
           value={form.description}
           onChange={handleChange}
-          className="w-full px-4 py-2 border rounded"
+          className="w-full px-4 py-2 border rounded h-24"
         />
 
         <div className="grid grid-cols-3 gap-4">
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={form.price}
-            onChange={handleChange}
-            className="px-4 py-2 border rounded"
-          />
-          <input
-            type="number"
-            name="discount"
-            placeholder="Discount (%)"
-            value={form.discount}
-            onChange={handleChange}
-            className="px-4 py-2 border rounded"
-          />
-          <input
-            type="number"
-            name="stock"
-            placeholder="Stock"
-            value={form.stock}
-            onChange={handleChange}
-            className="px-4 py-2 border rounded"
-          />
+          {["price", "discount", "stock"].map((field) => (
+            <input
+              key={field}
+              type="number"
+              name={field}
+              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+              value={form[field] || ""}
+              onChange={handleChange}
+              className="px-4 py-2 border rounded focus:outline-blue-500"
+            />
+          ))}
         </div>
 
-        <label className="block font-medium">Specifications (Key-Value Pairs)</label>
-        {specifications.map((spec, idx) => (
-          <div key={idx} className="flex gap-2 mb-2">
-            <select
-              value={spec.key}
-              onChange={(e) => {
-                const updated = [...specifications];
-                updated[idx].key = e.target.value;
-                setSpecifications(updated);
-              }}
-              className="w-1/2 px-2 py-1 border rounded"
-            >
-              <option value="">Select Spec</option>
-              <option value="RAM">RAM</option>
-              <option value="Storage">Storage</option>
-              <option value="Battery">Battery</option>
-              <option value="Display">Display</option>
-              <option value="Processor">Processor</option>
-              <option value="Color">Color</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Value"
-              value={spec.value}
-              onChange={(e) => {
-                const updated = [...specifications];
-                updated[idx].value = e.target.value;
-                setSpecifications(updated);
-              }}
-              className="w-1/2 px-2 py-1 border rounded"
-            />
-          </div>
-        ))}
-        <button
-          type="button"
-          className="text-sm text-blue-600"
-          onClick={() => setSpecifications([...specifications, { key: "", value: "" }])}
-        >
-          + Add more specifications
-        </button>
+        <div>
+          <label className="block font-semibold text-gray-700 mb-2">Specifications</label>
+          {specifications.map((spec, idx) => (
+            <div key={idx} className="flex gap-2 mb-2">
+              <select
+                value={spec.key}
+                onChange={(e) => {
+                  const updated = [...specifications];
+                  updated[idx].key = e.target.value;
+                  setSpecifications(updated);
+                }}
+                className="w-1/2 px-2 py-1 border rounded"
+              >
+                <option value="">Select Spec</option>
+                <option value="RAM">RAM</option>
+                <option value="Storage">Storage</option>
+                <option value="Battery">Battery</option>
+                <option value="Display">Display</option>
+                <option value="Processor">Processor</option>
+                <option value="Color">Color</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Value"
+                value={spec.value}
+                onChange={(e) => {
+                  const updated = [...specifications];
+                  updated[idx].value = e.target.value;
+                  setSpecifications(updated);
+                }}
+                className="w-1/2 px-2 py-1 border rounded"
+              />
+            </div>
+          ))}
+          <button type="button" className="flex items-center gap-2 text-sm text-blue-600" onClick={() => setSpecifications([...specifications, { key: "", value: "" }])}>
+            <FaPlusCircle /> Add more specs
+          </button>
+        </div>
 
-        <label className="block font-medium mt-4">Ingredients</label>
-        {ingredients.map((val, idx) => (
-          <div key={idx} className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={val}
-              onChange={(e) => {
-                const updated = [...ingredients];
-                updated[idx] = e.target.value;
-                setIngredients(updated);
-              }}
-              className="w-full px-2 py-1 border rounded"
-            />
-          </div>
-        ))}
-        <button
-          type="button"
-          className="text-sm text-blue-600"
-          onClick={() => setIngredients([...ingredients, ""])}
-        >
-          + Add more ingredients
-        </button>
+        <div>
+          <label className="block font-semibold text-gray-700 mb-2">Ingredients</label>
+          {ingredients.map((val, idx) => (
+            <div key={idx} className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={val}
+                onChange={(e) => {
+                  const updated = [...ingredients];
+                  updated[idx] = e.target.value;
+                  setIngredients(updated);
+                }}
+                className="w-full px-2 py-1 border rounded"
+              />
+            </div>
+          ))}
+          <button type="button" className="flex items-center gap-2 text-sm text-blue-600" onClick={() => setIngredients([...ingredients, ""]) }>
+            <FaPlusCircle /> Add more ingredients
+          </button>
+        </div>
 
-        <input
-          type="checkbox"
-          name="isExpiryProduct"
-          checked={form.isExpiryProduct}
-          onChange={handleChange}
-        /> Expiry Product
+        <div className="space-x-2">
+          <input type="checkbox" name="isExpiryProduct" checked={form.isExpiryProduct} onChange={handleChange} />
+          <label className="text-gray-700 font-medium"> Is this an expiry-based product?</label>
+        </div>
 
         {form.isExpiryProduct && (
           <div className="grid grid-cols-2 gap-4">
@@ -226,54 +199,34 @@ const CreateProduct = () => {
           </div>
         )}
 
-        <textarea
-          name="storageInstructions"
-          placeholder="Storage Instructions"
-          value={form.storageInstructions}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded"
-        />
-        <textarea
-          name="usageInstructions"
-          placeholder="Usage Instructions"
-          value={form.usageInstructions}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded"
-        />
-        <textarea
-          name="allergenWarnings"
-          placeholder="Allergen Warnings"
-          value={form.allergenWarnings}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded"
-        />
-
-        <label className="block font-medium mt-4">Thumbnail</label>
-        <input type="file" onChange={(e) => setThumbnail(e.target.files[0])} className="w-full" />
-
-        <label className="block font-medium">Product Images</label>
-        <input
-          type="file"
-          multiple
-          onChange={(e) => setImages(Array.from(e.target.files))}
-          className="w-full"
-        />
-
-        <div className="flex items-center gap-2 mt-4">
-          <input
-            type="checkbox"
-            name="isPublished"
-            checked={form.isPublished}
+        {["storageInstructions", "usageInstructions", "allergenWarnings"].map((field) => (
+          <textarea
+            key={field}
+            name={field}
+            placeholder={field.replace(/([A-Z])/g, ' $1')}
+            value={form[field]}
             onChange={handleChange}
+            className="w-full px-4 py-2 border rounded h-20"
           />
-          <label>Publish Product</label>
+        ))}
+
+        <div>
+          <label className="block font-semibold text-gray-700 mb-1">Thumbnail Image</label>
+          <input type="file" onChange={(e) => setThumbnail(e.target.files[0])} className="w-full border p-2 rounded" />
         </div>
 
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Submit
+        <div>
+          <label className="block font-semibold text-gray-700 mb-1">Product Images</label>
+          <input type="file" multiple onChange={(e) => setImages(Array.from(e.target.files))} className="w-full border p-2 rounded" />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input type="checkbox" name="isPublished" checked={form.isPublished} onChange={handleChange} />
+          <label className="text-gray-700">Publish Product</label>
+        </div>
+
+        <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700">
+          Submit Product
         </button>
       </form>
     </div>

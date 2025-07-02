@@ -6,6 +6,8 @@ import {
   FaListAlt,
   FaCheckCircle,
 } from "react-icons/fa";
+
+import {PackagePlus} from "lucide-react"
 import { IoAnalytics } from "react-icons/io5";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -128,7 +130,7 @@ const StoreDashboard = ({ children }) => {
               }`}
               onClick={() => setSidebarOpen(false)}
             >
-              <IoAnalytics className="nav-icon" />My Products
+              <Package  className="nav-icon" />My Products
             </Link>
           </li>
           <li className="store-nav-item">
@@ -139,7 +141,7 @@ const StoreDashboard = ({ children }) => {
               }`}
               onClick={() => setSidebarOpen(false)}
             >
-              <IoAnalytics className="nav-icon" /> Create Product
+              <PackagePlus className="nav-icon" /> Create Product
             </Link>
           </li>
         </ul>
