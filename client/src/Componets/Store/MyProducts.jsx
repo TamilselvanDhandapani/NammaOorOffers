@@ -47,13 +47,13 @@ const MyProducts = () => {
                 <p className="text-lg font-bold text-blue-600">
                   ₹{product.finalPrice}
                 </p>
+                <Link
+                  to={`/myproducts/${product._id}`}
+                  className="mt-4 w-full py-2 px-4 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                >
+                  View Product
+                </Link>
               </div>
-              <Link
-                to={`/myproducts/${product._id}`}
-                className="mt-4 w-full py-2 px-4 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-              >
-                View Product
-              </Link>
             </div>
           </div>
         ))}
