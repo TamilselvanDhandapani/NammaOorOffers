@@ -24,6 +24,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/coupon", require("./routes/couponRoutes"));
 app.use("/api/store", require("./routes/storeRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
+app.use("/api/products",require("./routes/productRoutes"))
 
 // ===== Serve uploaded files =====
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

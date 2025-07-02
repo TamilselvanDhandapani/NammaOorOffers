@@ -1,6 +1,21 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
+/* ---------- Address sub-schema ---------- */
+const addressSchema = new mongoose.Schema(
+  {
+    label: { type: String, default: "Home" }, // Home / Office…
+    line1: { type: String, required: true },
+    line2: String,
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    pincode: { type: String, required: true },
+    country: { type: String, default: "India" },
+    isDefault: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+/* ---------- User Schema ---------- */
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -59,7 +74,6 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-
     myReferralCode: {
       type: String,
       unique: true,
@@ -89,9 +103,19 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 100,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    blockedUntil: {
+      type: Date,
+    },
+
+    // 👉 Addresses array (multiple addresses support)
+    addresses: [addressSchema],
 
     // OTP / Verification
-    otp: String,
+    otp: String, 
     otpExpires: Date,
     verificationToken: String,
     verificationTokenExpires: Date,
@@ -123,7 +147,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// ✅ Virtual property to check if user is a store owner
+/* ---------- Virtual ---------- */
 userSchema.virtual("isStoreOwner").get(function () {
   return this.role === "store" && !!this.storeId;
 });

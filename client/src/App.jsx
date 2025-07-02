@@ -49,7 +49,9 @@ import CouponDetail from "./Componets/Store/CouponDetail";
 import RedeemedList from "./Componets/Store/RedeemedList";
 import StoreInformation from "./Componets/Store/StoreInformation";
 import MyStore from "./Componets/Store/MyStore";
+import MyProducts from "./Componets/Store/MyProducts";
 import StoreAnalytics from "./Componets/Store/StoreAnalytics";
+import CreateProduct from "./Componets/Store/CreateProduct";
 
 // User Pages
 import UserCoupons from "./Componets/User/UserCoupons";
@@ -213,6 +215,16 @@ const App = () => {
                 }
               />
               <Route
+                path="/createproduct"
+                element={
+                  <PrivateRoute role="store">
+                    <StoreDashboard>
+                      <CreateProduct />
+                    </StoreDashboard>
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/couponlist"
                 element={
                   <PrivateRoute role="store">
@@ -228,6 +240,16 @@ const App = () => {
                   <PrivateRoute role="store">
                     <StoreDashboard>
                       <MyStore />
+                    </StoreDashboard>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/myproducts"
+                element={
+                  <PrivateRoute role="store">
+                    <StoreDashboard>
+                      <MyProducts />
                     </StoreDashboard>
                   </PrivateRoute>
                 }

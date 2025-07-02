@@ -16,15 +16,16 @@ const {
 } = require("../controllers/couponController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
-const upload = require("../middleware/uploadMiddleware");
+const {upload} = require("../middleware/uploadMiddleware");
 
 // ========================= Store Coupon Management =========================
 
+// Create Coupon
 router.post(
   "/create/:storeId",
   protect,
   authorizeRoles("store"),
-  upload.single("backgroundImage"),
+  upload.single("backgroundImage"), // ✅ works now
   createCoupon
 );
 

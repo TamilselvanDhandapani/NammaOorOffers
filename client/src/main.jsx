@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { CouponProvider } from "./context/CouponContext.jsx";
 import { StoreProvider } from "./context/StoreContext.jsx";
 import { AnalyticsProvider } from "./context/AnalyticsContext.jsx";
+import { ProductProvider } from "./context/ProductContext.js";
 
 // Google OAuth
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -21,7 +22,9 @@ createRoot(root).render(
         <CouponProvider>
           <StoreProvider>
            <AnalyticsProvider>
-             <App />
+            <ProductProvider>
+             <App />  
+            </ProductProvider>
            </AnalyticsProvider>
           </StoreProvider>
         </CouponProvider>

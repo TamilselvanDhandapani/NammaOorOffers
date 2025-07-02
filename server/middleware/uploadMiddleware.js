@@ -1,22 +1,25 @@
+// middleware/upload.js
 const multer = require("multer");
 const path = require("path");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../utils/cloudinary");
 
-// Define allowed image extensions
+// Allowed extensions
 const allowedImageTypes = [".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".svg"];
 
-// Cloudinary storage setup
+// Configure Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder: "uploads", // Cloudinary folder name
-    allowed_formats: ["jpg", "jpeg", "png", "webp", "avif", "gif", "svg"],
-    transformation: [{ quality: "auto" }],
+  params: async (req, file) => {
+    return {
+      folder: "product-images",
+      allowed_formats: ["jpg", "jpeg", "png", "webp", "avif", "gif", "svg"],
+      transformation: [{ quality: "auto" }],
+    };
   },
 });
 
-// File filter for image types
+// File filter
 const imageFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowedImageTypes.includes(ext)) {
@@ -26,13 +29,22 @@ const imageFilter = (req, file, cb) => {
   }
 };
 
-// Multer instance for Cloudinary image upload
+// Multer instance
 const upload = multer({
   storage,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  }
+    fileSize: 5 * 1024 * 1024, // Max 5MB
+  },
 });
 
-module.exports = upload;
+// Export config for single & multiple uploads
+const uploadProductImages = upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "images", maxCount: 5 }, // You can increase if needed
+]);
+
+module.exports = {
+  upload,
+  uploadProductImages,
+};

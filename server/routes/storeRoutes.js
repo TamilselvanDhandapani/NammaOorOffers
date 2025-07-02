@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const upload = require("../middleware/uploadMiddleware");
+const {upload} = require("../middleware/uploadMiddleware");
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 const {
   StoreCredentials,

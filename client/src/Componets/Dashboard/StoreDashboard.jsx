@@ -120,6 +120,28 @@ const StoreDashboard = ({ children }) => {
               <IoAnalytics className="nav-icon" /> Store Analytics
             </Link>
           </li>
+          <li className="store-nav-item">
+            <Link
+              to="/myproducts"
+              className={`store-nav-link ${
+                location.pathname.startsWith("/myproducts") ? "active" : ""
+              }`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <IoAnalytics className="nav-icon" />My Products
+            </Link>
+          </li>
+          <li className="store-nav-item">
+            <Link
+              to="/createproduct"
+              className={`store-nav-link ${
+                location.pathname.startsWith("/createproduct") ? "active" : ""
+              }`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <IoAnalytics className="nav-icon" /> Create Product
+            </Link>
+          </li>
         </ul>
       </div>
 
