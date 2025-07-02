@@ -1,6 +1,6 @@
 // 📁 src/pages/CreateProduct.jsx
 import React, { useState } from "react";
-import useProduct from "../hooks/useProduct";
+import useProduct from "../../hooks/useProduct";
 import { useNavigate } from "react-router-dom";
 
 const CreateProduct = () => {
