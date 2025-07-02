@@ -1,5 +1,6 @@
-import useProduct from "../hooks/useProduct";
+
 import { useEffect } from "react";
+import useProduct from "../../hooks/useProduct";
 
 const MyProducts = () => {
   const { fetchStoreProducts, storeProducts, loading, error } = useProduct();
@@ -22,6 +23,7 @@ const MyProducts = () => {
           <h3 className="text-lg font-semibold mt-2">{product.name}</h3>
           <p className="text-gray-600">{product.category}</p>
           <p className="text-blue-600 font-bold">₹{product.finalPrice}</p>
+     
         </div>
       ))}
     </div>
