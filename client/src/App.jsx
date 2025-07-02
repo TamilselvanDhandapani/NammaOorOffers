@@ -50,12 +50,12 @@ import RedeemedList from "./Componets/Store/RedeemedList";
 import StoreInformation from "./Componets/Store/StoreInformation";
 import MyStore from "./Componets/Store/MyStore";
 import MyProducts from "./Componets/Store/MyProducts";
+import MyProductDetail from "./Componets/Store/MyProductDetail";
 import StoreAnalytics from "./Componets/Store/StoreAnalytics";
 import CreateProduct from "./Componets/Store/CreateProduct";
 
 // User Pages
 import UserCoupons from "./Componets/User/UserCoupons";
-import MyProductDetail from "./Componets/Store/MyProductDetail";
 
 const App = () => {
   return (

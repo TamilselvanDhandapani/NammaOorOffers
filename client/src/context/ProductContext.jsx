@@ -25,7 +25,9 @@ const productReducer = (state, action) => {
       return {
         ...state,
         loading: false,
-        storeProducts: state.storeProducts.filter((p) => p._id !== action.payload),
+        storeProducts: state.storeProducts.filter(
+          (p) => p._id !== action.payload
+        ),
       };
     case "ERROR":
       return { ...state, loading: false, error: action.payload };
@@ -51,17 +53,19 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  // Public: Get product details by ID
+  // ProductContext.js
   const getProductById = async (id) => {
     dispatch({ type: "FETCH_START" });
     try {
       const res = await api.get(`/products/public/${id}`);
       dispatch({ type: "FETCH_DETAIL_SUCCESS", payload: res.data.product });
+      return res.data.product; // ✅ ADD THIS LINE
     } catch (err) {
       dispatch({
         type: "ERROR",
         payload: err.response?.data?.msg || "Failed to fetch product",
       });
+      throw err;
     }
   };
 
