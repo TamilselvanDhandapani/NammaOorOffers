@@ -55,6 +55,7 @@ import CreateProduct from "./Componets/Store/CreateProduct";
 
 // User Pages
 import UserCoupons from "./Componets/User/UserCoupons";
+import MyProductDetail from "./Componets/Store/MyProductDetail";
 
 const App = () => {
   return (
@@ -250,6 +251,16 @@ const App = () => {
                   <PrivateRoute role="store">
                     <StoreDashboard>
                       <MyProducts />
+                    </StoreDashboard>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/myproducts/:id"
+                element={
+                  <PrivateRoute role="store">
+                    <StoreDashboard>
+                      <MyProductDetail />
                     </StoreDashboard>
                   </PrivateRoute>
                 }
