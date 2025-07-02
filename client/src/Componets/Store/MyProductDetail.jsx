@@ -59,48 +59,12 @@ const MyProductDetail = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded mt-8 animate-fadeIn">
-      <div className="flex justify-between items-center mb-4">
-        {editMode ? (
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="text-2xl font-bold border px-2 py-1 rounded w-full"
-          />
-        ) : (
-          <h2 className="text-2xl font-bold">{product.name}</h2>
-        )}
-        <div className="flex gap-4 ml-4">
-          {editMode ? (
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              <FaSave /> Save
-            </button>
-          ) : (
-            <button
-              onClick={() => setEditMode(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-            >
-              <FaEdit /> Edit
-            </button>
-          )}
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            <FaTrash /> Delete
-          </button>
-        </div>
-      </div>
-
       <img
         src={product.thumbnail?.url}
         alt={product.name}
-        className="w-full h-64 object-cover rounded mb-6"
+        className="w-full h-64 object-cover rounded mb-4"
       />
+      <h2 className="text-2xl font-bold text-center mb-4">{product.name}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {["brand", "category", "subcategory", "sku", "barcode", "batchNumber", "fssaiNumber", "licenseNumber"].map((field) => (
@@ -121,45 +85,36 @@ const MyProductDetail = () => {
         ))}
         <div>
           <strong>Stock:</strong>
-          {editMode ? (
-            <input
-              type="number"
-              name="stock"
-              value={formData.stock || 0}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1 mt-1"
-            />
-          ) : (
-            <span className="text-gray-700 ml-1">{product.stock}</span>
-          )}
+          <input
+            type="number"
+            name="stock"
+            value={formData.stock ?? ""}
+            onChange={handleChange}
+            className="w-full border rounded px-2 py-1 mt-1"
+            disabled={!editMode}
+          />
         </div>
         <div>
           <strong>Price:</strong>
-          {editMode ? (
-            <input
-              type="number"
-              name="price"
-              value={formData.price || 0}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1 mt-1"
-            />
-          ) : (
-            <span className="text-gray-700 ml-1">₹{product.price}</span>
-          )}
+          <input
+            type="number"
+            name="price"
+            value={formData.price ?? ""}
+            onChange={handleChange}
+            className="w-full border rounded px-2 py-1 mt-1"
+            disabled={!editMode}
+          />
         </div>
         <div>
           <strong>Discount:</strong>
-          {editMode ? (
-            <input
-              type="number"
-              name="discount"
-              value={formData.discount || 0}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1 mt-1"
-            />
-          ) : (
-            <span className="text-gray-700 ml-1">{product.discount}%</span>
-          )}
+          <input
+            type="number"
+            name="discount"
+            value={formData.discount ?? ""}
+            onChange={handleChange}
+            className="w-full border rounded px-2 py-1 mt-1"
+            disabled={!editMode}
+          />
         </div>
         <p><strong>Final Price:</strong> ₹{product.finalPrice}</p>
         <div>
@@ -250,6 +205,30 @@ const MyProductDetail = () => {
           </div>
         </div>
       )}
+
+      <div className="flex justify-center gap-6 mt-8">
+        {editMode ? (
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            <FaSave /> Save
+          </button>
+        ) : (
+          <button
+            onClick={() => setEditMode(true)}
+            className="flex items-center gap-2 px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+          >
+            <FaEdit /> Edit
+          </button>
+        )}
+        <button
+          onClick={handleDelete}
+          className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          <FaTrash /> Delete
+        </button>
+      </div>
     </div>
   );
 };
