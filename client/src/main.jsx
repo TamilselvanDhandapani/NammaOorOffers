@@ -8,7 +8,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { CouponProvider } from "./context/CouponContext.jsx";
 import { StoreProvider } from "./context/StoreContext.jsx";
 import { AnalyticsProvider } from "./context/AnalyticsContext.jsx";
-import { ProductProvider } from "./context/ProductContext.js";
+import { ProductProvider } from "./context/ProductContext.jsx";
 
 // Google OAuth
 import { GoogleOAuthProvider } from "@react-oauth/google";
