@@ -69,7 +69,7 @@ const CreateProduct = () => {
 
     try {
       await createProduct(formData);
-      navigate("/store/products");
+      navigate("/myproducts");
     } catch (err) {
       alert("Failed to create product");
     }
