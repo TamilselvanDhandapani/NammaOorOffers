@@ -7,7 +7,7 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
-import {PackagePlus} from "lucide-react"
+import {PackagePlus,Package} from "lucide-react"
 import { IoAnalytics } from "react-icons/io5";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faTimes } from "@fortawesome/free-solid-svg-icons";
