@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import useProduct from "../../hooks/useProduct";
 import { FaBoxOpen } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const MyProducts = () => {
   const { fetchStoreProducts, storeProducts, loading, error } = useProduct();
@@ -40,17 +40,20 @@ const MyProducts = () => {
 
             <div className="p-4 flex flex-col justify-between h-full">
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-1">{product.name}</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-1">
+                  {product.name}
+                </h3>
                 <p className="text-sm text-gray-500 mb-1">{product.category}</p>
-                <p className="text-lg font-bold text-blue-600">₹{product.finalPrice}</p>
+                <p className="text-lg font-bold text-blue-600">
+                  ₹{product.finalPrice}
+                </p>
               </div>
-
-              <button
-                onClick={() => navigate(`/myproducts/${product._id}`)}
+              <Link
+                to={`/myproducts/${product._id}`}
                 className="mt-4 w-full py-2 px-4 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition"
               >
                 View Product
-              </button>
+              </Link>
             </div>
           </div>
         ))}
