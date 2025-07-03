@@ -1,5 +1,3 @@
-// ✅ Updated MyProductDetail.jsx with improved UI/UX for white background
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useProduct from "../../hooks/useProduct";
@@ -129,6 +127,7 @@ const MyProductDetail = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
+      {/* Top Toolbar */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -161,10 +160,37 @@ const MyProductDetail = () => {
         </div>
       </div>
 
+      {/* Main Card */}
       <div className="bg-white shadow-lg rounded-2xl p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">
           {product.name}
         </h2>
+
+        {/* Thumbnail */}
+        <div className="relative mb-6">
+          <img
+            src={
+              newThumbPreview ||
+              existingThumb?.url ||
+              "https://via.placeholder.com/400x400?text=No+Image"
+            }
+            alt="Thumbnail"
+            className="w-full h-64 object-cover rounded-xl shadow-sm"
+          />
+          {editMode && (
+            <>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onThumbChange}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                Change
+              </span>
+            </>
+          )}
+        </div>
 
         {/* Specifications Section */}
         <div>
@@ -218,6 +244,47 @@ const MyProductDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Ingredients Section */}
+        {ingredients.filter((ing) => ing.trim()).length > 0 && (
+          <div className="mt-8">
+            <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded mb-2">
+              Ingredients
+            </span>
+            {editMode ? (
+              <>
+                {ingredients.map((ing, idx) => (
+                  <div key={idx} className="flex gap-3 items-center mb-2">
+                    <input
+                      className="flex-1 px-3 py-2 border rounded text-sm"
+                      value={ing}
+                      placeholder="Ingredient"
+                      onChange={(e) => changeIng(idx, e.target.value)}
+                    />
+                    <button
+                      onClick={() => removeIng(idx)}
+                      className="text-red-600 hover:text-red-800 cursor-pointer"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addIng}
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                >
+                  <FaPlus /> Add ingredient
+                </button>
+              </>
+            ) : (
+              <ul className="list-disc list-inside space-y-1 text-gray-700">
+                {ingredients.map((ing, i) => (
+                  <li key={i}>{ing}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
