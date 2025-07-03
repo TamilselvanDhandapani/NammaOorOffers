@@ -60,94 +60,92 @@ const MyProductDetail = () => {
   const gallery = product.images?.length ? product.images : [product.thumbnail];
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="grid md:grid-cols-2 gap-10">
         <div className="border rounded-xl overflow-hidden">
           <img
             src={gallery[activeImg]?.url}
             alt={product.name}
-            className="w-full h-[400px] object-cover"
+            className="w-full h-96 object-cover"
           />
           {gallery.length > 1 && (
-            <div className="flex gap-2 mt-2 overflow-x-auto">
+            <div className="flex justify-center gap-4 mt-4 overflow-x-auto">
               {gallery.map((img, idx) => (
                 <img
                   key={idx}
                   src={img.url}
                   alt={`thumb-${idx}`}
                   onClick={() => setActiveImg(idx)}
-                  className={`w-20 h-20 object-cover rounded cursor-pointer border ${activeImg === idx ? "ring-2 ring-blue-500" : ""}`}
+                  className={`w-20 h-20 object-cover rounded cursor-pointer border ${activeImg === idx ? "ring-2 ring-blue-600" : ""}`}
                 />
               ))}
             </div>
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h1 className="text-3xl font-bold text-gray-800">{product.name}</h1>
-          <div className="flex gap-2 flex-wrap">
-            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs">
+          <div className="flex flex-wrap gap-2">
+            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
               {product.category}
             </span>
             {product.subcategory && (
-              <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">
+              <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm">
                 {product.subcategory}
               </span>
             )}
           </div>
 
-          <div className="p-4 bg-gray-100 rounded-xl shadow">
-            <p className="text-xl font-semibold text-red-600">
+          <div className="bg-gray-50 border rounded-lg p-4 shadow-sm">
+            <p className="text-2xl font-semibold text-red-600">
               ₹{product.finalPrice}
             </p>
             {product.discount > 0 && (
-              <p className="text-sm line-through text-gray-500">
+              <p className="text-sm text-gray-500 line-through">
                 MRP ₹{product.price}
               </p>
             )}
-            <p className="text-sm text-gray-700">Stock: {product.stock}</p>
+            <p className="text-sm text-gray-600 mt-1">Stock: {product.stock}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {[
-              "sku",
-              "barcode",
-              "batchNumber",
-              "fssaiNumber",
-              "licenseNumber",
-            ].map((key) => (
-              product[key] && (
-                <div key={key}>
-                  <span className="font-medium capitalize text-gray-700">{key}</span>
-                  <p className="text-gray-600">{product[key]}</p>
-                </div>
-              )
-            ))}
+          <div className="grid sm:grid-cols-2 gap-4 text-sm">
+            {["sku", "barcode", "batchNumber", "fssaiNumber", "licenseNumber"].map(
+              (key) =>
+                product[key] && (
+                  <div key={key}>
+                    <span className="font-medium text-gray-700 capitalize">
+                      {key}
+                    </span>
+                    <p className="text-gray-600">{product[key]}</p>
+                  </div>
+                )
+            )}
           </div>
+
           <div>
-          <h2 className="text-xl font-semibold mb-2">Description</h2>
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-            {product.description}
-          </p>
-        </div>
+            <h2 className="text-xl font-semibold mb-1">Description</h2>
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+              {product.description}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="mt-10 border-t pt-6 space-y-6">
-        
-
+      <div className="mt-12 border-t pt-8 space-y-8">
         {product.specifications && (
           <div>
             <h2 className="text-xl font-semibold mb-2">Specifications</h2>
-            <ul className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 text-sm text-gray-700">
+            <ul className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
               {Object.entries(product.specifications).map(([k, v]) => (
-                <li key={k}><strong>{k}:</strong> {v}</li>
+                <li key={k}>
+                  <strong>{k}:</strong> {v}
+                </li>
               ))}
             </ul>
           </div>
         )}
 
-        {product.ingredients?.length > 0 && (
+        {product.ingredients && product.ingredients.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold mb-2">Ingredients</h2>
             <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
@@ -161,22 +159,30 @@ const MyProductDetail = () => {
         {product.isExpiryProduct && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
             <div>
-              <strong>Manufacturing Date:</strong> {new Date(product.manufacturingDate).toLocaleDateString()}
+              <strong>Manufacturing Date:</strong> {" "}
+              {new Date(product.manufacturingDate).toLocaleDateString()}
             </div>
             <div>
-              <strong>Expiry Date:</strong> {new Date(product.expiryDate).toLocaleDateString()}
+              <strong>Expiry Date:</strong> {" "}
+              {new Date(product.expiryDate).toLocaleDateString()}
             </div>
             <div>
               <strong>Storage Instructions:</strong>
-              <p className="text-gray-700">{product.storageInstructions || "—"}</p>
+              <p className="text-gray-700">
+                {product.storageInstructions || "—"}
+              </p>
             </div>
             <div>
               <strong>Usage Instructions:</strong>
-              <p className="text-gray-700">{product.usageInstructions || "—"}</p>
+              <p className="text-gray-700">
+                {product.usageInstructions || "—"}
+              </p>
             </div>
             <div>
               <strong>Allergen Warnings:</strong>
-              <p className="text-gray-700">{product.allergenWarnings || "—"}</p>
+              <p className="text-gray-700">
+                {product.allergenWarnings || "—"}
+              </p>
             </div>
           </div>
         )}
@@ -199,7 +205,10 @@ const MyProductDetail = () => {
           </button>
         )}
         <button
-          onClick={() => window.confirm("Are you sure you want to delete this product?") && handleDelete()}
+          onClick={() =>
+            window.confirm("Are you sure you want to delete this product?") &&
+            handleDelete()
+          }
           className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
         >
           <FaTrash /> Delete
