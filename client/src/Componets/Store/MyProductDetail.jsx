@@ -1,4 +1,4 @@
-// ✅ Full MyProductDetail.jsx with editable thumbnail and image gallery
+// ✅ Full MyProductDetail.jsx with editable thumbnail and image gallery & improved layout
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -179,119 +179,125 @@ const MyProductDetail = () => {
       </div>
 
       <div className="bg-white shadow-lg rounded-2xl p-6">
-        {/* Images Section */}
-        <div className="mb-6">
-          <label className="text-sm font-medium text-gray-700 block mb-2">Thumbnail</label>
-          <div className="relative w-48 h-48 border rounded overflow-hidden">
-            <img
-              src={newThumbPreview || existingThumb?.url || "https://via.placeholder.com/200x200?text=No+Image"}
-              alt="Thumbnail"
-              className="w-full h-full object-cover"
-            />
-            {editMode && (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onThumbChange}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-              />
-            )}
-          </div>
-
-          <label className="mt-4 text-sm font-medium text-gray-700 block mb-2">Gallery Images</label>
-          <div className="flex gap-3 flex-wrap">
-            {existingImgs.map((img) => (
+        {/* Top Section with Image and Details */}
+        <div className="flex flex-col md:flex-row gap-6 mb-6">
+          <div className="md:w-1/3 space-y-4">
+            <div className="relative w-full h-48 border rounded overflow-hidden">
               <img
-                key={img.public_id}
-                src={img.url}
-                alt="Gallery"
-                className="w-24 h-24 object-cover rounded"
+                src={newThumbPreview || existingThumb?.url || "https://via.placeholder.com/200x200?text=No+Image"}
+                alt="Thumbnail"
+                className="w-full h-full object-cover"
               />
-            ))}
-            {newImgPreviews.map((src, idx) => (
-              <div key={idx} className="relative group w-24 h-24">
-                <img
-                  src={src}
-                  alt="New"
-                  className="w-full h-full object-cover rounded"
-                />
-                <button
-                  onClick={() => removeNewGallery(idx)}
-                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded"
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            ))}
-            {editMode && (
-              <label className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
-                <FaPlus className="text-gray-400" />
+              {editMode && (
                 <input
                   type="file"
-                  multiple
                   accept="image/*"
-                  onChange={onGalleryChange}
-                  className="hidden"
+                  onChange={onThumbChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
                 />
-              </label>
-            )}
-          </div>
-        </div>
-
-        {/* Main Info */}
-        {renderField("Product Name", "name")}
-        {renderField("Brand", "brand")}
-        {renderField("Category", "category")}
-        {renderField("Subcategory", "subcategory")}
-        {renderField("Price (₹)", "price", "number")}
-        {renderField("Discount (%)", "discount", "number")}
-        {renderField("Stock", "stock", "number")}
-        {renderField("SKU", "sku")}
-        {renderField("Barcode", "barcode")}
-        {renderField("Description", "description")}
-
-        <div className="mt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Specifications</h4>
-          {editMode ? (
-            <>
-              {specs.map((row, i) => (
-                <div key={i} className="flex gap-2 mb-2">
-                  <input
-                    placeholder="Key"
-                    value={row.key}
-                    onChange={(e) => changeSpec(i, "key", e.target.value)}
-                    className="w-1/3 px-2 py-1 border rounded text-sm"
-                  />
-                  <input
-                    placeholder="Value"
-                    value={row.value}
-                    onChange={(e) => changeSpec(i, "value", e.target.value)}
-                    className="w-2/3 px-2 py-1 border rounded text-sm"
+              )}
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {existingImgs.map((img) => (
+                <img
+                  key={img.public_id}
+                  src={img.url}
+                  alt="Gallery"
+                  className="w-20 h-20 object-cover rounded"
+                />
+              ))}
+              {newImgPreviews.map((src, idx) => (
+                <div key={idx} className="relative group w-20 h-20">
+                  <img
+                    src={src}
+                    alt="New"
+                    className="w-full h-full object-cover rounded"
                   />
                   <button
-                    onClick={() => removeSpec(i)}
-                    className="text-red-600 cursor-pointer"
+                    onClick={() => removeNewGallery(idx)}
+                    className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded"
                   >
                     <FaTrash />
                   </button>
                 </div>
               ))}
+              {editMode && (
+                <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
+                  <FaPlus className="text-gray-400" />
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={onGalleryChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
+          <div className="md:w-2/3">
+            {renderField("Product Name", "name")}
+            {renderField("Brand", "brand")}
+            {renderField("Category", "category")}
+            {renderField("Subcategory", "subcategory")}
+            {renderField("Price (₹)", "price", "number")}
+            {renderField("Discount (%)", "discount", "number")}
+            {renderField("Stock", "stock", "number")}
+            {renderField("SKU", "sku")}
+            {renderField("Barcode", "barcode")}
+            {renderField("Description", "description")}
+          </div>
+        </div>
+
+        {/* Split Specs in Grid */}
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Specifications</h4>
+          {editMode ? (
+            <>
+              <div className="grid md:grid-cols-2 gap-4">
+                {specs.map((row, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input
+                      placeholder="Key"
+                      value={row.key}
+                      onChange={(e) => changeSpec(i, "key", e.target.value)}
+                      className="w-1/2 px-2 py-1 border rounded text-sm"
+                    />
+                    <input
+                      placeholder="Value"
+                      value={row.value}
+                      onChange={(e) => changeSpec(i, "value", e.target.value)}
+                      className="w-1/2 px-2 py-1 border rounded text-sm"
+                    />
+                    <button
+                      onClick={() => removeSpec(i)}
+                      className="text-red-600 cursor-pointer"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+              </div>
               <button
                 onClick={addSpec}
-                className="text-sm text-blue-600 flex items-center gap-1 mt-1"
+                className="text-sm text-blue-600 flex items-center gap-1 mt-2"
               >
                 <FaPlus /> Add Specification
               </button>
             </>
           ) : (
-            <ul className="list-disc ml-4 text-sm text-gray-700">
+            <div className="grid md:grid-cols-2 gap-4">
               {Object.entries(product.specifications || {}).map(([k, v]) => (
-                <li key={k}><b>{k}</b>: {v}</li>
+                <div key={k} className="text-sm text-gray-800">
+                  <b>{k}:</b> {v}
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
+        {/* Ingredients */}
         <div className="mt-6">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Ingredients</h4>
           {editMode ? (
