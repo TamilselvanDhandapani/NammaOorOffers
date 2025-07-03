@@ -46,24 +46,38 @@ const createProduct = async (req, res) => {
       url: file.path,
     }));
 
+    const parsedSpecifications =
+      typeof specifications === "string"
+        ? JSON.parse(specifications)
+        : specifications || {};
+
+    const parsedIngredients =
+      typeof ingredients === "string"
+        ? JSON.parse(ingredients)
+        : ingredients || [];
+
+    const numericPrice = Number(price) || 0;
+    const numericDiscount = Number(discount) || 0;
+    const finalPrice = numericPrice - (numericPrice * numericDiscount) / 100;
+
     const product = new Product({
       name,
       brand,
       category,
       subcategory,
       description,
-      specifications: JSON.parse(specifications || "{}"),
-      price,
-      discount,
-      finalPrice: price - (price * discount) / 100,
-      stock,
+      specifications: parsedSpecifications,
+      price: numericPrice,
+      discount: numericDiscount,
+      finalPrice,
+      stock: Number(stock),
       sku,
       barcode,
       isExpiryProduct,
       manufacturingDate,
       expiryDate,
       batchNumber,
-      ingredients: ingredients ? JSON.parse(ingredients) : [],
+      ingredients: parsedIngredients,
       storageInstructions,
       usageInstructions,
       allergenWarnings,
@@ -179,11 +193,14 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    // Parse fields that may come as JSON strings
     const parsedSpecifications =
       typeof specifications === "string" ? JSON.parse(specifications) : specifications;
     const parsedIngredients =
       typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients;
+
+    const numericPrice = price !== undefined ? Number(price) : product.price;
+    const numericDiscount = discount !== undefined ? Number(discount) : product.discount;
+    const finalPrice = numericPrice - (numericPrice * numericDiscount) / 100;
 
     // Update fields
     product.name = name ?? product.name;
@@ -192,9 +209,9 @@ const updateProduct = async (req, res) => {
     product.subcategory = subcategory ?? product.subcategory;
     product.description = description ?? product.description;
     product.specifications = parsedSpecifications ?? product.specifications;
-    product.price = price !== undefined ? Number(price) : product.price;
-    product.discount = discount !== undefined ? Number(discount) : product.discount;
-    product.finalPrice = product.price - (product.price * product.discount) / 100;
+    product.price = numericPrice;
+    product.discount = numericDiscount;
+    product.finalPrice = finalPrice;
     product.stock = stock !== undefined ? Number(stock) : product.stock;
     product.sku = sku ?? product.sku;
     product.barcode = barcode ?? product.barcode;
@@ -215,11 +232,6 @@ const updateProduct = async (req, res) => {
     const imageFiles = req.files?.images || [];
 
     if (thumbnailFile) {
-      // Optional: delete old image from Cloudinary
-      // if (product.thumbnail?.public_id) {
-      //   await cloudinary.uploader.destroy(product.thumbnail.public_id);
-      // }
-
       product.thumbnail = {
         public_id: thumbnailFile.filename,
         url: thumbnailFile.path,
@@ -227,13 +239,6 @@ const updateProduct = async (req, res) => {
     }
 
     if (imageFiles.length > 0) {
-      // Optional: delete old gallery images
-      // for (const img of product.images) {
-      //   if (img.public_id) {
-      //     await cloudinary.uploader.destroy(img.public_id);
-      //   }
-      // }
-
       product.images = imageFiles.map((file) => ({
         public_id: file.filename,
         url: file.path,
@@ -249,8 +254,6 @@ const updateProduct = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   createProduct,
   updateProduct,
@@ -258,5 +261,4 @@ module.exports = {
   getProductById,
   getAllProducts,
   getStoreProducts,
-
 };

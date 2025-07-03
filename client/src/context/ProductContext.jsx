@@ -97,16 +97,16 @@ export const ProductProvider = ({ children }) => {
 
   // Store: Edit product
   const updateProduct = async (id, formData) => {
-    try {
-      const res = await api.put(`/products/${id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      return res.data.product;
-    } catch (err) {
-      throw new Error(err.response?.data?.msg || "Failed to update product");
-    }
-  };
-
+  const isFormData = formData instanceof FormData;
+  try {
+    const res = await api.put(`/products/${id}`, formData, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+    });
+    return res.data.product;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || "Failed to update product");
+  }
+};
   // Store: Delete product
   const deleteProduct = async (id) => {
     try {
