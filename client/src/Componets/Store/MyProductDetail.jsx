@@ -11,10 +11,12 @@ import {
 } from "react-icons/fa";
 
 const MyProductDetail = () => {
+  /* ───── hooks & helpers ───── */
   const { id } = useParams();
   const navigate = useNavigate();
   const { getProductById, updateProduct, deleteProduct } = useProduct();
 
+  /* ───── state ───── */
   const [product, setProduct] = useState(null);
   const [form, setForm] = useState({});
   const [editMode, setEditMode] = useState(false);
@@ -27,6 +29,7 @@ const MyProductDetail = () => {
   const [newImgFiles, setNewImgFiles] = useState([]);
   const [newImgPreviews, setNewImgPreviews] = useState([]);
 
+  /* ───── data fetch ───── */
   useEffect(() => {
     (async () => {
       try {
@@ -47,8 +50,17 @@ const MyProductDetail = () => {
         navigate(-1);
       }
     })();
-  }, [id]);
+  }, [id, getProductById, navigate]);
 
+  /* ───── cleanup previews ───── */
+  useEffect(() => {
+    return () => {
+      newThumbPreview && URL.revokeObjectURL(newThumbPreview);
+      newImgPreviews.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [newThumbPreview, newImgPreviews]);
+
+  /* ───── helpers ───── */
   const handleInput = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -71,16 +83,31 @@ const MyProductDetail = () => {
     setNewImgPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const changeSpec = (idx, field, value) =>
+    setSpecs((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    );
+
+  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
+  const removeSpec = (idx) => setSpecs((prev) => prev.filter((_, i) => i !== idx));
+
+  const changeIng = (idx, value) =>
+    setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
+  const addIng = () => setIngredients((prev) => [...prev, ""]);
+  const removeIng = (idx) =>
+    setIngredients((prev) => prev.filter((_, i) => i !== idx));
+
+  /* ───── save / delete ───── */
   const handleSave = async () => {
     try {
       const isFileChanged = newThumbFile || newImgFiles.length > 0;
-      let payload;
       const specObj = specs.reduce((acc, { key, value }) => {
         if (key.trim()) acc[key] = value;
         return acc;
       }, {});
       const cleanIngs = ingredients.filter((x) => x.trim());
 
+      let payload;
       if (isFileChanged) {
         payload = new FormData();
         Object.entries({
@@ -89,7 +116,7 @@ const MyProductDetail = () => {
           ingredients: JSON.stringify(cleanIngs),
         }).forEach(([k, v]) => payload.append(k, v));
 
-        if (newThumbFile) payload.append("thumbnail", newThumbFile);
+        newThumbFile && payload.append("thumbnail", newThumbFile);
         newImgFiles.forEach((f) => payload.append("images", f));
       } else {
         payload = { ...form, specifications: specObj, ingredients: cleanIngs };
@@ -110,226 +137,261 @@ const MyProductDetail = () => {
     navigate("/dashboard/products");
   };
 
-  const changeSpec = (idx, field, value) =>
-    setSpecs((prev) =>
-      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
-    );
-
-  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
-  const removeSpec = (idx) => setSpecs((prev) => prev.filter((_, i) => i !== idx));
-  const changeIng = (idx, value) =>
-    setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
-  const addIng = () => setIngredients((prev) => [...prev, ""]);
-  const removeIng = (idx) =>
-    setIngredients((prev) => prev.filter((_, i) => i !== idx));
-
+  /* ───── render helpers ───── */
   const renderField = (label, name, type = "text") => (
-    <div className="mb-4">
-      <label className="text-sm text-gray-600 font-medium">{label}</label>
+    <div className="space-y-1">
+      <span className="text-xs font-medium text-gray-500">{label}</span>
       {editMode ? (
         <input
           name={name}
           value={form[name] || ""}
           onChange={handleInput}
           type={type}
-          className="mt-1 w-full px-4 py-2 border rounded-md text-sm"
+          className="w-full px-3 py-2 border rounded-md text-sm focus:outline-blue-500 bg-blue-50/50"
         />
       ) : (
-        <p className="mt-1 text-gray-800 text-sm">{form[name] || "-"}</p>
+        <p className="text-sm text-gray-800 font-medium">{form[name] || "-"}</p>
       )}
     </div>
   );
 
-  if (!product) return <div className="p-6">Loading...</div>;
+  /* ───── skeleton / loading ───── */
+  if (!product) return <div className="p-6 text-center">Loading…</div>;
 
+  /* ───── jsx ───── */
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-8 animate-fadeIn">
+      {/* header */}
+      <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-blue-600 cursor-pointer"
+          className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600"
         >
           <FaChevronLeft /> Back
         </button>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditMode((p) => !p)}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
-          >
-            {editMode ? <FaTimes /> : <FaEdit />} {editMode ? "Cancel" : "Edit"}
-          </button>
-          {editMode ? (
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
-            >
-              <FaSave /> Save
-            </button>
-          ) : (
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md text-white bg-red-600 hover:bg-red-700 cursor-pointer"
-            >
-              <FaTrash /> Delete
-            </button>
-          )}
-        </div>
+
+        {/* status badge */}
+        <span
+          className={`text-xs px-2 py-1 rounded-full font-medium ${product.isPublished ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}
+        >
+          {product.isPublished ? "Published" : "Unpublished"}
+        </span>
       </div>
 
-      <div className="bg-white shadow-lg rounded-2xl p-6">
-        {/* Top Section with Image and Details */}
-        <div className="flex flex-col md:flex-row gap-6 mb-6">
-          <div className="md:w-1/3 space-y-4">
-            <div className="relative w-full h-48 border rounded overflow-hidden">
-              <img
-                src={newThumbPreview || existingThumb?.url || "https://via.placeholder.com/200x200?text=No+Image"}
-                alt="Thumbnail"
-                className="w-full h-full object-cover"
+      {/* main grid */}
+      <div className="grid md:grid-cols-3 gap-8 bg-white shadow-lg rounded-2xl p-6">
+        {/* left column – images */}
+        <div className="space-y-4">
+          {/* thumbnail */}
+          <div className="relative w-full pb-[100%] border rounded overflow-hidden">
+            <img
+              src={newThumbPreview || existingThumb?.url || "https://via.placeholder.com/400x400?text=No+Image"}
+              alt="Thumbnail"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            {editMode && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onThumbChange}
+                className="absolute inset-0 opacity-0 cursor-pointer"
               />
-              {editMode && (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={onThumbChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-              )}
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {existingImgs.map((img) => (
-                <img
-                  key={img.public_id}
-                  src={img.url}
-                  alt="Gallery"
-                  className="w-20 h-20 object-cover rounded"
-                />
-              ))}
-              {newImgPreviews.map((src, idx) => (
-                <div key={idx} className="relative group w-20 h-20">
-                  <img
-                    src={src}
-                    alt="New"
-                    className="w-full h-full object-cover rounded"
-                  />
-                  <button
-                    onClick={() => removeNewGallery(idx)}
-                    className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              ))}
-              {editMode && (
-                <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
-                  <FaPlus className="text-gray-400" />
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={onGalleryChange}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
+            )}
           </div>
 
-          <div className="md:w-2/3 grid md:grid-cols-2 gap-6">
-            {renderField("Product Name", "name")}
-            {renderField("Brand", "brand")}
-            {renderField("Category", "category")}
-            {renderField("Subcategory", "subcategory")}
-            {renderField("Price (₹)", "price", "number")}
-            {renderField("Discount (%)", "discount", "number")}
-            {renderField("Stock", "stock", "number")}
-            {renderField("SKU", "sku")}
-            {renderField("Barcode", "barcode")}
-            {renderField("Description", "description")}
+          {/* gallery */}
+          <div className="flex gap-2 flex-wrap">
+            {existingImgs.map((img) => (
+              <img
+                key={img.public_id}
+                src={img.url}
+                alt="Gallery"
+                className="w-20 h-20 object-cover rounded"
+              />
+            ))}
+            {newImgPreviews.map((src, idx) => (
+              <div key={idx} className="relative group w-20 h-20">
+                <img src={src} alt="New" className="w-full h-full object-cover rounded" />
+                <button
+                  type="button"
+                  onClick={() => removeNewGallery(idx)}
+                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+            {editMode && (
+              <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
+                <FaPlus className="text-gray-400" />
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={onGalleryChange}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
         </div>
 
-        {/* Split Specs in Grid */}
-        <div className="mt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Specifications</h4>
-          {editMode ? (
-            <>
+        {/* right column – details */}
+        <div className="md:col-span-2 space-y-8">
+          {/* basic details */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">Basic Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {renderField("Product Name", "name")}
+              {renderField("Brand", "brand")}
+              {renderField("Category", "category")}
+              {renderField("Subcategory", "subcategory")}
+            </div>
+          </section>
+
+          {/* price & stock */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">Price & Stock</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {renderField("Price (₹)", "price", "number")}
+              {renderField("Discount (%)", "discount", "number")}
+              {renderField("Stock", "stock", "number")}
+            </div>
+          </section>
+
+          {/* description */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">Description</h3>
+            {editMode ? (
+              <textarea
+                name="description"
+                value={form.description || ""}
+                onChange={handleInput}
+                className="w-full px-3 py-2 border rounded-md text-sm h-24 bg-blue-50/50"
+              />
+            ) : (
+              <p className="text-sm text-gray-800 whitespace-pre-line">{form.description || "-"}</p>
+            )}
+          </section>
+
+          {/* specifications */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">Specifications</h3>
+            {editMode ? (
+              <>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {specs.map((row, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input
+                        placeholder="Key"
+                        value={row.key}
+                        onChange={(e) => changeSpec(i, "key", e.target.value)}
+                        className="w-1/2 px-2 py-1 border rounded text-sm"
+                      />
+                      <input
+                        placeholder="Value"
+                        value={row.value}
+                        onChange={(e) => changeSpec(i, "value", e.target.value)}
+                        className="w-1/2 px-2 py-1 border rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSpec(i)}
+                        className="text-red-600"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addSpec}
+                  className="mt-2 text-sm text-blue-600 flex items-center gap-1"
+                >
+                  <FaPlus /> Add Specification
+                </button>
+              </>
+            ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                {specs.map((row, i) => (
-                  <div key={i} className="flex gap-2">
+                {Object.entries(product.specifications || {}).map(([k, v]) => (
+                  <div key={k} className="text-sm text-gray-800">
+                    <b>{k}:</b> {v}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* ingredients */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">Ingredients</h3>
+            {editMode ? (
+              <>
+                {ingredients.map((ing, i) => (
+                  <div key={i} className="flex gap-2 mb-2 items-center">
                     <input
-                      placeholder="Key"
-                      value={row.key}
-                      onChange={(e) => changeSpec(i, "key", e.target.value)}
-                      className="w-1/2 px-2 py-1 border rounded text-sm"
+                      value={ing}
+                      onChange={(e) => changeIng(i, e.target.value)}
+                      className="w-full px-2 py-1 border rounded text-sm"
                     />
-                    <input
-                      placeholder="Value"
-                      value={row.value}
-                      onChange={(e) => changeSpec(i, "value", e.target.value)}
-                      className="w-1/2 px-2 py-1 border rounded text-sm"
-                    />
-                    <button
-                      onClick={() => removeSpec(i)}
-                      className="text-red-600 cursor-pointer"
-                    >
+                    <button type="button" onClick={() => removeIng(i)} className="text-red-600">
                       <FaTrash />
                     </button>
                   </div>
                 ))}
-              </div>
-              <button
-                onClick={addSpec}
-                className="text-sm text-blue-600 flex items-center gap-1 mt-2"
-              >
-                <FaPlus /> Add Specification
-              </button>
-            </>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {Object.entries(product.specifications || {}).map(([k, v]) => (
-                <div key={k} className="text-sm text-gray-800">
-                  <b>{k}:</b> {v}
-                </div>
-              ))}
-            </div>
-          )}
+                <button
+                  type="button"
+                  onClick={addIng}
+                  className="mt-1 text-sm text-blue-600 flex items-center gap-1"
+                >
+                  <FaPlus /> Add Ingredient
+                </button>
+              </>
+            ) : (
+              <ul className="list-disc ml-4 text-sm text-gray-700 space-y-1">
+                {ingredients.map((ing, i) => (
+                  <li key={i}>{ing}</li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
+      </div>
 
-        {/* Ingredients */}
-        <div className="mt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Ingredients</h4>
-          {editMode ? (
-            <>
-              {ingredients.map((ing, i) => (
-                <div key={i} className="flex gap-2 mb-2">
-                  <input
-                    value={ing}
-                    onChange={(e) => changeIng(i, e.target.value)}
-                    className="w-full px-2 py-1 border rounded text-sm"
-                  />
-                  <button
-                    onClick={() => removeIng(i)}
-                    className="text-red-600 cursor-pointer"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={addIng}
-                className="text-sm text-blue-600 flex items-center gap-1 mt-1"
-              >
-                <FaPlus /> Add Ingredient
-              </button>
-            </>
-          ) : (
-            <ul className="list-disc ml-4 text-sm text-gray-700">
-              {ingredients.map((ing, i) => (
-                <li key={i}>{ing}</li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {/* sticky actions */}
+      <div className="fixed bottom-4 right-4 flex gap-3 z-50">
+        {editMode ? (
+          <>
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-1 px-4 py-2 rounded-md text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg"
+            >
+              <FaSave /> Save
+            </button>
+            <button
+              onClick={() => setEditMode(false)}
+              className="flex items-center gap-1 px-4 py-2 rounded-md text-white bg-gray-500 hover:bg-gray-600 shadow-lg"
+            >
+              <FaTimes /> Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setEditMode(true)}
+              className="flex items-center gap-1 px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-lg"
+            >
+              <FaEdit /> Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-1 px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 shadow-lg"
+            >
+              <FaTrash /> Delete
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
