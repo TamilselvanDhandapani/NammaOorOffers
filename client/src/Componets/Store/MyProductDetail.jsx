@@ -14,7 +14,6 @@ const MyProductDetail = () => {
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
   const [activeImg, setActiveImg] = useState(0);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -61,66 +60,52 @@ const MyProductDetail = () => {
   const gallery = product.images?.length ? product.images : [product.thumbnail];
 
   return (
-    <section className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-10 animate-fadeIn">
-      <div className="grid md:grid-cols-2 gap-8">
-        <div>
-          <div className="w-full aspect-square rounded-xl overflow-hidden border">
-            <img
-              src={gallery[activeImg]?.url}
-              alt={product.name}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            />
-          </div>
+    <section className="max-w-7xl mx-auto px-6 py-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="border rounded-xl overflow-hidden">
+          <img
+            src={gallery[activeImg]?.url}
+            alt={product.name}
+            className="w-full h-[400px] object-cover"
+          />
           {gallery.length > 1 && (
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+            <div className="flex gap-2 mt-2 overflow-x-auto">
               {gallery.map((img, idx) => (
-                <button
+                <img
                   key={idx}
+                  src={img.url}
+                  alt={`thumb-${idx}`}
                   onClick={() => setActiveImg(idx)}
-                  className={`shrink-0 w-20 h-20 rounded border ${
-                    activeImg === idx ? "ring-2 ring-blue-600" : ""
-                  }`}
-                >
-                  <img
-                    src={img.url}
-                    alt={`thumb-${idx}`}
-                    className="w-full h-full object-cover rounded"
-                  />
-                </button>
+                  className={`w-20 h-20 object-cover rounded cursor-pointer border ${activeImg === idx ? "ring-2 ring-blue-500" : ""}`}
+                />
               ))}
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <span className="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-600">
-                {product.category}
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold text-gray-800">{product.name}</h1>
+          <div className="flex gap-2 flex-wrap">
+            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs">
+              {product.category}
+            </span>
+            {product.subcategory && (
+              <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">
+                {product.subcategory}
               </span>
-              {product.subcategory && (
-                <span className="px-3 py-1 rounded-full text-xs bg-emerald-100 text-emerald-600">
-                  {product.subcategory}
-                </span>
-              )}
-            </div>
+            )}
           </div>
 
-          <div className="rounded-xl border p-4 bg-gray-50">
-            <div className="text-2xl font-bold text-red-600">
+          <div className="p-4 bg-gray-100 rounded-xl shadow">
+            <p className="text-xl font-semibold text-red-600">
               ₹{product.finalPrice}
-            </div>
+            </p>
             {product.discount > 0 && (
-              <div className="text-sm text-gray-500 line-through">
+              <p className="text-sm line-through text-gray-500">
                 MRP ₹{product.price}
-              </div>
+              </p>
             )}
-            {product.stock <= 10 && (
-              <span className="text-xs text-orange-600">
-                Hurry! Only {product.stock} left.
-              </span>
-            )}
+            <p className="text-sm text-gray-700">Stock: {product.stock}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -130,81 +115,73 @@ const MyProductDetail = () => {
               "batchNumber",
               "fssaiNumber",
               "licenseNumber",
-            ].map((k) =>
-              product[k] ? (
-                <div key={k}>
-                  <span className="font-medium capitalize">{k}</span>
-                  <div className="text-gray-700">{product[k]}</div>
+            ].map((key) => (
+              product[key] && (
+                <div key={key}>
+                  <span className="font-medium capitalize text-gray-700">{key}</span>
+                  <p className="text-gray-600">{product[key]}</p>
                 </div>
-              ) : null
-            )}
+              )
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="mt-10">
-        <h2 className="text-xl font-semibold mb-2">Description</h2>
-        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-          {product.description}
-        </p>
+      <div className="mt-10 border-t pt-6 space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Description</h2>
+          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+            {product.description}
+          </p>
+        </div>
+
+        {product.specifications && (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Specifications</h2>
+            <ul className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 text-sm text-gray-700">
+              {Object.entries(product.specifications).map(([k, v]) => (
+                <li key={k}><strong>{k}:</strong> {v}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {product.ingredients?.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Ingredients</h2>
+            <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+              {product.ingredients.map((ing, i) => (
+                <li key={i}>{ing}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {product.isExpiryProduct && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+            <div>
+              <strong>Manufacturing Date:</strong> {new Date(product.manufacturingDate).toLocaleDateString()}
+            </div>
+            <div>
+              <strong>Expiry Date:</strong> {new Date(product.expiryDate).toLocaleDateString()}
+            </div>
+            <div>
+              <strong>Storage Instructions:</strong>
+              <p className="text-gray-700">{product.storageInstructions || "—"}</p>
+            </div>
+            <div>
+              <strong>Usage Instructions:</strong>
+              <p className="text-gray-700">{product.usageInstructions || "—"}</p>
+            </div>
+            <div>
+              <strong>Allergen Warnings:</strong>
+              <p className="text-gray-700">{product.allergenWarnings || "—"}</p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {product.specifications && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Specifications</h2>
-          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-            {Object.entries(product.specifications).map(([k, v]) => (
-              <li key={k}>
-                <strong>{k}:</strong> {v}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {product.ingredients?.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Ingredients</h2>
-          <ul className="list-disc list-inside text-sm text-gray-700">
-            {product.ingredients.map((ing, idx) => (
-              <li key={idx}>{ing}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {product.isExpiryProduct && (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <strong>Manufacturing Date:</strong>{" "}
-            {new Date(product.manufacturingDate).toLocaleDateString()}
-          </div>
-          <div>
-            <strong>Expiry Date:</strong> {" "}
-            {new Date(product.expiryDate).toLocaleDateString()}
-          </div>
-          <div>
-            <strong>Storage Instructions:</strong>
-            <div className="text-gray-700">
-              {product.storageInstructions || "—"}
-            </div>
-          </div>
-          <div>
-            <strong>Usage Instructions:</strong>
-            <div className="text-gray-700">
-              {product.usageInstructions || "—"}
-            </div>
-          </div>
-          <div>
-            <strong>Allergen Warnings:</strong>
-            <div className="text-gray-700">
-              {product.allergenWarnings || "—"}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-center gap-4 mt-10">
+      <div className="flex justify-center gap-4 mt-12">
         {editMode ? (
           <button
             onClick={handleSave}
@@ -221,10 +198,7 @@ const MyProductDetail = () => {
           </button>
         )}
         <button
-          onClick={() =>
-            window.confirm("Are you sure you want to delete this product?") &&
-            handleDelete()
-          }
+          onClick={() => window.confirm("Are you sure you want to delete this product?") && handleDelete()}
           className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
         >
           <FaTrash /> Delete
