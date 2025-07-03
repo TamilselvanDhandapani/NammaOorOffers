@@ -1,5 +1,3 @@
-// ✅ Full MyProductDetail.jsx with editable thumbnail and image gallery & improved layout
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useProduct from "../../hooks/useProduct";
@@ -236,7 +234,7 @@ const MyProductDetail = () => {
             </div>
           </div>
 
-          <div className="md:w-2/3">
+          <div className="md:w-2/3 grid md:grid-cols-2 gap-6">
             {renderField("Product Name", "name")}
             {renderField("Brand", "brand")}
             {renderField("Category", "category")}
