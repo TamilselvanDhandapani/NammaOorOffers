@@ -1,3 +1,5 @@
+// ✅ Full MyProductDetail.jsx with improved UI, color contrast, and all product fields
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useProduct from "../../hooks/useProduct";
@@ -52,6 +54,23 @@ const MyProductDetail = () => {
   const handleInput = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
+  const renderField = (label, name, type = "text") => (
+    <div className="mb-4">
+      <label className="text-sm text-gray-600 font-medium">{label}</label>
+      {editMode ? (
+        <input
+          name={name}
+          value={form[name] || ""}
+          onChange={handleInput}
+          type={type}
+          className="mt-1 w-full px-4 py-2 border rounded-md text-sm"
+        />
+      ) : (
+        <p className="mt-1 text-gray-800 text-sm">{form[name] || "-"}</p>
+      )}
+    </div>
+  );
+
   const changeSpec = (idx, field, value) =>
     setSpecs((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
@@ -88,13 +107,11 @@ const MyProductDetail = () => {
     try {
       const isFileChanged = newThumbFile || newImgFiles.length > 0;
       let payload;
-
       const specObj = specs.reduce((acc, { key, value }) => {
         if (key.trim()) acc[key] = value;
         return acc;
       }, {});
       const cleanIngs = ingredients.filter((x) => x.trim());
-
       if (isFileChanged) {
         payload = new FormData();
         Object.entries({
@@ -107,7 +124,6 @@ const MyProductDetail = () => {
       } else {
         payload = { ...form, specifications: specObj, ingredients: cleanIngs };
       }
-
       await updateProduct(id, payload);
       alert("Saved!");
       setEditMode(false);
@@ -127,7 +143,6 @@ const MyProductDetail = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Top Toolbar */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -160,131 +175,98 @@ const MyProductDetail = () => {
         </div>
       </div>
 
-      {/* Main Card */}
       <div className="bg-white shadow-lg rounded-2xl p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">
           {product.name}
         </h2>
 
-        {/* Thumbnail */}
-        <div className="relative mb-6">
-          <img
-            src={
-              newThumbPreview ||
-              existingThumb?.url ||
-              "https://via.placeholder.com/400x400?text=No+Image"
-            }
-            alt="Thumbnail"
-            className="w-full h-64 object-cover rounded-xl shadow-sm"
-          />
-          {editMode && (
-            <>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onThumbChange}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-              />
-              <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                Change
-              </span>
-            </>
-          )}
-        </div>
+        {renderField("Product Name", "name")}
+        {renderField("Brand", "brand")}
+        {renderField("Category", "category")}
+        {renderField("Subcategory", "subcategory")}
+        {renderField("Price (₹)", "price", "number")}
+        {renderField("Discount (%)", "discount", "number")}
+        {renderField("Stock", "stock", "number")}
+        {renderField("SKU", "sku")}
+        {renderField("Barcode", "barcode")}
+        {renderField("Description", "description")}
 
-        {/* Specifications Section */}
-        <div>
-          <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded mb-2">
-            Specifications
-          </span>
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Specifications</h4>
           {editMode ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {specs.map((row, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <input
-                      className="flex-1 px-3 py-2 border rounded text-sm"
-                      placeholder="Key"
-                      value={row.key}
-                      onChange={(e) => changeSpec(idx, "key", e.target.value)}
-                    />
-                    <input
-                      className="flex-1 px-3 py-2 border rounded text-sm"
-                      placeholder="Value"
-                      value={row.value}
-                      onChange={(e) => changeSpec(idx, "value", e.target.value)}
-                    />
-                    <button
-                      onClick={() => removeSpec(idx)}
-                      className="text-red-600 hover:text-red-800 cursor-pointer"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              {specs.map((row, i) => (
+                <div key={i} className="flex gap-2 mb-2">
+                  <input
+                    placeholder="Key"
+                    value={row.key}
+                    onChange={(e) => changeSpec(i, "key", e.target.value)}
+                    className="w-1/3 px-2 py-1 border rounded text-sm"
+                  />
+                  <input
+                    placeholder="Value"
+                    value={row.value}
+                    onChange={(e) => changeSpec(i, "value", e.target.value)}
+                    className="w-2/3 px-2 py-1 border rounded text-sm"
+                  />
+                  <button
+                    onClick={() => removeSpec(i)}
+                    className="text-red-600 cursor-pointer"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              ))}
               <button
                 onClick={addSpec}
-                className="mt-2 text-blue-600 text-sm flex items-center gap-1 hover:text-blue-800 cursor-pointer"
+                className="text-sm text-blue-600 flex items-center gap-1 mt-1"
               >
-                <FaPlus /> Add spec
+                <FaPlus /> Add Specification
               </button>
             </>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <ul className="list-disc ml-4 text-sm text-gray-700">
               {Object.entries(product.specifications || {}).map(([k, v]) => (
-                <div
-                  key={k}
-                  className="bg-gray-50 rounded p-3 shadow-sm border border-gray-200"
-                >
-                  <div className="text-gray-600 font-medium">{k}</div>
-                  <div className="text-gray-800">{v}</div>
-                </div>
+                <li key={k}><b>{k}</b>: {v}</li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 
-        {/* Ingredients Section */}
-        {ingredients.filter((ing) => ing.trim()).length > 0 && (
-          <div className="mt-8">
-            <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded mb-2">
-              Ingredients
-            </span>
-            {editMode ? (
-              <>
-                {ingredients.map((ing, idx) => (
-                  <div key={idx} className="flex gap-3 items-center mb-2">
-                    <input
-                      className="flex-1 px-3 py-2 border rounded text-sm"
-                      value={ing}
-                      placeholder="Ingredient"
-                      onChange={(e) => changeIng(idx, e.target.value)}
-                    />
-                    <button
-                      onClick={() => removeIng(idx)}
-                      className="text-red-600 hover:text-red-800 cursor-pointer"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  onClick={addIng}
-                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
-                >
-                  <FaPlus /> Add ingredient
-                </button>
-              </>
-            ) : (
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                {ingredients.map((ing, i) => (
-                  <li key={i}>{ing}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Ingredients</h4>
+          {editMode ? (
+            <>
+              {ingredients.map((ing, i) => (
+                <div key={i} className="flex gap-2 mb-2">
+                  <input
+                    value={ing}
+                    onChange={(e) => changeIng(i, e.target.value)}
+                    className="w-full px-2 py-1 border rounded text-sm"
+                  />
+                  <button
+                    onClick={() => removeIng(i)}
+                    className="text-red-600 cursor-pointer"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={addIng}
+                className="text-sm text-blue-600 flex items-center gap-1 mt-1"
+              >
+                <FaPlus /> Add Ingredient
+              </button>
+            </>
+          ) : (
+            <ul className="list-disc ml-4 text-sm text-gray-700">
+              {ingredients.map((ing, i) => (
+                <li key={i}>{ing}</li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
