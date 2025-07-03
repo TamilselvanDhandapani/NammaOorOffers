@@ -124,16 +124,17 @@ const MyProductDetail = () => {
               )
             ))}
           </div>
-        </div>
-      </div>
-
-      <div className="mt-10 border-t pt-6 space-y-6">
-        <div>
+          <div>
           <h2 className="text-xl font-semibold mb-2">Description</h2>
           <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
             {product.description}
           </p>
         </div>
+        </div>
+      </div>
+
+      <div className="mt-10 border-t pt-6 space-y-6">
+        
 
         {product.specifications && (
           <div>
