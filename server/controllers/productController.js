@@ -179,29 +179,35 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
+    // Parse fields that may come as JSON strings
+    const parsedSpecifications =
+      typeof specifications === "string" ? JSON.parse(specifications) : specifications;
+    const parsedIngredients =
+      typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients;
+
     // Update fields
-    product.name = name || product.name;
-    product.brand = brand || product.brand;
-    product.category = category || product.category;
-    product.subcategory = subcategory || product.subcategory;
-    product.description = description || product.description;
-    product.specifications = specifications ? JSON.parse(specifications) : product.specifications;
-    product.price = price || product.price;
-    product.discount = discount ?? product.discount;
+    product.name = name ?? product.name;
+    product.brand = brand ?? product.brand;
+    product.category = category ?? product.category;
+    product.subcategory = subcategory ?? product.subcategory;
+    product.description = description ?? product.description;
+    product.specifications = parsedSpecifications ?? product.specifications;
+    product.price = price !== undefined ? Number(price) : product.price;
+    product.discount = discount !== undefined ? Number(discount) : product.discount;
     product.finalPrice = product.price - (product.price * product.discount) / 100;
-    product.stock = stock ?? product.stock;
-    product.sku = sku || product.sku;
-    product.barcode = barcode || product.barcode;
+    product.stock = stock !== undefined ? Number(stock) : product.stock;
+    product.sku = sku ?? product.sku;
+    product.barcode = barcode ?? product.barcode;
     product.isExpiryProduct = isExpiryProduct ?? product.isExpiryProduct;
-    product.manufacturingDate = manufacturingDate || product.manufacturingDate;
-    product.expiryDate = expiryDate || product.expiryDate;
-    product.batchNumber = batchNumber || product.batchNumber;
-    product.ingredients = ingredients ? JSON.parse(ingredients) : product.ingredients;
-    product.storageInstructions = storageInstructions || product.storageInstructions;
-    product.usageInstructions = usageInstructions || product.usageInstructions;
-    product.allergenWarnings = allergenWarnings || product.allergenWarnings;
-    product.fssaiNumber = fssaiNumber || product.fssaiNumber;
-    product.licenseNumber = licenseNumber || product.licenseNumber;
+    product.manufacturingDate = manufacturingDate ?? product.manufacturingDate;
+    product.expiryDate = expiryDate ?? product.expiryDate;
+    product.batchNumber = batchNumber ?? product.batchNumber;
+    product.ingredients = parsedIngredients ?? product.ingredients;
+    product.storageInstructions = storageInstructions ?? product.storageInstructions;
+    product.usageInstructions = usageInstructions ?? product.usageInstructions;
+    product.allergenWarnings = allergenWarnings ?? product.allergenWarnings;
+    product.fssaiNumber = fssaiNumber ?? product.fssaiNumber;
+    product.licenseNumber = licenseNumber ?? product.licenseNumber;
     product.isPublished = isPublished ?? product.isPublished;
 
     // Handle updated images
@@ -209,6 +215,11 @@ const updateProduct = async (req, res) => {
     const imageFiles = req.files?.images || [];
 
     if (thumbnailFile) {
+      // Optional: delete old image from Cloudinary
+      // if (product.thumbnail?.public_id) {
+      //   await cloudinary.uploader.destroy(product.thumbnail.public_id);
+      // }
+
       product.thumbnail = {
         public_id: thumbnailFile.filename,
         url: thumbnailFile.path,
@@ -216,6 +227,13 @@ const updateProduct = async (req, res) => {
     }
 
     if (imageFiles.length > 0) {
+      // Optional: delete old gallery images
+      // for (const img of product.images) {
+      //   if (img.public_id) {
+      //     await cloudinary.uploader.destroy(img.public_id);
+      //   }
+      // }
+
       product.images = imageFiles.map((file) => ({
         public_id: file.filename,
         url: file.path,
@@ -226,11 +244,10 @@ const updateProduct = async (req, res) => {
 
     res.json({ success: true, product });
   } catch (err) {
-    console.error("Update product error:", err);
+    console.error("Update product error:", err.message);
     res.status(500).json({ success: false, message: "Failed to update product" });
   }
 };
-
 
 
 

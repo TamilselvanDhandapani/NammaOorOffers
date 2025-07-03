@@ -1,283 +1,471 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useProduct from "../../hooks/useProduct";
-import { FaTrash, FaEdit, FaSave } from "react-icons/fa";
+import {
+  FaTrash,
+  FaEdit,
+  FaSave,
+  FaPlus,
+  FaTimes,
+  FaChevronLeft,
+} from "react-icons/fa";
 
 const MyProductDetail = () => {
-  const { id } = useParams();
+ const { id } = useParams();
   const navigate = useNavigate();
-  const { getProductById, updateProduct, deleteProduct, loading } = useProduct();
 
+  const { getProductById, updateProduct, deleteProduct, loading } =
+    useProduct();
+
+  /** raw product from API (read-only copy) */
   const [product, setProduct] = useState(null);
-  const [error, setError] = useState("");
-  const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({});
-  const [activeImg, setActiveImg] = useState(0);
 
-  useEffect(() => {
+  /** editable form state (will mutate in edit mode) */
+  const [form, setForm] = useState({});
+  const [editMode, setEditMode] = useState(false);
+
+  /** specs & ingredients edited via dedicated helpers  */
+  const [specs, setSpecs] = useState([{ key: "", value: "" }]);
+  const [ingredients, setIngredients] = useState([""]);
+ // existing assets from DB
+  const [existingThumb, setExistingThumb] = useState(null);
+  const [existingImgs, setExistingImgs] = useState([]);
+  // new uploads
+  const [newThumbFile, setNewThumbFile] = useState(null);
+  const [newThumbPreview, setNewThumbPreview] = useState("");
+  const [newImgFiles, setNewImgFiles] = useState([]);
+  const [newImgPreviews, setNewImgPreviews] = useState([]);
+
+useEffect(() => {
     (async () => {
       try {
         const res = await getProductById(id);
         setProduct(res);
         setForm(res);
+
+        // specs → array of pairs for easy editing
+        setSpecs(
+          Object.entries(res.specifications || {}).map(([key, value]) => ({
+            key,
+            value,
+          }))
+        );
+        setIngredients(res.ingredients?.length ? res.ingredients : [""]);
+
+        setExistingThumb(res.thumbnail);
+        setExistingImgs(res.images || []);
       } catch {
-        setError("Failed to load product");
+        alert("Failed to load product");
+        navigate(-1);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+ const handleInput = (e) =>
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+ const changeSpec = (idx, field, value) =>
+    setSpecs((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    );
+
+  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
+
+  const removeSpec = (idx) =>
+    setSpecs((prev) => prev.filter((_, i) => i !== idx));
+
+ const changeIng = (idx, value) =>
+    setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
+
+  const addIng = () => setIngredients((prev) => [...prev, ""]);
+
+  const removeIng = (idx) =>
+    setIngredients((prev) => prev.filter((_, i) => i !== idx));
+
+  const onThumbChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewThumbFile(file);
+    setNewThumbPreview(URL.createObjectURL(file));
+  };
+
+  const onGalleryChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setNewImgFiles((p) => [...p, ...files]);
+    setNewImgPreviews((p) => [...p, ...files.map((f) => URL.createObjectURL(f))]);
+  };
+
+  const removeNewGallery = (idx) => {
+    setNewImgFiles((prev) => prev.filter((_, i) => i !== idx));
+    setNewImgPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleSave = async () => {
     try {
-      const payload = { ...form };
-      payload.specifications = JSON.stringify(payload.specifications || {});
-      payload.ingredients = JSON.stringify(payload.ingredients || []);
-      await updateProduct(id, payload);
-      setProduct({ ...product, ...form });
+      /* ----- decide JSON vs multipart -------------------------------- */
+      const isFileChanged =
+        newThumbFile || newImgFiles.length > 0 /* bool check */;
+
+      /* ---------- build payload -------------------------------------- */
+      let payload;
+      if (isFileChanged) {
+        // multipart
+        payload = new FormData();
+        Object.entries({
+          ...form,
+          specifications: JSON.stringify(
+            specs.reduce((acc, { key, value }) => {
+              if (key.trim()) acc[key] = value;
+              return acc;
+            }, {})
+          ),
+          ingredients: JSON.stringify(
+            ingredients.filter((ing) => ing.trim())
+          ),
+        }).forEach(([k, v]) => payload.append(k, v));
+
+        if (newThumbFile) payload.append("thumbnail", newThumbFile);
+        newImgFiles.forEach((file) => payload.append("images", file));
+      } else {
+        // plain JSON
+        payload = {
+          ...form,
+          specifications: specs.reduce((acc, { key, value }) => {
+            if (key.trim()) acc[key] = value;
+            return acc;
+          }, {}),
+          ingredients: ingredients.filter((ing) => ing.trim()),
+        };
+      }
+
+      await updateProduct(id, payload); // hook handles header type
+      alert("Product updated!");
       setEditMode(false);
-    } catch {
-      alert("Failed to update product");
+      navigate(0); // simple refresh
+    } catch (err) {
+      console.error(err);
+      alert("Update failed");
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
-    try {
-      await deleteProduct(id);
-      navigate("/myproducts");
-    } catch {
-      alert("Failed to delete product");
-    }
+    if (!window.confirm("Delete this product?")) return;
+    await deleteProduct(id);
+    navigate("/dashboard/products");
   };
 
-  if (loading || !product) return <p className="text-center mt-10">Loading…</p>;
-  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
+  if (!product) return <div className="p-6">Loading...</div>;
 
-  const gallery = product.images?.length ? product.images : [product.thumbnail];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Gallery and Basic Info */}
-      <div className="grid md:grid-cols-2 gap-10">
-        <div className="border rounded-xl overflow-hidden">
-          <img
-            src={gallery[activeImg]?.url}
-            alt={product.name}
-            className="w-full h-96 object-cover"
-          />
-          {gallery.length > 1 && (
-            <div className="flex justify-center gap-4 mt-4 overflow-x-auto">
-              {gallery.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img.url}
-                  alt={`thumb-${idx}`}
-                  onClick={() => setActiveImg(idx)}
-                  className={`w-20 h-20 object-cover rounded cursor-pointer border ${
-                    activeImg === idx ? "ring-2 ring-blue-600" : ""
-                  }`}
-                />
-              ))}
-            </div>
+    <div className="max-w-5xl mx-auto p-6">
+      {/* toolbar ------------------------------------------------------- */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-sm text-gray-500 hover:text-blue-600"
+        >
+          <FaChevronLeft className="mr-1" /> Back
+        </button>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => setEditMode((p) => !p)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center gap-2"
+          >
+            {editMode ? <FaTimes /> : <FaEdit />} {editMode ? "Cancel" : "Edit"}
+          </button>
+
+          {editMode ? (
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md flex items-center gap-2"
+            >
+              <FaSave /> Save
+            </button>
+          ) : (
+            <button
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md flex items-center gap-2"
+            >
+              <FaTrash /> Delete
+            </button>
           )}
         </div>
+      </div>
 
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-gray-800">
+      {/* main card ----------------------------------------------------- */}
+      <div className="bg-white shadow-md rounded-xl p-6">
+        {/* top section – images + basic text */}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* 🖼️  thumbnail & gallery */}
+          <div className="w-full lg:w-1/2 space-y-4">
+            {/* thumbnail */}
+            <div className="relative">
+              <img
+                src={
+                  newThumbPreview ||
+                  existingThumb?.url ||
+                  "https://via.placeholder.com/400x400?text=No+Image"
+                }
+                alt="Thumbnail"
+                className="w-full h-64 object-cover rounded-lg"
+              />
+
+              {editMode && (
+                <>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onThumbChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <p className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    Change
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* gallery previews */}
+            <div className="grid grid-cols-3 gap-3">
+              {/* existing gallery */}
+              {existingImgs.map((img) => (
+                <img
+                  key={img.public_id}
+                  src={img.url}
+                  alt="Gallery"
+                  className="h-24 object-cover rounded-lg"
+                />
+              ))}
+
+              {/* new gallery previews */}
+              {newImgPreviews.map((src, idx) => (
+                <div key={idx} className="relative group">
+                  <img
+                    src={src}
+                    alt="New"
+                    className="h-24 w-full object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() => removeNewGallery(idx)}
+                    className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-lg transition"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              ))}
+
+              {editMode && (
+                <label className="h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
+                  <FaPlus className="text-gray-400" />
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={onGalleryChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* 👉  basic details */}
+          <div className="w-full lg:w-1/2 space-y-4">
+            {/* name */}
             {editMode ? (
               <input
-                type="text"
                 name="name"
-                value={form.name || ""}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xl"
+                value={form.name}
+                onChange={handleInput}
+                className="w-full px-4 py-2 border rounded-md"
+                placeholder="Product name"
               />
             ) : (
-              product.name
+              <h2 className="text-2xl font-semibold">{product.name}</h2>
             )}
-          </h1>
 
-          <div className="flex flex-wrap gap-2">
-            <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
-              {product.category}
-            </span>
-            {product.subcategory && (
-              <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm">
-                {product.subcategory}
-              </span>
-            )}
-          </div>
-
-          <div className="bg-gray-50 border rounded-lg p-4 shadow-sm">
-            {editMode ? (
-              <>
-                <label className="block text-sm text-gray-700">Price (₹)</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={form.price ?? ""}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded mb-3"
-                />
-                <label className="block text-sm text-gray-700">Discount (%)</label>
-                <input
-                  type="number"
-                  name="discount"
-                  value={form.discount ?? ""}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded mb-3"
-                />
-                <label className="block text-sm text-gray-700">Stock</label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={form.stock ?? ""}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded"
-                />
-              </>
-            ) : (
-              <>
-                <p className="text-2xl font-semibold text-red-600">
-                  ₹{product.finalPrice}
-                </p>
-                {product.discount > 0 && (
-                  <p className="text-sm text-gray-500 line-through">
-                    MRP ₹{product.price}
-                  </p>
-                )}
-                <p className="text-sm text-gray-600 mt-1">Stock: {product.stock}</p>
-              </>
-            )}
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4 text-sm">
-            {["sku", "barcode", "batchNumber", "fssaiNumber", "licenseNumber"].map((key) =>
-              product[key] ? (
-                <div key={key}>
-                  <span className="font-medium text-gray-700 capitalize">{key}</span>
-                  {editMode ? (
-                    <input
-                      type="text"
-                      name={key}
-                      value={form[key] || ""}
-                      onChange={handleChange}
-                      className="w-full px-2 py-1 border rounded mt-1"
-                    />
-                  ) : (
-                    <p className="text-gray-600">{product[key]}</p>
-                  )}
-                </div>
-              ) : null
-            )}
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold mb-1">Description</h2>
-            {editMode ? (
-              <textarea
-                name="description"
-                value={form.description || ""}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded resize-none h-24"
+            {/* brand & category */}
+            <div className="flex gap-6">
+              <Field
+                label="Brand"
+                name="brand"
+                editMode={editMode}
+                value={form.brand}
+                onChange={handleInput}
               />
-            ) : (
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {product.description}
+              <Field
+                label="Category"
+                name="category"
+                editMode={editMode}
+                value={form.category}
+                onChange={handleInput}
+              />
+            </div>
+
+            {/* price & discount */}
+            <div className="flex gap-6">
+              <Field
+                label="Price (₹)"
+                name="price"
+                type="number"
+                editMode={editMode}
+                value={form.price}
+                onChange={handleInput}
+              />
+              <Field
+                label="Discount (%)"
+                name="discount"
+                type="number"
+                editMode={editMode}
+                value={form.discount}
+                onChange={handleInput}
+              />
+            </div>
+
+            {!editMode && (
+              <p className="text-xl text-emerald-600 font-medium">
+                Final&nbsp;Price&nbsp;: ₹
+                {(
+                  form.price -
+                  (form.price * (form.discount || 0)) / 100
+                ).toFixed(2)}
               </p>
             )}
+
+            {/* description */}
+            <div>
+              <label className="text-sm font-medium text-gray-600">
+                Description
+              </label>
+              {editMode ? (
+                <textarea
+                  name="description"
+                  rows={4}
+                  value={form.description}
+                  onChange={handleInput}
+                  className="w-full mt-1 px-4 py-2 border rounded-md"
+                />
+              ) : (
+                <p className="mt-1 text-gray-700">{product.description}</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Additional Sections */}
-      <div className="mt-12 border-t pt-8 space-y-8">
-        {product.specifications && (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Specifications</h2>
-            <ul className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
-              {Object.entries(product.specifications).map(([k, v]) => (
-                <li key={k}>
-                  <strong>{k}:</strong> {v}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {product.ingredients && product.ingredients.length > 0 && (
-          <div>
-           
-            <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-              {product.ingredients.map((ing, i) => (
-                <li key={i}>{ing}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {product.isExpiryProduct && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-            <div>
-              <strong>Manufacturing Date:</strong>{" "}
-              {new Date(product.manufacturingDate).toLocaleDateString()}
-            </div>
-            <div>
-              <strong>Expiry Date:</strong>{" "}
-              {new Date(product.expiryDate).toLocaleDateString()}
-            </div>
-            <div>
-              <strong>Storage Instructions:</strong>
-              <p className="text-gray-700">
-                {product.storageInstructions || "—"}
-              </p>
-            </div>
-            <div>
-              <strong>Usage Instructions:</strong>
-              <p className="text-gray-700">
-                {product.usageInstructions || "—"}
-              </p>
-            </div>
-            <div>
-              <strong>Allergen Warnings:</strong>
-              <p className="text-gray-700">
-                {product.allergenWarnings || "—"}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4 mt-12">
+        <SectionTitle>Specifications</SectionTitle>
         {editMode ? (
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            <FaSave /> Save
-          </button>
+          <div className="space-y-4">
+            {specs.map((row, idx) => (
+              <div key={idx} className="grid grid-cols-5 gap-3">
+                <input
+                  className="col-span-2 px-3 py-2 border rounded"
+                  placeholder="Key"
+                  value={row.key}
+                  onChange={(e) => changeSpec(idx, "key", e.target.value)}
+                />
+                <input
+                  className="col-span-3 px-3 py-2 border rounded"
+                  placeholder="Value"
+                  value={row.value}
+                  onChange={(e) => changeSpec(idx, "value", e.target.value)}
+                />
+                <button
+                  onClick={() => removeSpec(idx)}
+                  className="text-red-600"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+
+            <button
+              onClick={addSpec}
+              className="flex items-center gap-2 text-blue-600 text-sm"
+            >
+              <FaPlus /> Add spec
+            </button>
+          </div>
         ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="flex items-center gap-2 px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-          >
-            <FaEdit /> Edit
-          </button>
+          <ul className="list-disc list-inside space-y-1 text-gray-700">
+            {Object.entries(product.specifications || {}).map(([k, v]) => (
+              <li key={k}>
+                <span className="font-medium">{k}:</span> {v}
+              </li>
+            ))}
+          </ul>
         )}
-        <button
-          onClick={handleDelete}
-          className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          <FaTrash /> Delete
-        </button>
+        {ingredients.filter((ing) => ing.trim()).length > 0 && (
+          <>
+            <SectionTitle>Ingredients</SectionTitle>
+            {editMode ? (
+              <div className="space-y-4">
+                {ingredients.map((ing, idx) => (
+                  <div key={idx} className="flex gap-3 items-center">
+                    <input
+                      className="flex-1 px-3 py-2 border rounded"
+                      value={ing}
+                      placeholder="Ingredient"
+                      onChange={(e) => changeIng(idx, e.target.value)}
+                    />
+                    <button
+                      onClick={() => removeIng(idx)}
+                      className="text-red-600"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addIng}
+                  className="flex items-center gap-2 text-blue-600 text-sm"
+                >
+                  <FaPlus /> Add ingredient
+                </button>
+              </div>
+            ) : (
+              <ul className="list-disc list-inside space-y-1 text-gray-700">
+                {ingredients.map((ing, i) => (
+                  <li key={i}>{ing}</li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
       </div>
-    </section>
+    </div>
   );
 };
+
+const Field = ({
+  label,
+  name,
+  value,
+  onChange,
+  editMode,
+  type = "text",
+}) => (
+  <div className="flex-1">
+    <label className="text-sm font-medium text-gray-600">{label}</label>
+    {editMode ? (
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        className="w-full mt-1 px-4 py-2 border rounded-md"
+      />
+    ) : (
+      <p className="mt-1 text-gray-700">{value}</p>
+    )}
+  </div>
+);
+
+const SectionTitle = ({ children }) => (
+  <h3 className="mt-8 mb-3 text-lg font-semibold">{children}</h3>
+);
 
 export default MyProductDetail;
