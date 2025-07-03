@@ -1,4 +1,4 @@
-// ✅ Full MyProductDetail.jsx with improved UI, color contrast, and all product fields
+// ✅ Full MyProductDetail.jsx with editable thumbnail and image gallery
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -54,36 +54,6 @@ const MyProductDetail = () => {
   const handleInput = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const renderField = (label, name, type = "text") => (
-    <div className="mb-4">
-      <label className="text-sm text-gray-600 font-medium">{label}</label>
-      {editMode ? (
-        <input
-          name={name}
-          value={form[name] || ""}
-          onChange={handleInput}
-          type={type}
-          className="mt-1 w-full px-4 py-2 border rounded-md text-sm"
-        />
-      ) : (
-        <p className="mt-1 text-gray-800 text-sm">{form[name] || "-"}</p>
-      )}
-    </div>
-  );
-
-  const changeSpec = (idx, field, value) =>
-    setSpecs((prev) =>
-      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
-    );
-
-  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
-  const removeSpec = (idx) => setSpecs((prev) => prev.filter((_, i) => i !== idx));
-  const changeIng = (idx, value) =>
-    setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
-  const addIng = () => setIngredients((prev) => [...prev, ""]);
-  const removeIng = (idx) =>
-    setIngredients((prev) => prev.filter((_, i) => i !== idx));
-
   const onThumbChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -112,6 +82,7 @@ const MyProductDetail = () => {
         return acc;
       }, {});
       const cleanIngs = ingredients.filter((x) => x.trim());
+
       if (isFileChanged) {
         payload = new FormData();
         Object.entries({
@@ -119,11 +90,13 @@ const MyProductDetail = () => {
           specifications: JSON.stringify(specObj),
           ingredients: JSON.stringify(cleanIngs),
         }).forEach(([k, v]) => payload.append(k, v));
+
         if (newThumbFile) payload.append("thumbnail", newThumbFile);
         newImgFiles.forEach((f) => payload.append("images", f));
       } else {
         payload = { ...form, specifications: specObj, ingredients: cleanIngs };
       }
+
       await updateProduct(id, payload);
       alert("Saved!");
       setEditMode(false);
@@ -138,6 +111,36 @@ const MyProductDetail = () => {
     await deleteProduct(id);
     navigate("/dashboard/products");
   };
+
+  const changeSpec = (idx, field, value) =>
+    setSpecs((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    );
+
+  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
+  const removeSpec = (idx) => setSpecs((prev) => prev.filter((_, i) => i !== idx));
+  const changeIng = (idx, value) =>
+    setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
+  const addIng = () => setIngredients((prev) => [...prev, ""]);
+  const removeIng = (idx) =>
+    setIngredients((prev) => prev.filter((_, i) => i !== idx));
+
+  const renderField = (label, name, type = "text") => (
+    <div className="mb-4">
+      <label className="text-sm text-gray-600 font-medium">{label}</label>
+      {editMode ? (
+        <input
+          name={name}
+          value={form[name] || ""}
+          onChange={handleInput}
+          type={type}
+          className="mt-1 w-full px-4 py-2 border rounded-md text-sm"
+        />
+      ) : (
+        <p className="mt-1 text-gray-800 text-sm">{form[name] || "-"}</p>
+      )}
+    </div>
+  );
 
   if (!product) return <div className="p-6">Loading...</div>;
 
@@ -176,10 +179,66 @@ const MyProductDetail = () => {
       </div>
 
       <div className="bg-white shadow-lg rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6">
-          {product.name}
-        </h2>
+        {/* Images Section */}
+        <div className="mb-6">
+          <label className="text-sm font-medium text-gray-700 block mb-2">Thumbnail</label>
+          <div className="relative w-48 h-48 border rounded overflow-hidden">
+            <img
+              src={newThumbPreview || existingThumb?.url || "https://via.placeholder.com/200x200?text=No+Image"}
+              alt="Thumbnail"
+              className="w-full h-full object-cover"
+            />
+            {editMode && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onThumbChange}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            )}
+          </div>
 
+          <label className="mt-4 text-sm font-medium text-gray-700 block mb-2">Gallery Images</label>
+          <div className="flex gap-3 flex-wrap">
+            {existingImgs.map((img) => (
+              <img
+                key={img.public_id}
+                src={img.url}
+                alt="Gallery"
+                className="w-24 h-24 object-cover rounded"
+              />
+            ))}
+            {newImgPreviews.map((src, idx) => (
+              <div key={idx} className="relative group w-24 h-24">
+                <img
+                  src={src}
+                  alt="New"
+                  className="w-full h-full object-cover rounded"
+                />
+                <button
+                  onClick={() => removeNewGallery(idx)}
+                  className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+            {editMode && (
+              <label className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
+                <FaPlus className="text-gray-400" />
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={onGalleryChange}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+        </div>
+
+        {/* Main Info */}
         {renderField("Product Name", "name")}
         {renderField("Brand", "brand")}
         {renderField("Category", "category")}
