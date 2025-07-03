@@ -76,7 +76,9 @@ const CreateProduct = () => {
 
   return (
     <div className="max-w-5xl mx-auto bg-white shadow-lg p-8 rounded-lg mt-10 animate-fadeIn">
-      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">Create New Product</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">
+        Create New Product
+      </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
@@ -125,7 +127,9 @@ const CreateProduct = () => {
         </div>
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">Specifications</label>
+          <label className="block font-semibold text-gray-700 mb-2">
+            Specifications
+          </label>
           {specifications.map((spec, idx) => (
             <div key={idx} className="flex gap-2 mb-2">
               <select
@@ -144,6 +148,17 @@ const CreateProduct = () => {
                 <option value="Display">Display</option>
                 <option value="Processor">Processor</option>
                 <option value="Color">Color</option>
+                <option value="Rear Camera">Rear Camera</option>
+                <option value="Front Camera">Front Camera</option>
+                <option value="Weight">Weight</option>
+                <option value="Dimensions">Dimensions</option>
+                <option value="Operating System">Operating System</option>
+                <option value="Network Type">Network Type</option>
+                <option value="Sim Type">Sim Type</option>
+                <option value="Expandable Storage">Expandable Storage</option>
+                <option value="Audio Jack">Audio Jack</option>
+                <option value="Quick Charge">Quick Charge</option>
+                <option value="Graphics">Graphics</option>
               </select>
               <input
                 type="text"
@@ -161,7 +176,9 @@ const CreateProduct = () => {
           <button
             type="button"
             className="flex items-center gap-2 text-sm text-blue-600"
-            onClick={() => setSpecifications([...specifications, { key: "", value: "" }])}
+            onClick={() =>
+              setSpecifications([...specifications, { key: "", value: "" }])
+            }
           >
             <FaPlusCircle /> Add more specs
           </button>
@@ -174,7 +191,9 @@ const CreateProduct = () => {
             checked={form.isExpiryProduct}
             onChange={handleChange}
           />
-          <label className="text-gray-700 font-medium">Is this an expiry-based product?</label>
+          <label className="text-gray-700 font-medium">
+            Is this an expiry-based product?
+          </label>
         </div>
 
         {form.isExpiryProduct && (
@@ -197,7 +216,9 @@ const CreateProduct = () => {
             </div>
 
             <div>
-              <label className="block font-semibold text-gray-700 mb-2">Ingredients</label>
+              <label className="block font-semibold text-gray-700 mb-2">
+                Ingredients
+              </label>
               {ingredients.map((val, idx) => (
                 <div key={idx} className="flex gap-2 mb-2">
                   <input
@@ -227,7 +248,9 @@ const CreateProduct = () => {
               { name: "allergenWarnings", label: "Allergen Warnings" },
             ].map(({ name, label }) => (
               <div key={name} className="mb-4">
-                <label className="block font-semibold text-gray-700 mb-1">{label}</label>
+                <label className="block font-semibold text-gray-700 mb-1">
+                  {label}
+                </label>
                 <textarea
                   name={name}
                   value={form[name]}
@@ -240,7 +263,9 @@ const CreateProduct = () => {
         )}
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">Thumbnail Image</label>
+          <label className="block font-semibold text-gray-700 mb-1">
+            Thumbnail Image
+          </label>
           <input
             type="file"
             onChange={(e) => setThumbnail(e.target.files[0])}
@@ -249,7 +274,9 @@ const CreateProduct = () => {
         </div>
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">Product Images</label>
+          <label className="block font-semibold text-gray-700 mb-1">
+            Product Images
+          </label>
           <input
             type="file"
             multiple

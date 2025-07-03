@@ -29,7 +29,7 @@ const MyProductDetail = () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await deleteProduct(id);
-        navigate("/store/products");
+        navigate("/myproducts");
       } catch {
         alert("Failed to delete product.");
       }
