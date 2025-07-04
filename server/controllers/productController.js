@@ -1,323 +1,207 @@
+// 📁 controllers/productController.js
 const Product = require("../models/Product");
 const cloudinary = require("../utils/cloudinary");
 
-// Create a product
+/* ───────────── Helpers ───────────── */
+const parseJSON = (val, fallback) => {
+  if (!val) return fallback;
+  if (Array.isArray(val) || typeof val === "object") return val;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return fallback;
+  }
+};
+
+/* ───────────── Create ───────────── */
 const createProduct = async (req, res) => {
   try {
     const {
       name,
       brand,
       category,
-      subcategory,
       description,
-      specifications,
       price,
-      discount,
       stock,
-      sku,
-      barcode,
-      isExpiryProduct,
-      manufacturingDate,
-      expiryDate,
-      batchNumber,
-      ingredients,
-      storageInstructions,
-      usageInstructions,
-      allergenWarnings,
-      fssaiNumber,
-      licenseNumber,
-      isPublished,
     } = req.body;
+
+    /* Basic required-field guard */
+    if (!name || !brand || !category || price === undefined) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
 
     const store = req.user.storeId;
     const createdBy = req.user.id;
 
-    const thumbnailFile = req.files?.thumbnail?.[0];
-    const imageFiles = req.files?.images || [];
+    /* Images prepared by Multer + Cloudinary */
+    const tFile = req.files?.thumbnail?.[0];
+    const imgFiles = req.files?.images || [];
 
-    const thumbnail = thumbnailFile
-      ? {
-          public_id: thumbnailFile.filename,
-          url: thumbnailFile.path,
-        }
-      : null;
-
-    const images = imageFiles.map((file) => ({
-      public_id: file.filename,
-      url: file.path,
-    }));
-
-    const parsedSpecifications =
-      typeof specifications === "string"
-        ? JSON.parse(specifications)
-        : specifications || {};
-
-    const parsedIngredients =
-      typeof ingredients === "string"
-        ? JSON.parse(ingredients)
-        : ingredients || [];
-
-    const numericPrice = Number(price) || 0;
-    const numericDiscount = Number(discount) || 0;
-    const finalPrice = numericPrice - (numericPrice * numericDiscount) / 100;
-
+    /* Build doc */
     const product = new Product({
-      name,
-      brand,
-      category,
-      subcategory,
-      description,
-      specifications: parsedSpecifications,
-      price: numericPrice,
-      discount: numericDiscount,
-      finalPrice,
-      stock: Number(stock),
-      sku,
-      barcode,
-      isExpiryProduct,
-      manufacturingDate,
-      expiryDate,
-      batchNumber,
-      ingredients: parsedIngredients,
-      storageInstructions,
-      usageInstructions,
-      allergenWarnings,
-      fssaiNumber,
-      licenseNumber,
-      isPublished,
-      thumbnail,
-      images,
+      ...req.body,
+      specifications: parseJSON(req.body.specifications, []),
+      ingredients: parseJSON(req.body.ingredients, []),
+      price: Number(price),
+      discount: Number(req.body.discount) || 0,
+      stock: Number(stock) || 0,
+      thumbnail: tFile
+        ? { public_id: tFile.filename, url: tFile.path || tFile.secure_url }
+        : null,
+      images: imgFiles.map((f) => ({
+        public_id: f.filename,
+        url: f.path || f.secure_url,
+      })),
       store,
       createdBy,
     });
 
     await product.save();
-
     res.status(201).json({ success: true, product });
   } catch (err) {
     console.error("Create product error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Product creation failed" });
+    res.status(500).json({ success: false, message: "Product creation failed" });
   }
 };
 
-// Get all public products (published only)
-const getAllProducts = async (req, res) => {
+/* ───────────── Read ───────────── */
+const getAllProducts = async (_req, res) => {
   try {
-    const products = await Product.find({ isPublished: true }).sort({
-      createdAt: -1,
-    });
+    const products = await Product.find({ isPublished: true })
+      .sort({ createdAt: -1 })
+      .lean();
     res.json({ success: true, products });
   } catch (err) {
     console.error("Fetch products error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch products" });
+    res.status(500).json({ success: false, message: "Failed to fetch products" });
   }
 };
 
-// Get product by ID (public)
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findOne({
-      _id: req.params.id,
-      isPublished: true,
-    });
-
+    const product = await Product.findOne({ _id: req.params.id, isPublished: true }).lean();
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
-
     res.json({ success: true, product });
   } catch (err) {
     console.error("Get product error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch product" });
+    res.status(500).json({ success: false, message: "Failed to fetch product" });
   }
 };
 
-// Get all products for store (dashboard)
 const getStoreProducts = async (req, res) => {
   try {
-    const products = await Product.find({ store: req.user.storeId }).sort({
-      createdAt: -1,
-    });
+    const products = await Product.find({ store: req.user.storeId })
+      .sort({ createdAt: -1 })
+      .lean();
     res.json({ success: true, products });
   } catch (err) {
     console.error("Fetch store products error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch store products" });
+    res.status(500).json({ success: false, message: "Failed to fetch store products" });
   }
 };
 
-// Delete product by ID
+/* ───────────── Update ───────────── */
+const updateProduct = async (req, res) => {
+  try {
+    const prod = await Product.findOne({ _id: req.params.id, store: req.user.storeId });
+    if (!prod) return res.status(404).json({ success: false, message: "Product not found" });
+
+    /* Parse complex fields */
+    const specs = parseJSON(req.body.specifications, prod.specifications);
+    const ingrs = parseJSON(req.body.ingredients, prod.ingredients);
+
+    /* Numeric conversions */
+    const price = req.body.price !== undefined ? Number(req.body.price) : prod.price;
+    const discount =
+      req.body.discount !== undefined ? Number(req.body.discount) : prod.discount;
+
+    /* Assign updated values */
+    Object.assign(prod, {
+      ...req.body,
+      specifications: specs,
+      ingredients: ingrs,
+      price,
+      discount,
+      stock: req.body.stock !== undefined ? Number(req.body.stock) : prod.stock,
+    });
+
+    /* Handle deleted image IDs */
+    const deletedIds = parseJSON(req.body.deletedImageIds, []);
+    if (deletedIds.length) {
+      prod.images = prod.images.filter((img) => !deletedIds.includes(img.public_id));
+      for (const id of deletedIds) {
+        try {
+          await cloudinary.uploader.destroy(id);
+        } catch (err) {
+          console.warn("Cloudinary deletion failed:", id);
+        }
+      }
+    }
+
+    /* Handle new uploads */
+    const tFile = req.files?.thumbnail?.[0];
+    const imgFiles = req.files?.images || [];
+    if (tFile) {
+      /* delete old thumb */
+      if (prod.thumbnail?.public_id) await cloudinary.uploader.destroy(prod.thumbnail.public_id);
+      prod.thumbnail = { public_id: tFile.filename, url: tFile.path || tFile.secure_url };
+    }
+    if (imgFiles.length) {
+      prod.images.push(
+        ...imgFiles.map((f) => ({
+          public_id: f.filename,
+          url: f.path || f.secure_url,
+        }))
+      );
+    }
+
+    await prod.save();
+    res.json({ success: true, product: prod });
+  } catch (err) {
+    console.error("Update product error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+/* ───────────── Delete ───────────── */
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findOneAndDelete({
+    const prod = await Product.findOneAndDelete({
       _id: req.params.id,
       store: req.user.storeId,
     });
-
-    if (!product) {
+    if (!prod) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found or unauthorized" });
     }
 
+    /* Delete thumbnail + gallery */
+    if (prod.thumbnail?.public_id) {
+      await cloudinary.uploader.destroy(prod.thumbnail.public_id).catch(() => {});
+    }
+    for (const img of prod.images) {
+      if (img.public_id) await cloudinary.uploader.destroy(img.public_id).catch(() => {});
+    }
+
     res.json({ success: true, message: "Product deleted successfully" });
   } catch (err) {
     console.error("Delete product error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to delete product" });
+    res.status(500).json({ success: false, message: "Failed to delete product" });
   }
 };
 
-// Update product by ID
-const updateProduct = async (req, res) => {
-  try {
-    const {
-      name,
-      brand,
-      category,
-      subcategory,
-      description,
-      specifications,
-      price,
-      discount,
-      stock,
-      sku,
-      barcode,
-      isExpiryProduct,
-      manufacturingDate,
-      expiryDate,
-      batchNumber,
-      ingredients,
-      storageInstructions,
-      usageInstructions,
-      allergenWarnings,
-      fssaiNumber,
-      licenseNumber,
-      isPublished,
-      deletedImageIds: deletedImageIdsRaw,
-    } = req.body;
-
-    // ✅ parse deletedImageIds safely
-    let deletedImageIds = [];
-    if (deletedImageIdsRaw) {
-      try {
-        deletedImageIds = Array.isArray(deletedImageIdsRaw)
-          ? deletedImageIdsRaw
-          : JSON.parse(deletedImageIdsRaw);
-      } catch (e) {
-        console.warn("Failed to parse deletedImageIds:", deletedImageIdsRaw);
-      }
-    }
-
-    const product = await Product.findOne({
-      _id: req.params.id,
-      store: req.user.storeId,
-    });
-
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
-    // ✅ Update regular fields
-    const parsedSpecifications =
-      typeof specifications === "string"
-        ? JSON.parse(specifications)
-        : specifications || {};
-    const parsedIngredients =
-      typeof ingredients === "string"
-        ? JSON.parse(ingredients)
-        : ingredients || [];
-
-    const numericPrice = price !== undefined ? Number(price) : product.price || 0;
-    const numericDiscount = discount !== undefined ? Number(discount) : product.discount || 0;
-    const finalPrice = numericPrice - (numericPrice * numericDiscount) / 100;
-
-    Object.assign(product, {
-      name: name ?? product.name,
-      brand: brand ?? product.brand,
-      category: category ?? product.category,
-      subcategory: subcategory ?? product.subcategory,
-      description: description ?? product.description,
-      specifications: parsedSpecifications,
-      ingredients: parsedIngredients,
-      price: numericPrice,
-      discount: numericDiscount,
-      finalPrice,
-      stock: stock !== undefined ? Number(stock) : product.stock,
-      sku: sku ?? product.sku,
-      barcode: barcode ?? product.barcode,
-      isExpiryProduct: isExpiryProduct ?? product.isExpiryProduct,
-      manufacturingDate: manufacturingDate ?? product.manufacturingDate,
-      expiryDate: expiryDate ?? product.expiryDate,
-      batchNumber: batchNumber ?? product.batchNumber,
-      storageInstructions: storageInstructions ?? product.storageInstructions,
-      usageInstructions: usageInstructions ?? product.usageInstructions,
-      allergenWarnings: allergenWarnings ?? product.allergenWarnings,
-      fssaiNumber: fssaiNumber ?? product.fssaiNumber,
-      licenseNumber: licenseNumber ?? product.licenseNumber,
-      isPublished: isPublished ?? product.isPublished,
-    });
-
-    // ✅ Remove deleted images from DB
-    if (deletedImageIds.length) {
-      product.images = product.images.filter(
-        (img) => !deletedImageIds.includes(img.public_id)
-      );
-
-      for (const public_id of deletedImageIds) {
-        try {
-          await cloudinary.uploader.destroy(public_id);
-        } catch (e) {
-          console.warn("Failed to delete from Cloudinary:", public_id);
-        }
-      }
-    }
-
-    // ✅ Update thumbnail and images if present
-    const thumbnailFile = req.files?.thumbnail?.[0];
-    const imageFiles = req.files?.images || [];
-
-    if (thumbnailFile) {
-      product.thumbnail = {
-        public_id: thumbnailFile.filename,
-        url: thumbnailFile.path,
-      };
-    }
-
-    if (imageFiles.length > 0) {
-      product.images.push(
-        ...imageFiles.map((file) => ({
-          public_id: file.filename,
-          url: file.path,
-        }))
-      );
-    }
-
-    await product.save();
-    res.json({ success: true, product });
-  } catch (err) {
-    console.error("🔴 Update product error:", err.message);
-    console.error(err.stack);
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
 
 module.exports = {
   createProduct,
-  updateProduct,
   deleteProduct,
-  getProductById,
+  updateProduct,
   getAllProducts,
+  getProductById,
   getStoreProducts,
+  getStoreProducts
+
 };

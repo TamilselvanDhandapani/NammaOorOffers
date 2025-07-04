@@ -1,5 +1,6 @@
+// 📁 context/ProductContext.js
 import { createContext, useReducer } from "react";
-import api from "../Services/api"; // your axios instance
+import api from "../Services/api"; // Axios instance
 
 const ProductContext = createContext();
 
@@ -25,9 +26,7 @@ const productReducer = (state, action) => {
       return {
         ...state,
         loading: false,
-        storeProducts: state.storeProducts.filter(
-          (p) => p._id !== action.payload
-        ),
+        storeProducts: state.storeProducts.filter((p) => p._id !== action.payload),
       };
     case "ERROR":
       return { ...state, loading: false, error: action.payload };
@@ -39,37 +38,37 @@ const productReducer = (state, action) => {
 export const ProductProvider = ({ children }) => {
   const [state, dispatch] = useReducer(productReducer, initialState);
 
-  // Public: Fetch all published products
+  /* ───────────── Public: Get All Published Products ───────────── */
   const fetchAllProducts = async () => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get("/products/public");
+      const res = await api.get("/products");
       dispatch({ type: "FETCH_ALL_SUCCESS", payload: res.data.products });
     } catch (err) {
       dispatch({
         type: "ERROR",
-        payload: err.response?.data?.msg || "Failed to fetch products",
+        payload: err.response?.data?.message || "Failed to fetch products",
       });
     }
   };
 
-  // ProductContext.js
+  /* ───────────── Public: Get Product By ID ───────────── */
   const getProductById = async (id) => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get(`/products/public/${id}`);
+      const res = await api.get(`/products/${id}`);
       dispatch({ type: "FETCH_DETAIL_SUCCESS", payload: res.data.product });
-      return res.data.product; // ✅ ADD THIS LINE
+      return res.data.product;
     } catch (err) {
       dispatch({
         type: "ERROR",
-        payload: err.response?.data?.msg || "Failed to fetch product",
+        payload: err.response?.data?.message || "Failed to fetch product",
       });
       throw err;
     }
   };
 
-  // Store: Fetch my products
+  /* ───────────── Store: Get My Products ───────────── */
   const fetchStoreProducts = async () => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -78,12 +77,12 @@ export const ProductProvider = ({ children }) => {
     } catch (err) {
       dispatch({
         type: "ERROR",
-        payload: err.response?.data?.msg || "Failed to fetch store products",
+        payload: err.response?.data?.message || "Failed to fetch store products",
       });
     }
   };
 
-  // Store: Create product
+  /* ───────────── Store: Create Product ───────────── */
   const createProduct = async (formData) => {
     try {
       const res = await api.post("/products", formData, {
@@ -91,29 +90,30 @@ export const ProductProvider = ({ children }) => {
       });
       return res.data.product;
     } catch (err) {
-      throw new Error(err.response?.data?.msg || "Failed to create product");
+      throw new Error(err.response?.data?.message || "Failed to create product");
     }
   };
 
-  // Store: Edit product
+  /* ───────────── Store: Update Product ───────────── */
   const updateProduct = async (id, formData) => {
-  const isFormData = formData instanceof FormData;
-  try {
-    const res = await api.put(`/products/${id}`, formData, {
-      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
-    });
-    return res.data.product;
-  } catch (err) {
-    throw new Error(err.response?.data?.message || "Failed to update product");
-  }
-};
-  // Store: Delete product
+    const isFormData = formData instanceof FormData;
+    try {
+      const res = await api.put(`/products/${id}`, formData, {
+        headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+      });
+      return res.data.product;
+    } catch (err) {
+      throw new Error(err.response?.data?.message || "Failed to update product");
+    }
+  };
+
+  /* ───────────── Store: Delete Product ───────────── */
   const deleteProduct = async (id) => {
     try {
       await api.delete(`/products/${id}`);
       dispatch({ type: "DELETE_SUCCESS", payload: id });
     } catch (err) {
-      throw new Error(err.response?.data?.msg || "Failed to delete product");
+      throw new Error(err.response?.data?.message || "Failed to delete product");
     }
   };
 

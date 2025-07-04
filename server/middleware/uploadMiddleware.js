@@ -1,50 +1,40 @@
-// middleware/upload.js
+// 📁 middleware/upload.js
 const multer = require("multer");
 const path = require("path");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../utils/cloudinary");
 
-// Allowed extensions
-const allowedImageTypes = [".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".svg"];
+/* ───────────── Allowed types ───────────── */
+const allowedExt = [".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".svg"];
 
-// Configure Cloudinary storage
+/* ───────────── Cloudinary storage ───────────── */
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: async (req, file) => {
-    return {
-      folder: "product-images",
-      allowed_formats: ["jpg", "jpeg", "png", "webp", "avif", "gif", "svg"],
-      transformation: [{ quality: "auto" }],
-    };
-  },
+  params: async () => ({
+    folder: "product-images", // keep flat; public_id carries unique ID
+    allowed_formats: allowedExt.map((e) => e.replace(".", "")),
+    transformation: [{ quality: "auto" }],
+  }),
 });
 
-// File filter
+/* ───────────── Secure file filter ───────────── */
 const imageFilter = (req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowedImageTypes.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed (.jpg, .png, .webp, etc.)"), false);
-  }
+  if (file.mimetype.startsWith("image/") && allowedExt.includes(ext)) cb(null, true);
+  else cb(new Error("Only valid image files are allowed"), false);
 };
 
-// Multer instance
+/* ───────────── Multer instance ───────────── */
 const upload = multer({
   storage,
   fileFilter: imageFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // Max 5MB
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
-// Export config for single & multiple uploads
+/* ───────────── Fields helper ───────────── */
 const uploadProductImages = upload.fields([
   { name: "thumbnail", maxCount: 1 },
-  { name: "images", maxCount: 5 }, // You can increase if needed
+  { name: "images", maxCount: 5 },
 ]);
 
-module.exports = {
-  upload,
-  uploadProductImages,
-};
+module.exports = { uploadProductImages };

@@ -1,26 +1,32 @@
-// routes/productRoutes.js
+// 📁 routes/productRoutes.js
 const express = require("express");
-const router = express.Router();
 const {
   createProduct,
-  deleteProduct,
   updateProduct,
+  deleteProduct,
   getAllProducts,
   getProductById,
   getStoreProducts,
 } = require("../controllers/productController");
+const { uploadProductImages } = require("../middleware/upload");
+const handleMulterErrors = require("../utils/handleMulterErrors");
+const protect = require("../middleware/auth"); // ⬅️ your auth middleware
 
-const { protect, authorizeRoles } = require("../middleware/authMiddleware");
-const  {uploadProductImages}  = require("../middleware/uploadMiddleware");
+const router = express.Router();
 
-// Public
-router.get("/public", getAllProducts);
-router.get("/public/:id", getProductById);
+router
+  .route("/")
+  .get(getAllProducts)
+  .post(protect, handleMulterErrors(uploadProductImages), createProduct);
 
-// Store/Admin
-router.post("/", protect, authorizeRoles("store", "admin"), uploadProductImages, createProduct);
-router.get("/store", protect, authorizeRoles("store", "admin"), getStoreProducts);
-router.put("/:id", protect, authorizeRoles("store", "admin"), uploadProductImages, updateProduct);
-router.delete("/:id", protect, authorizeRoles("store", "admin"), deleteProduct);
+router
+  .route("/store")
+  .get(protect, getStoreProducts);
+
+router
+  .route("/:id")
+  .get(getProductById)
+  .put(protect, handleMulterErrors(uploadProductImages), updateProduct)
+  .delete(protect, deleteProduct);
 
 module.exports = router;

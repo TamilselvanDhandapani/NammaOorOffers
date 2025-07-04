@@ -1,29 +1,32 @@
 // 📁 src/pages/CreateProduct.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import useProduct from "../../hooks/useProduct";
 import { useNavigate } from "react-router-dom";
 import { FaPlusCircle } from "react-icons/fa";
+import useProduct from "../../hooks/useProduct";
 
-/* ──────────────── helper: compress an image file ──────────────── */
+/* ───────────── Helper: compress + validate image ───────────── */
 const compressImage = (file, { quality = 0.7, maxWidth = 800 } = {}) =>
   new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) return reject(new Error("Not an image"));
+    if (file.size > 5 * 1024 * 1024)
+      return reject(new Error("Image too large (5 MB max)"));
+
     const img = new Image();
     img.onload = () => {
-      /* scale down if wider than maxWidth */
       const scale = Math.min(1, maxWidth / img.width);
       const canvas = document.createElement("canvas");
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(
         (blob) => {
           if (!blob) return reject(new Error("Compression failed"));
-          const compressed = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
-            type: "image/jpeg",
-            lastModified: Date.now(),
-          });
-          resolve(compressed);
+          resolve(
+            new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            })
+          );
         },
         "image/jpeg",
         quality
@@ -37,7 +40,7 @@ const compressImage = (file, { quality = 0.7, maxWidth = 800 } = {}) =>
   });
 
 const CreateProduct = () => {
-  /* ───────────── form & state ───────────── */
+  /* ───────────── State ───────────── */
   const [form, setForm] = useState({
     name: "",
     brand: "",
@@ -60,85 +63,80 @@ const CreateProduct = () => {
     licenseNumber: "",
     isPublished: true,
   });
-
-  const [specifications, setSpecifications] = useState([
-    { key: "RAM", value: "" },
-    { key: "Storage", value: "" },
-  ]);
+  const [specs, setSpecs] = useState([{ key: "RAM", value: "" }]);
   const [ingredients, setIngredients] = useState([""]);
 
-  /* files & previews */
   const [thumbnail, setThumbnail] = useState(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState(null);
-  const [images, setImages] = useState([]); // compressed files
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [thumbPrev, setThumbPrev] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imgPrevs, setImgPrevs] = useState([]);
 
   const { createProduct } = useProduct();
   const navigate = useNavigate();
 
-  /* ───────────── handlers ───────────── */
+  /* ───────────── Handlers ───────────── */
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, type, checked, value } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
-  /* compress & set thumbnail */
   const handleThumbChange = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
       const compressed = await compressImage(file);
       setThumbnail(compressed);
-      setThumbnailPreview(URL.createObjectURL(compressed));
-    } catch {
-      alert("Failed to compress thumbnail");
+      setThumbPrev(URL.createObjectURL(compressed));
+    } catch (err) {
+      alert(err.message);
     }
   }, []);
 
-  /* compress & set gallery images */
   const handleImagesChange = useCallback(async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-
     try {
-      const compressedFiles = await Promise.all(files.map((f) => compressImage(f)));
-      setImages(compressedFiles);
-      setImagePreviews(compressedFiles.map((f) => URL.createObjectURL(f)));
-    } catch {
-      alert("Failed to compress some images");
+      const compressed = await Promise.all(files.map((f) => compressImage(f)));
+      setImages(compressed);
+      setImgPrevs(compressed.map((c) => URL.createObjectURL(c)));
+    } catch (err) {
+      alert(err.message);
     }
   }, []);
 
-  /* clean up preview URLs */
+  /* cleanup preview URLs */
   useEffect(() => {
     return () => {
-      thumbnailPreview && URL.revokeObjectURL(thumbnailPreview);
-      imagePreviews.forEach((u) => URL.revokeObjectURL(u));
+      thumbPrev && URL.revokeObjectURL(thumbPrev);
+      imgPrevs.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [thumbnailPreview, imagePreviews]);
+  }, [thumbPrev, imgPrevs]);
 
-  /* ───────────── submit ───────────── */
+  /* ───────────── Submit ───────────── */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.name || !form.brand || !form.category || !form.price) {
+      return alert("Please fill required fields");
+    }
     if (form.isExpiryProduct) {
-      if (!form.manufacturingDate || !form.expiryDate) {
-        alert("Please fill both manufacturing and expiry dates.");
-        return;
-      }
-      if (new Date(form.expiryDate) <= new Date(form.manufacturingDate)) {
-        alert("Expiry date must be after manufacturing date.");
-        return;
-      }
+      if (!form.manufacturingDate || !form.expiryDate)
+        return alert("Provide manufacturing & expiry dates");
+      if (new Date(form.expiryDate) <= new Date(form.manufacturingDate))
+        return alert("Expiry must be after manufacturing date");
     }
 
     const fd = new FormData();
-    Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+    Object.entries(form).forEach(([k, v]) => fd.append(k, typeof v === "string" ? v.trim() : v));
     fd.append(
       "specifications",
-      JSON.stringify(Object.fromEntries(specifications.map((s) => [s.key, s.value])))
+      JSON.stringify(
+        specs
+          .filter((s) => s.key.trim())
+          .reduce((o, s) => ({ ...o, [s.key]: s.value }), {})
+      )
     );
-    fd.append("ingredients", JSON.stringify(ingredients));
+    fd.append("ingredients", JSON.stringify(ingredients.filter((i) => i.trim())));
     if (thumbnail) fd.append("thumbnail", thumbnail);
     images.forEach((img) => fd.append("images", img));
 
@@ -152,13 +150,11 @@ const CreateProduct = () => {
 
   /* ───────────── JSX ───────────── */
   return (
-    <div className="max-w-5xl mx-auto bg-white shadow-lg p-6 rounded-lg mt-8 animate-fadeIn">
-      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">
-        Create New Product
-      </h2>
+    <div className="max-w-5xl mx-auto bg-white shadow-lg p-8 rounded-lg mt-8">
+      <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">Create New Product</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ─── basic fields ─── */}
+        {/* basic text inputs */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             "name",
@@ -170,86 +166,85 @@ const CreateProduct = () => {
             "batchNumber",
             "fssaiNumber",
             "licenseNumber",
-          ].map((field) => (
+          ].map((f) => (
             <input
-              key={field}
-              type="text"
-              name={field}
-              placeholder={field.replace(/([A-Z])/g, " $1")}
-              value={form[field] || ""}
+              key={f}
+              name={f}
+              placeholder={f.replace(/([A-Z])/g, " $1")}
+              value={form[f] || ""}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded focus:outline-blue-500"
             />
           ))}
         </div>
 
-        {/* description */}
         <textarea
           name="description"
           placeholder="Product Description"
           value={form.description}
           onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded h-24 resize-none"
+          className="w-full px-4 py-2 border rounded h-24 resize-none"
         />
 
-        {/* price / discount / stock */}
+        {/* price/discount/stock */}
         <div className="grid grid-cols-3 gap-4">
-          {["price", "discount", "stock"].map((field) => (
+          {["price", "discount", "stock"].map((f) => (
             <input
-              key={field}
+              key={f}
               type="number"
-              name={field}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={form[field] || ""}
+              name={f}
+              placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
+              value={form[f] || ""}
               onChange={handleChange}
-              className="px-4 py-2 border rounded focus:outline-blue-500"
+              className="px-4 py-2 border rounded"
             />
           ))}
         </div>
 
         {/* specifications */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-2">
-            Specifications
-          </label>
-          {specifications.map((spec, idx) => (
-            <div key={idx} className="flex gap-2 mb-2">
+          <label className="font-semibold mb-2 block">Specifications</label>
+          {specs.map((s, i) => (
+            <div key={i} className="flex gap-2 mb-2">
               <select
-                value={spec.key}
+                value={s.key}
                 onChange={(e) => {
-                  const upd = [...specifications];
-                  upd[idx].key = e.target.value;
-                  setSpecifications(upd);
+                  const u = [...specs];
+                  u[i].key = e.target.value;
+                  setSpecs(u);
                 }}
                 className="w-1/2 px-2 py-1 border rounded"
               >
-                <option value="">Select Spec</option>
-                <option value="RAM">RAM</option>
-                <option value="Storage">Storage</option>
-                <option value="Battery">Battery</option>
-                <option value="Display">Display</option>
-                <option value="Processor">Processor</option>
-                <option value="Color">Color</option>
-                <option value="Rear Camera">Rear Camera</option>
-                <option value="Front Camera">Front Camera</option>
-                <option value="Weight">Weight</option>
-                <option value="Dimensions">Dimensions</option>
-                <option value="Operating System">Operating System</option>
-                <option value="Network Type">Network Type</option>
-                <option value="Sim Type">Sim Type</option>
-                <option value="Expandable Storage">Expandable Storage</option>
-                <option value="Audio Jack">Audio Jack</option>
-                <option value="Quick Charge">Quick Charge</option>
-                <option value="Graphics">Graphics</option>
+                <option value="">Select</option>
+                {[
+                  "RAM",
+                  "Storage",
+                  "Battery",
+                  "Display",
+                  "Processor",
+                  "Color",
+                  "Rear Camera",
+                  "Front Camera",
+                  "Weight",
+                  "Dimensions",
+                  "Operating System",
+                  "Network Type",
+                  "Sim Type",
+                  "Expandable Storage",
+                  "Audio Jack",
+                  "Quick Charge",
+                  "Graphics",
+                ].map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
               </select>
               <input
-                type="text"
+                value={s.value}
                 placeholder="Value"
-                value={spec.value}
                 onChange={(e) => {
-                  const upd = [...specifications];
-                  upd[idx].value = e.target.value;
-                  setSpecifications(upd);
+                  const u = [...specs];
+                  u[i].value = e.target.value;
+                  setSpecs(u);
                 }}
                 className="w-1/2 px-2 py-1 border rounded"
               />
@@ -257,159 +252,94 @@ const CreateProduct = () => {
           ))}
           <button
             type="button"
-            className="flex items-center gap-2 text-sm text-blue-600"
-            onClick={() =>
-              setSpecifications([...specifications, { key: "", value: "" }])
-            }
+            onClick={() => setSpecs([...specs, { key: "", value: "" }])}
+            className="text-blue-600 flex items-center gap-2 text-sm"
           >
-            <FaPlusCircle /> Add more specs
+            <FaPlusCircle /> Add
           </button>
         </div>
 
         {/* expiry toggle */}
         <div className="space-x-2">
-          <input
-            type="checkbox"
-            name="isExpiryProduct"
-            checked={form.isExpiryProduct}
-            onChange={handleChange}
-          />
-          <label className="text-gray-700 font-medium">
-            Is this an expiry-based product?
-          </label>
+          <input type="checkbox" name="isExpiryProduct" checked={form.isExpiryProduct} onChange={handleChange} />
+          <label className="font-medium">Expiry-based product?</label>
         </div>
 
-        {/* expiry-related fields */}
         {form.isExpiryProduct && (
           <>
             <div className="grid grid-cols-2 gap-4">
-              <input
-                type="date"
-                name="manufacturingDate"
-                value={form.manufacturingDate}
-                onChange={handleChange}
-                className="px-4 py-2 border rounded"
-              />
-              <input
-                type="date"
-                name="expiryDate"
-                value={form.expiryDate}
-                onChange={handleChange}
-                className="px-4 py-2 border rounded"
-              />
+              <input type="date" name="manufacturingDate" value={form.manufacturingDate} onChange={handleChange} className="px-4 py-2 border rounded" />
+              <input type="date" name="expiryDate" value={form.expiryDate} onChange={handleChange} className="px-4 py-2 border rounded" />
             </div>
 
-            {/* ingredients list */}
+            {/* ingredients */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-2">
-                Ingredients
-              </label>
-              {ingredients.map((val, idx) => (
-                <div key={idx} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={val}
-                    onChange={(e) => {
-                      const upd = [...ingredients];
-                      upd[idx] = e.target.value;
-                      setIngredients(upd);
-                    }}
-                    className="w-full px-2 py-1 border rounded"
-                  />
-                </div>
+              <label className="font-semibold mb-2 block">Ingredients</label>
+              {ingredients.map((val, i) => (
+                <input
+                  key={i}
+                  value={val}
+                  onChange={(e) => {
+                    const u = [...ingredients];
+                    u[i] = e.target.value;
+                    setIngredients(u);
+                  }}
+                  className="w-full mb-2 px-2 py-1 border rounded"
+                />
               ))}
               <button
                 type="button"
-                className="flex items-center gap-2 text-sm text-blue-600"
                 onClick={() => setIngredients([...ingredients, ""])}
+                className="text-blue-600 flex items-center gap-2 text-sm"
               >
-                <FaPlusCircle /> Add more ingredients
+                <FaPlusCircle /> Add
               </button>
             </div>
 
-            {/* storage / usage / allergen */}
             {[
-              { name: "storageInstructions", label: "Storage Instructions" },
-              { name: "usageInstructions", label: "Usage Instructions" },
-              { name: "allergenWarnings", label: "Allergen Warnings" },
-            ].map(({ name, label }) => (
-              <div key={name} className="mb-4">
-                <label className="block font-semibold text-gray-700 mb-1">
-                  {label}
-                </label>
+              ["storageInstructions", "Storage Instructions"],
+              ["usageInstructions", "Usage Instructions"],
+              ["allergenWarnings", "Allergen Warnings"],
+            ].map(([n, l]) => (
+              <div key={n}>
+                <label className="font-semibold mb-1 block">{l}</label>
                 <textarea
-                  name={name}
-                  value={form[name]}
+                  name={n}
+                  value={form[n]}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded h-24 resize-none"
+                  className="w-full px-4 py-2 border rounded h-24 resize-none"
                 />
               </div>
             ))}
           </>
         )}
 
-        {/* thumbnail upload & preview */}
+        {/* thumbnail + gallery */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Thumbnail Image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleThumbChange}
-            className="w-full border p-2 rounded"
-          />
-          {thumbnailPreview && (
-            <img
-              src={thumbnailPreview}
-              alt="Thumbnail Preview"
-              className="mt-2 w-32 h-32 object-cover rounded border"
-            />
-          )}
+          <label className="font-semibold block mb-1">Thumbnail</label>
+          <input type="file" accept="image/*" onChange={handleThumbChange} className="border p-2 rounded w-full" />
+          {thumbPrev && <img src={thumbPrev} alt="thumb" className="w-32 h-32 object-cover mt-2 rounded border" />}
         </div>
 
-        {/* product images upload & previews */}
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Product Images
-          </label>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleImagesChange}
-            className="w-full border p-2 rounded"
-          />
-          {imagePreviews.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-3">
-              {imagePreviews.map((src, idx) => (
-                <img
-                  key={idx}
-                  src={src}
-                  alt={`Product Preview ${idx + 1}`}
-                  className="w-24 h-24 object-cover rounded border"
-                />
+          <label className="font-semibold block mb-1">Product Images</label>
+          <input type="file" multiple accept="image/*" onChange={handleImagesChange} className="border p-2 rounded w-full" />
+          {imgPrevs.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-2">
+              {imgPrevs.map((src, i) => (
+                <img key={i} src={src} alt="" className="w-24 h-24 object-cover rounded border" />
               ))}
             </div>
           )}
         </div>
 
-        {/* publish toggle */}
+        {/* publish */}
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="isPublished"
-            checked={form.isPublished}
-            onChange={handleChange}
-          />
-          <label className="text-gray-700">Publish Product</label>
+          <input type="checkbox" name="isPublished" checked={form.isPublished} onChange={handleChange} />
+          <label>Publish now</label>
         </div>
 
-        {/* submit */}
-        <button
-          type="submit"
-          className="w-full py-3 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700"
-        >
+        <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700">
           Submit Product
         </button>
       </form>
