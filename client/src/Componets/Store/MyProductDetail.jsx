@@ -11,12 +11,9 @@ import {
   FaChevronLeft,
 } from "react-icons/fa";
 
-/* ------------------------------------------------------------------ */
-/*                               Modal                                */
-/* ------------------------------------------------------------------ */
-const ConfirmModal = ({ open, title, onCancel, onConfirm }) => {
-  if (!open) return null;
-  return (
+/* -------- Modal -------- */
+const ConfirmModal = ({ open, title, onCancel, onConfirm }) =>
+  !open ? null : (
     <div className="fixed inset-0 z-40 bg-black/30 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full animate-fadeIn">
         <h2 className="text-lg font-bold mb-3">{title}</h2>
@@ -37,11 +34,14 @@ const ConfirmModal = ({ open, title, onCancel, onConfirm }) => {
       </div>
     </div>
   );
-};
 
-/* ------------------------------------------------------------------ */
-/*                           Main Component                           */
-/* ------------------------------------------------------------------ */
+/* -------- Helper -------- */
+const stringifyIfObj = (v) =>
+  v && typeof v === "object" ? JSON.stringify(v) : v ?? "";
+
+/* =================================================================== */
+/*                          Main Component                             */
+/* =================================================================== */
 const MyProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,11 +51,11 @@ const MyProductDetail = () => {
   const [form, setForm] = useState({});
   const [editMode, setEditMode] = useState(false);
 
-  /* -------- variable-length fields -------- */
+  /* ----- variable-length fields ----- */
   const [specs, setSpecs] = useState([{ key: "", value: "" }]);
   const [ingredients, setIngredients] = useState([""]);
 
-  /* -------- image management -------- */
+  /* ----- image state ----- */
   const [existingThumb, setExistingThumb] = useState(null);
   const [existingImgs, setExistingImgs] = useState([]);
   const [newThumbFile, setNewThumbFile] = useState(null);
@@ -64,32 +64,42 @@ const MyProductDetail = () => {
   const [newImgPreviews, setNewImgPreviews] = useState([]);
   const [deletedImageIds, setDeletedImageIds] = useState([]);
 
-  /* -------- ui state -------- */
+  /* ----- ui state ----- */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  /* ------------------------------------------------------------------ */
-  /*                       Fetch product on mount                       */
-  /* ------------------------------------------------------------------ */
+  /* ================================================================ */
+  /*                          Fetch product                           */
+  /* ================================================================ */
   useEffect(() => {
     (async () => {
       try {
         const res = await getProductById(id);
         setProduct(res);
-        setForm(res);
 
-        /* convert specifications object to editable array */
-        setSpecs(
-          Object.entries(res.specifications || {}).map(([key, value]) => ({
-            key,
-            value,
-          }))
-        );
+        /* Flatten any object-y fields you might render directly */
+        setForm({
+          ...res,
+          category: stringifyIfObj(res.category),
+          subcategory: stringifyIfObj(res.subcategory),
+        });
 
-        /* ingredients: ensure at least one placeholder WHEN in edit mode */
-        setIngredients(
-          res.ingredients?.length ? res.ingredients : [""]
-        );
+        /* NORMALISE specs: accept array OR object */
+        const initialSpecs = Array.isArray(res.specifications)
+          ? res.specifications.length
+            ? res.specifications.map((s) => ({
+                key: s.key ?? "",
+                value: s.value ?? "",
+              }))
+            : [{ key: "", value: "" }]
+          : Object.entries(res.specifications || {}).map(([k, v]) => ({
+              key: k,
+              value: stringifyIfObj(v),
+            }));
+        setSpecs(initialSpecs);
+
+        /* ensure at least one line if empty */
+        setIngredients(res.ingredients?.length ? res.ingredients : [""]);
 
         setExistingThumb(res.thumbnail);
         setExistingImgs(res.images || []);
@@ -100,90 +110,97 @@ const MyProductDetail = () => {
     // eslint-disable-next-line
   }, [id]);
 
-  /* ------------------------------------------------------------------ */
-  /*                        Helper & event handlers                     */
-  /* ------------------------------------------------------------------ */
+  /* ================================================================ */
+  /*                       Generic field helpers                      */
+  /* ================================================================ */
   const handleInput = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setForm((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
   };
 
+  const renderField = (label, name, type = "text") => {
+    const val = stringifyIfObj(form[name]);
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+        {editMode ? (
+          <input
+            name={name}
+            value={val}
+            onChange={handleInput}
+            type={type}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        ) : (
+          <p className="text-sm text-gray-800">{val || "-"}</p>
+        )}
+      </div>
+    );
+  };
+
+  /* ======================= image handlers ========================= */
   const onThumbChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setNewThumbFile(file);
     setNewThumbPreview(URL.createObjectURL(file));
   };
-
   const onGalleryChange = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setNewImgFiles((p) => [...p, ...files]);
     setNewImgPreviews((p) => [...p, ...files.map((f) => URL.createObjectURL(f))]);
   };
-
-  const removeNewGallery = (idx) => {
-    setNewImgFiles((prev) => prev.filter((_, i) => i !== idx));
-    setNewImgPreviews((prev) => prev.filter((_, i) => i !== idx));
+  const removeNewGallery = (i) => {
+    setNewImgFiles((p) => p.filter((_, idx) => idx !== i));
+    setNewImgPreviews((p) => p.filter((_, idx) => idx !== i));
+  };
+  const removeExistingImg = (i) => {
+    setDeletedImageIds((p) => [...p, existingImgs[i].public_id]);
+    setExistingImgs((p) => p.filter((_, idx) => idx !== i));
   };
 
-  const removeExistingImg = (index) => {
-    setDeletedImageIds((prev) => [...prev, existingImgs[index].public_id]);
-    setExistingImgs((prev) => prev.filter((_, i) => i !== index));
-  };
+  /* ======================= specs & ingredients ==================== */
+  const changeSpec = (i, field, val) =>
+    setSpecs((p) => p.map((row, idx) => (idx === i ? { ...row, [field]: val } : row)));
+  const addSpec = () => setSpecs((p) => [...p, { key: "", value: "" }]);
+  const removeSpec = (i) => setSpecs((p) => p.filter((_, idx) => idx !== i));
 
-  /* ------- specifications ------- */
-  const changeSpec = (idx, field, value) =>
-    setSpecs((prev) =>
-      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
-    );
-  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
-  const removeSpec = (idx) =>
-    setSpecs((prev) => prev.filter((_, i) => i !== idx));
+  const changeIng = (i, val) =>
+    setIngredients((p) => p.map((ing, idx) => (idx === i ? val : ing)));
+  const addIng = () => setIngredients((p) => [...p, ""]);
+  const removeIng = (i) => setIngredients((p) => p.filter((_, idx) => idx !== i));
 
-  /* ------- ingredients ------- */
-  const changeIng = (idx, value) =>
-    setIngredients((prev) =>
-      prev.map((ing, i) => (i === idx ? value : ing))
-    );
-  const addIng = () => setIngredients((prev) => [...prev, ""]);
-  const removeIng = (idx) =>
-    setIngredients((prev) => prev.filter((_, i) => i !== idx));
-
-  /* ------------------------------------------------------------------ */
-  /*                               Save                                 */
-  /* ------------------------------------------------------------------ */
+  /* ============================= SAVE ============================= */
   const handleSave = async () => {
     setSaving(true);
     try {
-      /* build clean specifications & ingredients */
-      const specObj = specs.reduce((acc, { key, value }) => {
-        if (key.trim()) acc[key] = value;
-        return acc;
-      }, {});
+      /* convert editable specs back to ARRAY for your backend */
+      const cleanSpecs = specs
+        .filter((r) => r.key.trim() || r.value.trim())
+        .map((r) => ({ key: r.key.trim(), value: r.value.trim() }));
+
       const cleanIngs = ingredients.filter((x) => x.trim());
 
-      let payload;
       const hasFiles = newThumbFile || newImgFiles.length;
+      let payload;
+
       if (hasFiles) {
-        /* multipart/form-data */
         payload = new FormData();
         Object.entries({
           ...form,
-          specifications: JSON.stringify(specObj),
+          specifications: JSON.stringify(cleanSpecs),
           ingredients: JSON.stringify(cleanIngs),
           deletedImageIds: JSON.stringify(deletedImageIds),
         }).forEach(([k, v]) => payload.append(k, v));
         if (newThumbFile) payload.append("thumbnail", newThumbFile);
         newImgFiles.forEach((f) => payload.append("images", f));
       } else {
-        /* pure JSON */
         payload = {
           ...form,
-          specifications: specObj,
+          specifications: cleanSpecs,
           ingredients: cleanIngs,
           deletedImageIds,
         };
@@ -200,9 +217,7 @@ const MyProductDetail = () => {
     setSaving(false);
   };
 
-  /* ------------------------------------------------------------------ */
-  /*                              Delete                                */
-  /* ------------------------------------------------------------------ */
+  /* ============================ DELETE ============================ */
   const handleDelete = async () => {
     setSaving(true);
     setShowDeleteModal(false);
@@ -215,45 +230,22 @@ const MyProductDetail = () => {
     setSaving(false);
   };
 
-  /* ------------------------------------------------------------------ */
-  /*                 SAFE display helper (fixes error #31)              */
-  /* ------------------------------------------------------------------ */
-  const stringifyIfObj = (val) =>
-    val && typeof val === "object" ? JSON.stringify(val) : val;
-
-  const renderField = (label, name, type = "text") => {
-    const value = stringifyIfObj(form[name]);
-    return (
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-
-        {editMode ? (
-          <input
-            name={name}
-            value={typeof value === "string" ? value : ""}
-            onChange={handleInput}
-            type={type}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        ) : (
-          <p className="text-sm text-gray-800">{value || "-"}</p>
-        )}
-      </div>
-    );
-  };
-
-  /* ------------------------------------------------------------------ */
-  /*                               JSX                                  */
-  /* ------------------------------------------------------------------ */
+  /* -------------------------- JSX starts -------------------------- */
   if (!product) return <div className="p-6">Loading...</div>;
+
+  /* quick helper to render specs in read mode */
+  const specEntries = Array.isArray(product.specifications)
+    ? product.specifications.map((s, i) => ({
+        key: s.key ?? `#${i + 1}`,
+        value: stringifyIfObj(s.value ?? s._id ?? ""),
+      }))
+    : Object.entries(product.specifications || {}).map(([k, v]) => ({
+        key: k,
+        value: stringifyIfObj(v),
+      }));
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* ---------------------------------------------------------------- */}
-      {/*                          Confirmation Modal                      */}
-      {/* ---------------------------------------------------------------- */}
       <ConfirmModal
         open={showDeleteModal}
         title="Are you sure you want to delete this product?"
@@ -261,9 +253,7 @@ const MyProductDetail = () => {
         onConfirm={handleDelete}
       />
 
-      {/* ---------------------------------------------------------------- */}
-      {/*                               Header                            */}
-      {/* ---------------------------------------------------------------- */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -277,8 +267,7 @@ const MyProductDetail = () => {
             onClick={() => setEditMode((p) => !p)}
             className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center gap-1"
           >
-            {editMode ? <FaTimes /> : <FaEdit />}{" "}
-            {editMode ? "Cancel" : "Edit"}
+            {editMode ? <FaTimes /> : <FaEdit />} {editMode ? "Cancel" : "Edit"}
           </button>
 
           {editMode ? (
@@ -301,14 +290,11 @@ const MyProductDetail = () => {
         </div>
       </div>
 
-      {/* ---------------------------------------------------------------- */}
-      {/*                             Main Card                           */}
-      {/* ---------------------------------------------------------------- */}
+      {/* Main card */}
       <div className="bg-white border rounded-xl shadow-md p-6">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* ------------------------- Left: images --------------------- */}
+          {/* ------------ Images ------------ */}
           <div className="md:w-1/3">
-            {/* Thumbnail */}
             <div className="border rounded-lg overflow-hidden relative mb-4">
               <img
                 src={
@@ -329,10 +315,9 @@ const MyProductDetail = () => {
               )}
             </div>
 
-            {/* Gallery */}
+            {/* gallery */} 
             <div className="flex gap-2 flex-wrap">
-              {/* Existing images */}
-              {existingImgs.map((img, index) => (
+              {existingImgs.map((img, i) => (
                 <div key={img.public_id} className="relative group w-20 h-20">
                   <img
                     src={img.url}
@@ -341,34 +326,29 @@ const MyProductDetail = () => {
                   />
                   {editMode && (
                     <button
-                      onClick={() => removeExistingImg(index)}
+                      onClick={() => removeExistingImg(i)}
                       className="absolute top-1 right-1 bg-white text-red-600 rounded-full p-1 shadow hover:bg-red-600 hover:text-white transition"
-                      title="Remove image"
                     >
                       <FaTimes size={10} />
                     </button>
                   )}
                 </div>
               ))}
-
-              {/* New previews */}
-              {newImgPreviews.map((src, idx) => (
-                <div key={idx} className="relative group w-20 h-20">
+              {newImgPreviews.map((src, i) => (
+                <div key={i} className="relative group w-20 h-20">
                   <img
                     src={src}
                     alt="New"
                     className="w-full h-full object-cover rounded-md"
                   />
                   <button
-                    onClick={() => removeNewGallery(idx)}
+                    onClick={() => removeNewGallery(i)}
                     className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-md"
                   >
                     <FaTrash />
                   </button>
                 </div>
               ))}
-
-              {/* Add button */}
               {editMode && (
                 <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
                   <FaPlus className="text-gray-400" />
@@ -384,7 +364,7 @@ const MyProductDetail = () => {
             </div>
           </div>
 
-          {/* ----------------------- Right: details --------------------- */}
+          {/* ------------ Details ------------ */}
           <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
             {renderField("Product Name", "name")}
             {renderField("Brand", "brand")}
@@ -397,7 +377,7 @@ const MyProductDetail = () => {
             {renderField("Barcode", "barcode")}
             {renderField("Description", "description")}
 
-            {/* Status Toggles */}
+            {/* published / expiry toggles */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Published
@@ -422,7 +402,6 @@ const MyProductDetail = () => {
                 </span>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Expiry-based product
@@ -450,14 +429,11 @@ const MyProductDetail = () => {
           </div>
         </div>
 
-        {/* ---------------------------------------------------------------- */}
-        {/*                         Specifications                           */}
-        {/* ---------------------------------------------------------------- */}
+        {/* =============== Specifications =============== */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-3 text-gray-700">
             Specifications
           </h2>
-
           {editMode ? (
             <>
               <div className="grid md:grid-cols-2 gap-4">
@@ -493,30 +469,28 @@ const MyProductDetail = () => {
             </>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {Object.entries(product.specifications || {}).map(([k, v]) => (
-                <span
-                  key={k}
-                  className="inline-flex items-center bg-gray-100 border border-gray-300 px-3 py-1 rounded-full text-sm text-gray-800"
-                >
-                  <strong className="mr-1">{k}:</strong> {v}
-                </span>
-              ))}
-              {!Object.keys(product.specifications || {}).length && (
+              {specEntries.length ? (
+                specEntries.map(({ key, value }, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center bg-gray-100 border border-gray-300 px-3 py-1 rounded-full text-sm text-gray-800"
+                  >
+                    <strong className="mr-1">{key}:</strong> {value}
+                  </span>
+                ))
+              ) : (
                 <span className="text-gray-400">No specifications</span>
               )}
             </div>
           )}
         </div>
 
-        {/* ---------------------------------------------------------------- */}
-        {/*                            Ingredients                          */}
-        {/* ---------------------------------------------------------------- */}
+        {/* =============== Ingredients =============== */}
         {ingredients.some((ing) => ing.trim()) && (
           <div className="mt-8">
             <h2 className="text-lg font-semibold mb-3 text-gray-700">
               Ingredients
             </h2>
-
             {editMode ? (
               <>
                 {ingredients.map((ing, i) => (
