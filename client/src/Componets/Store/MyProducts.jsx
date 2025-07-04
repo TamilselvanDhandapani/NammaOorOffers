@@ -26,7 +26,7 @@ const MyProducts = () => {
         <FaBoxOpen className="text-6xl text-gray-400 mb-4" />
         <p className="text-gray-600 text-xl">No products found</p>
         <Link
-          to="/create-product"
+          to="/createproduct"
           className="mt-4 px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
           Add Product
