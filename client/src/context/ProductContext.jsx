@@ -42,7 +42,7 @@ export const ProductProvider = ({ children }) => {
   const fetchAllProducts = async () => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get("/products");
+      const res = await api.get("/products/public");
       dispatch({ type: "FETCH_ALL_SUCCESS", payload: res.data.products });
     } catch (err) {
       dispatch({
@@ -56,7 +56,7 @@ export const ProductProvider = ({ children }) => {
   const getProductById = async (id) => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get(`/products/${id}`);
+      const res = await api.get(`/products/public/${id}`);
       dispatch({ type: "FETCH_DETAIL_SUCCESS", payload: res.data.product });
       return res.data.product;
     } catch (err) {
