@@ -8,9 +8,9 @@ const {
   getProductById,
   getStoreProducts,
 } = require("../controllers/productController");
-const { uploadProductImages } = require("../middleware/upload");
+const { uploadProductImages } = require("../middleware/uploadMiddleware");
 const handleMulterErrors = require("../utils/handleMulterErrors");
-const protect = require("../middleware/auth"); // ⬅️ your auth middleware
+const protect = require("../middleware/authMiddleware"); // ⬅️ your auth middleware
 
 const router = express.Router();
 
