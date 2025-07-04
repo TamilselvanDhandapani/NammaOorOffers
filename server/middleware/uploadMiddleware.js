@@ -37,4 +37,4 @@ const uploadProductImages = upload.fields([
   { name: "images", maxCount: 5 },
 ]);
 
-module.exports = { uploadProductImages };
+module.exports = {upload, uploadProductImages };
