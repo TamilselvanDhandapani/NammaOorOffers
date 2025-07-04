@@ -5,21 +5,21 @@ const {
   createProduct,
   deleteProduct,
   updateProduct,
-  getAllProducts,
-  getProductById,
+  getAllProducts,        // consider renaming to getPublicProducts
+  getProductById,        // consider renaming to getPublicProductById
   getStoreProducts,
 } = require("../controllers/productController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
-const  {uploadProductImages}  = require("../middleware/uploadMiddleware");
+const { uploadProductImages } = require("../middleware/uploadMiddleware");
 
-// Public
+// ─── PUBLIC ROUTES ─────────────────────────────
 router.get("/public", getAllProducts);
 router.get("/public/:id", getProductById);
 
-// Store/Admin
-router.post("/", protect, authorizeRoles("store", "admin"), uploadProductImages, createProduct);
+// ─── STORE/ADMIN ROUTES ───────────────────────
 router.get("/store", protect, authorizeRoles("store", "admin"), getStoreProducts);
+router.post("/", protect, authorizeRoles("store", "admin"), uploadProductImages, createProduct);
 router.put("/:id", protect, authorizeRoles("store", "admin"), uploadProductImages, updateProduct);
 router.delete("/:id", protect, authorizeRoles("store", "admin"), deleteProduct);
 

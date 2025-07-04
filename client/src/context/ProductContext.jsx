@@ -1,8 +1,9 @@
-import { createContext, useReducer } from "react";
-import api from "../Services/api"; // Axios instance
+import { createContext, useReducer, useCallback, useMemo } from "react";
+import api from "../Services/api"; // axios instance
 
 const ProductContext = createContext();
 
+/* ---------- Initial State ---------- */
 const initialState = {
   allProducts: [],
   storeProducts: [],
@@ -12,6 +13,7 @@ const initialState = {
   error: null,
 };
 
+/* ---------- Reducer ---------- */
 const productReducer = (state, action) => {
   switch (action.type) {
     case "FETCH_START":
@@ -26,17 +28,38 @@ const productReducer = (state, action) => {
       };
 
     case "FETCH_STORE_SUCCESS":
-      return { ...state, loading: false, storeProducts: action.payload };
+      return {
+        ...state,
+        loading: false,
+        storeProducts: action.payload,
+      };
 
     case "FETCH_DETAIL_SUCCESS":
       return { ...state, loading: false, productDetail: action.payload };
+
+    case "CREATE_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        storeProducts: [action.payload, ...state.storeProducts],
+        allProducts: [action.payload, ...state.allProducts],
+      };
+
+    case "UPDATE_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        storeProducts: state.storeProducts.map(p => p._id === action.payload._id ? action.payload : p),
+        allProducts: state.allProducts.map(p => p._id === action.payload._id ? action.payload : p),
+        productDetail: state.productDetail && state.productDetail._id === action.payload._id ? action.payload : state.productDetail,
+      };
 
     case "DELETE_SUCCESS":
       return {
         ...state,
         loading: false,
-        storeProducts: state.storeProducts.filter((p) => p._id !== action.payload),
-        allProducts: state.allProducts.filter((p) => p._id !== action.payload),
+        storeProducts: state.storeProducts.filter(p => p._id !== action.payload),
+        allProducts: state.allProducts.filter(p => p._id !== action.payload),
       };
 
     case "ERROR":
@@ -50,19 +73,26 @@ const productReducer = (state, action) => {
   }
 };
 
+/* ---------- Provider ---------- */
 export const ProductProvider = ({ children }) => {
   const [state, dispatch] = useReducer(productReducer, initialState);
 
-  const fetchAllProducts = async (page = 1, limit = 12) => {
+  /* -------- Helpers -------- */
+  const buildQueryString = params => new URLSearchParams(params).toString();
+
+  /* -------- Public catalogue -------- */
+  const fetchAllProducts = useCallback(async (params = {}) => {
     dispatch({ type: "FETCH_START" });
+
+    const qs = buildQueryString({ page: 1, limit: 12, ...params });
+
     try {
-      const res = await api.get(`/products/public?page=${page}&limit=${limit}`);
+      const { data } = await api.get(`/products/public?${qs}`);
+      const { products, total, page, pages } = data;
+
       dispatch({
         type: "FETCH_ALL_SUCCESS",
-        payload: {
-          products: res.data.products,
-          pagination: res.data.pagination,
-        },
+        payload: { products, pagination: { total, page, pages } },
       });
     } catch (err) {
       dispatch({
@@ -70,83 +100,94 @@ export const ProductProvider = ({ children }) => {
         payload: err.response?.data?.message || "Failed to fetch products",
       });
     }
-  };
+  }, []);
 
-  const getProductById = async (id) => {
+  const getProductById = useCallback(async (id) => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get(`/products/public/${id}`);
-      dispatch({ type: "FETCH_DETAIL_SUCCESS", payload: res.data.product });
-      return res.data.product;
+      const { data } = await api.get(`/products/public/${id}`);
+      dispatch({ type: "FETCH_DETAIL_SUCCESS", payload: data });
+      return data;
     } catch (err) {
-      dispatch({
-        type: "ERROR",
-        payload: err.response?.data?.message || "Failed to fetch product",
-      });
-      throw err;
+      const msg = err.response?.data?.message || "Failed to fetch product";
+      dispatch({ type: "ERROR", payload: msg });
+      throw new Error(msg);
     }
-  };
+  }, []);
 
-  const fetchStoreProducts = async () => {
+  /* -------- Store / Admin side -------- */
+  const fetchStoreProducts = useCallback(async () => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get("/products/store");
-      dispatch({ type: "FETCH_STORE_SUCCESS", payload: res.data.products });
+      const { data } = await api.get("/products/store"); // backend returns an array
+      dispatch({ type: "FETCH_STORE_SUCCESS", payload: data });
     } catch (err) {
       dispatch({
         type: "ERROR",
         payload: err.response?.data?.message || "Failed to fetch store products",
       });
     }
-  };
+  }, []);
 
-  const createProduct = async (formData) => {
+  const createProduct = useCallback(async (formData) => {
+    dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.post("/products", formData, {
+      const { data } = await api.post("/products", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      return res.data.product;
+      dispatch({ type: "CREATE_SUCCESS", payload: data });
+      return data;
     } catch (err) {
-      throw new Error(err.response?.data?.message || "Failed to create product");
+      const msg = err.response?.data?.message || "Failed to create product";
+      dispatch({ type: "ERROR", payload: msg });
+      throw new Error(msg);
     }
-  };
+  }, []);
 
-  const updateProduct = async (id, formData) => {
+  const updateProduct = useCallback(async (id, data) => {
+    dispatch({ type: "FETCH_START" });
     try {
-      const isFormData = formData instanceof FormData;
-      const res = await api.put(`/products/${id}`, formData, {
-        headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+      const { data: updated } = await api.put(`/products/${id}`, data, {
+        headers: data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {},
       });
-      return res.data.product;
+      dispatch({ type: "UPDATE_SUCCESS", payload: updated });
+      return updated;
     } catch (err) {
-      throw new Error(err.response?.data?.message || "Failed to update product");
+      const msg = err.response?.data?.message || "Failed to update product";
+      dispatch({ type: "ERROR", payload: msg });
+      throw new Error(msg);
     }
-  };
+  }, []);
 
-  const deleteProduct = async (id) => {
+  const deleteProduct = useCallback(async (id) => {
+    dispatch({ type: "FETCH_START" });
     try {
       await api.delete(`/products/${id}`);
       dispatch({ type: "DELETE_SUCCESS", payload: id });
     } catch (err) {
-      throw new Error(err.response?.data?.message || "Failed to delete product");
+      dispatch({
+        type: "ERROR",
+        payload: err.response?.data?.message || "Failed to delete product",
+      });
     }
-  };
+  }, []);
 
-  const clearError = () => dispatch({ type: "CLEAR_ERROR" });
+  const clearError = useCallback(() => dispatch({ type: "CLEAR_ERROR" }), []);
+
+  /* -------- Memoised context value -------- */
+  const value = useMemo(() => ({
+    ...state,
+    fetchAllProducts,
+    getProductById,
+    fetchStoreProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    clearError,
+  }), [state, fetchAllProducts, getProductById, fetchStoreProducts, createProduct, updateProduct, deleteProduct, clearError]);
 
   return (
-    <ProductContext.Provider
-      value={{
-        ...state,
-        fetchAllProducts,
-        getProductById,
-        fetchStoreProducts,
-        createProduct,
-        updateProduct,
-        deleteProduct,
-        clearError,
-      }}
-    >
+    <ProductContext.Provider value={value}>
       {children}
     </ProductContext.Provider>
   );
