@@ -1,5 +1,5 @@
 const Product = require("../models/Product");
-const cloudinary = require("../utils/cloudinary")
+const cloudinary = require("../utils/cloudinary");
 
 // Create a product
 const createProduct = async (req, res) => {
@@ -96,45 +96,62 @@ const createProduct = async (req, res) => {
     res.status(201).json({ success: true, product });
   } catch (err) {
     console.error("Create product error:", err);
-    res.status(500).json({ success: false, message: "Product creation failed" });
+    res
+      .status(500)
+      .json({ success: false, message: "Product creation failed" });
   }
 };
 
 // Get all public products (published only)
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({ isPublished: true }).sort({ createdAt: -1 });
+    const products = await Product.find({ isPublished: true }).sort({
+      createdAt: -1,
+    });
     res.json({ success: true, products });
   } catch (err) {
     console.error("Fetch products error:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch products" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch products" });
   }
 };
 
 // Get product by ID (public)
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findOne({ _id: req.params.id, isPublished: true });
+    const product = await Product.findOne({
+      _id: req.params.id,
+      isPublished: true,
+    });
 
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     res.json({ success: true, product });
   } catch (err) {
     console.error("Get product error:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch product" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch product" });
   }
 };
 
 // Get all products for store (dashboard)
 const getStoreProducts = async (req, res) => {
   try {
-    const products = await Product.find({ store: req.user.storeId }).sort({ createdAt: -1 });
+    const products = await Product.find({ store: req.user.storeId }).sort({
+      createdAt: -1,
+    });
     res.json({ success: true, products });
   } catch (err) {
     console.error("Fetch store products error:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch store products" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch store products" });
   }
 };
 
@@ -147,20 +164,23 @@ const deleteProduct = async (req, res) => {
     });
 
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found or unauthorized" });
     }
 
     res.json({ success: true, message: "Product deleted successfully" });
   } catch (err) {
     console.error("Delete product error:", err);
-    res.status(500).json({ success: false, message: "Failed to delete product" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete product" });
   }
 };
 
 // Update product by ID
 const updateProduct = async (req, res) => {
   try {
-    // --- 1. Extract body fields ------------------------------------------------
     const {
       name,
       brand,
@@ -184,38 +204,42 @@ const updateProduct = async (req, res) => {
       fssaiNumber,
       licenseNumber,
       isPublished,
-      deletedImageIds: deletedImageIdsRaw, // 🆕 IDs to remove
+      deletedImageIds: deletedImageIdsRaw,
     } = req.body;
 
-    // Parse deleted IDs (may arrive as JSON string if sent via FormData)
-    const deletedImageIds =
-      typeof deletedImageIdsRaw === "string"
-        ? JSON.parse(deletedImageIdsRaw)
-        : deletedImageIdsRaw || [];
+    // ✅ parse deletedImageIds safely
+    let deletedImageIds = [];
+    if (deletedImageIdsRaw) {
+      try {
+        deletedImageIds = Array.isArray(deletedImageIdsRaw)
+          ? deletedImageIdsRaw
+          : JSON.parse(deletedImageIdsRaw);
+      } catch (e) {
+        console.warn("Failed to parse deletedImageIds:", deletedImageIdsRaw);
+      }
+    }
 
-    // --- 2. Fetch product that belongs to this store --------------------------
     const product = await Product.findOne({
       _id: req.params.id,
       store: req.user.storeId,
     });
 
-    if (!product)
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
 
-    // --- 3. Handle text / numeric field updates ------------------------------
+    // ✅ Update regular fields
     const parsedSpecifications =
       typeof specifications === "string"
         ? JSON.parse(specifications)
-        : specifications;
+        : specifications || {};
     const parsedIngredients =
-      typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients;
+      typeof ingredients === "string"
+        ? JSON.parse(ingredients)
+        : ingredients || [];
 
-    const numericPrice =
-      price !== undefined ? Number(price) : product.price || 0;
-    const numericDiscount =
-      discount !== undefined ? Number(discount) : product.discount || 0;
+    const numericPrice = price !== undefined ? Number(price) : product.price || 0;
+    const numericDiscount = discount !== undefined ? Number(discount) : product.discount || 0;
     const finalPrice = numericPrice - (numericPrice * numericDiscount) / 100;
 
     Object.assign(product, {
@@ -224,7 +248,8 @@ const updateProduct = async (req, res) => {
       category: category ?? product.category,
       subcategory: subcategory ?? product.subcategory,
       description: description ?? product.description,
-      specifications: parsedSpecifications ?? product.specifications,
+      specifications: parsedSpecifications,
+      ingredients: parsedIngredients,
       price: numericPrice,
       discount: numericDiscount,
       finalPrice,
@@ -235,7 +260,6 @@ const updateProduct = async (req, res) => {
       manufacturingDate: manufacturingDate ?? product.manufacturingDate,
       expiryDate: expiryDate ?? product.expiryDate,
       batchNumber: batchNumber ?? product.batchNumber,
-      ingredients: parsedIngredients ?? product.ingredients,
       storageInstructions: storageInstructions ?? product.storageInstructions,
       usageInstructions: usageInstructions ?? product.usageInstructions,
       allergenWarnings: allergenWarnings ?? product.allergenWarnings,
@@ -244,24 +268,22 @@ const updateProduct = async (req, res) => {
       isPublished: isPublished ?? product.isPublished,
     });
 
-    // --- 4. Remove images that user deleted ----------------------------------
+    // ✅ Remove deleted images from DB
     if (deletedImageIds.length) {
-      // Filter DB array
       product.images = product.images.filter(
         (img) => !deletedImageIds.includes(img.public_id)
       );
 
-      // Optional: also delete from Cloudinary (or local FS / S3)
       for (const public_id of deletedImageIds) {
         try {
-          await cloudinary.uploader.destroy(public_id); // comment out if not using Cloudinary
-        } catch (err) {
-          console.warn("Cloudinary delete error:", err.message);
+          await cloudinary.uploader.destroy(public_id);
+        } catch (e) {
+          console.warn("Failed to delete from Cloudinary:", public_id);
         }
       }
     }
 
-    // --- 5. Handle new uploads ------------------------------------------------
+    // ✅ Update thumbnail and images if present
     const thumbnailFile = req.files?.thumbnail?.[0];
     const imageFiles = req.files?.images || [];
 
@@ -272,8 +294,7 @@ const updateProduct = async (req, res) => {
       };
     }
 
-    if (imageFiles.length) {
-      // Append new images after the already-kept ones
+    if (imageFiles.length > 0) {
       product.images.push(
         ...imageFiles.map((file) => ({
           public_id: file.filename,
@@ -285,12 +306,11 @@ const updateProduct = async (req, res) => {
     await product.save();
     res.json({ success: true, product });
   } catch (err) {
-    console.error("Update product error:", err);
-    res.status(500).json({ success: false, message: "Failed to update product" });
+    console.error("🔴 Update product error:", err.message);
+    console.error(err.stack);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
-
-
 
 
 module.exports = {
