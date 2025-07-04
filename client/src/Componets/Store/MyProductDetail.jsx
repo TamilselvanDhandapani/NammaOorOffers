@@ -73,7 +73,6 @@ const MyProductDetail = () => {
         setExistingImgs(res.images || []);
       } catch {
         alert("Failed to load product");
-        navigate(-1);
       }
     })();
     // eslint-disable-next-line
@@ -98,7 +97,10 @@ const MyProductDetail = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setNewImgFiles((p) => [...p, ...files]);
-    setNewImgPreviews((p) => [...p, ...files.map((f) => URL.createObjectURL(f))]);
+    setNewImgPreviews((p) => [
+      ...p,
+      ...files.map((f) => URL.createObjectURL(f)),
+    ]);
   };
 
   const removeNewGallery = (idx) => {
@@ -142,7 +144,7 @@ const MyProductDetail = () => {
       await updateProduct(id, payload);
       alert("Saved!");
       setEditMode(false);
-      navigate(0);
+      navigate("/myproducts");
     } catch {
       alert("Save failed");
     }
@@ -154,7 +156,7 @@ const MyProductDetail = () => {
     setShowDeleteModal(false);
     try {
       await deleteProduct(id);
-      navigate("/dashboard/products");
+      navigate("/myproducts");
     } catch {
       alert("Failed to delete");
     }
@@ -167,7 +169,8 @@ const MyProductDetail = () => {
     );
 
   const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
-  const removeSpec = (idx) => setSpecs((prev) => prev.filter((_, i) => i !== idx));
+  const removeSpec = (idx) =>
+    setSpecs((prev) => prev.filter((_, i) => i !== idx));
 
   const changeIng = (idx, value) =>
     setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
