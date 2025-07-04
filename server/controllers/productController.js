@@ -1,6 +1,8 @@
 // 📁 controllers/productController.js
 const Product = require("../models/Product");
 const cloudinary = require("../utils/cloudinary");
+const fs = require("fs");
+const path = require("path");
 
 /* ───────────── Helpers ───────────── */
 const parseJSON = (val, fallback) => {
@@ -105,63 +107,88 @@ const getStoreProducts = async (req, res) => {
 /* ───────────── Update ───────────── */
 const updateProduct = async (req, res) => {
   try {
-    const prod = await Product.findOne({ _id: req.params.id, store: req.user.storeId });
-    if (!prod) return res.status(404).json({ success: false, message: "Product not found" });
+    const productId = req.params.id;
 
-    /* Parse complex fields */
-    const specs = parseJSON(req.body.specifications, prod.specifications);
-    const ingrs = parseJSON(req.body.ingredients, prod.ingredients);
-
-    /* Numeric conversions */
-    const price = req.body.price !== undefined ? Number(req.body.price) : prod.price;
-    const discount =
-      req.body.discount !== undefined ? Number(req.body.discount) : prod.discount;
-
-    /* Assign updated values */
-    Object.assign(prod, {
-      ...req.body,
-      specifications: specs,
-      ingredients: ingrs,
+    // 1. Extract body and safely parse fields
+    const {
+      name,
+      brand,
+      category,
+      subcategory,
+      description,
+      specifications,
       price,
       discount,
-      stock: req.body.stock !== undefined ? Number(req.body.stock) : prod.stock,
+      stock,
+      sku,
+      barcode,
+      isExpiryProduct,
+      manufacturingDate,
+      expiryDate,
+      batchNumber,
+      ingredients,
+      storageInstructions,
+      usageInstructions,
+      allergenWarnings,
+      fssaiNumber,
+      licenseNumber,
+      isPublished,
+    } = req.body;
+
+    const thumbnailFile = req.files?.thumbnail?.[0];
+    const imageFiles = req.files?.images || [];
+
+    const updateData = {
+      name,
+      brand,
+      category,
+      subcategory,
+      description,
+      price: Number(price),
+      discount: Number(discount),
+      stock: Number(stock),
+      sku,
+      barcode,
+      isExpiryProduct: isExpiryProduct === "true",
+      manufacturingDate: manufacturingDate !== "null" ? new Date(manufacturingDate) : null,
+      expiryDate: expiryDate !== "null" ? new Date(expiryDate) : null,
+      batchNumber,
+      ingredients: ingredients ? JSON.parse(ingredients) : [],
+      specifications: specifications ? JSON.parse(specifications) : [],
+      storageInstructions,
+      usageInstructions,
+      allergenWarnings,
+      fssaiNumber,
+      licenseNumber,
+      isPublished: isPublished === "true",
+    };
+
+    if (thumbnailFile) {
+      updateData.thumbnail = {
+        public_id: thumbnailFile.filename,
+        url: thumbnailFile.path,
+      };
+    }
+
+    if (imageFiles.length > 0) {
+      updateData.images = imageFiles.map((file) => ({
+        public_id: file.filename,
+        url: file.path,
+      }));
+    }
+
+    const updated = await Product.findByIdAndUpdate(productId, updateData, {
+      new: true,
+      runValidators: true,
     });
 
-    /* Handle deleted image IDs */
-    const deletedIds = parseJSON(req.body.deletedImageIds, []);
-    if (deletedIds.length) {
-      prod.images = prod.images.filter((img) => !deletedIds.includes(img.public_id));
-      for (const id of deletedIds) {
-        try {
-          await cloudinary.uploader.destroy(id);
-        } catch (err) {
-          console.warn("Cloudinary deletion failed:", id);
-        }
-      }
-    }
-
-    /* Handle new uploads */
-    const tFile = req.files?.thumbnail?.[0];
-    const imgFiles = req.files?.images || [];
-    if (tFile) {
-      /* delete old thumb */
-      if (prod.thumbnail?.public_id) await cloudinary.uploader.destroy(prod.thumbnail.public_id);
-      prod.thumbnail = { public_id: tFile.filename, url: tFile.path || tFile.secure_url };
-    }
-    if (imgFiles.length) {
-      prod.images.push(
-        ...imgFiles.map((f) => ({
-          public_id: f.filename,
-          url: f.path || f.secure_url,
-        }))
-      );
-    }
-
-    await prod.save();
-    res.json({ success: true, product: prod });
+    res.status(200).json({ success: true, product: updated });
   } catch (err) {
     console.error("Update product error:", err);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message || "Something went wrong while updating product.",
+    });
   }
 };
 
