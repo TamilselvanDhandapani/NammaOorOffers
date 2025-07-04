@@ -234,7 +234,7 @@ const MyProductDetail = () => {
             </div>
           </div>
 
-          <div className="md:w-2/3 grid md:grid-cols-2 gap-6">
+          <div className="md:w-2/3 grid md:grid-cols-2 gap-4">
             {renderField("Product Name", "name")}
             {renderField("Brand", "brand")}
             {renderField("Category", "category")}
@@ -250,7 +250,7 @@ const MyProductDetail = () => {
 
         {/* Split Specs in Grid */}
         <div className="mt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Specifications</h4>
+          <h2 className="text-[1rem] font-medium text-gray-700 mb-2">Specifications</h2>
           {editMode ? (
             <>
               <div className="grid md:grid-cols-2 gap-4">
