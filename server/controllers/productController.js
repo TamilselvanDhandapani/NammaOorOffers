@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const cloudinary = require("../utils/cloudinary")
 
 // Create a product
 const createProduct = async (req, res) => {
@@ -159,6 +160,7 @@ const deleteProduct = async (req, res) => {
 // Update product by ID
 const updateProduct = async (req, res) => {
   try {
+    // --- 1. Extract body fields ------------------------------------------------
     const {
       name,
       brand,
@@ -182,52 +184,84 @@ const updateProduct = async (req, res) => {
       fssaiNumber,
       licenseNumber,
       isPublished,
+      deletedImageIds: deletedImageIdsRaw, // 🆕 IDs to remove
     } = req.body;
 
+    // Parse deleted IDs (may arrive as JSON string if sent via FormData)
+    const deletedImageIds =
+      typeof deletedImageIdsRaw === "string"
+        ? JSON.parse(deletedImageIdsRaw)
+        : deletedImageIdsRaw || [];
+
+    // --- 2. Fetch product that belongs to this store --------------------------
     const product = await Product.findOne({
       _id: req.params.id,
       store: req.user.storeId,
     });
 
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
+    if (!product)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
 
+    // --- 3. Handle text / numeric field updates ------------------------------
     const parsedSpecifications =
-      typeof specifications === "string" ? JSON.parse(specifications) : specifications;
+      typeof specifications === "string"
+        ? JSON.parse(specifications)
+        : specifications;
     const parsedIngredients =
       typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients;
 
-    const numericPrice = price !== undefined ? Number(price) : product.price;
-    const numericDiscount = discount !== undefined ? Number(discount) : product.discount;
+    const numericPrice =
+      price !== undefined ? Number(price) : product.price || 0;
+    const numericDiscount =
+      discount !== undefined ? Number(discount) : product.discount || 0;
     const finalPrice = numericPrice - (numericPrice * numericDiscount) / 100;
 
-    // Update fields
-    product.name = name ?? product.name;
-    product.brand = brand ?? product.brand;
-    product.category = category ?? product.category;
-    product.subcategory = subcategory ?? product.subcategory;
-    product.description = description ?? product.description;
-    product.specifications = parsedSpecifications ?? product.specifications;
-    product.price = numericPrice;
-    product.discount = numericDiscount;
-    product.finalPrice = finalPrice;
-    product.stock = stock !== undefined ? Number(stock) : product.stock;
-    product.sku = sku ?? product.sku;
-    product.barcode = barcode ?? product.barcode;
-    product.isExpiryProduct = isExpiryProduct ?? product.isExpiryProduct;
-    product.manufacturingDate = manufacturingDate ?? product.manufacturingDate;
-    product.expiryDate = expiryDate ?? product.expiryDate;
-    product.batchNumber = batchNumber ?? product.batchNumber;
-    product.ingredients = parsedIngredients ?? product.ingredients;
-    product.storageInstructions = storageInstructions ?? product.storageInstructions;
-    product.usageInstructions = usageInstructions ?? product.usageInstructions;
-    product.allergenWarnings = allergenWarnings ?? product.allergenWarnings;
-    product.fssaiNumber = fssaiNumber ?? product.fssaiNumber;
-    product.licenseNumber = licenseNumber ?? product.licenseNumber;
-    product.isPublished = isPublished ?? product.isPublished;
+    Object.assign(product, {
+      name: name ?? product.name,
+      brand: brand ?? product.brand,
+      category: category ?? product.category,
+      subcategory: subcategory ?? product.subcategory,
+      description: description ?? product.description,
+      specifications: parsedSpecifications ?? product.specifications,
+      price: numericPrice,
+      discount: numericDiscount,
+      finalPrice,
+      stock: stock !== undefined ? Number(stock) : product.stock,
+      sku: sku ?? product.sku,
+      barcode: barcode ?? product.barcode,
+      isExpiryProduct: isExpiryProduct ?? product.isExpiryProduct,
+      manufacturingDate: manufacturingDate ?? product.manufacturingDate,
+      expiryDate: expiryDate ?? product.expiryDate,
+      batchNumber: batchNumber ?? product.batchNumber,
+      ingredients: parsedIngredients ?? product.ingredients,
+      storageInstructions: storageInstructions ?? product.storageInstructions,
+      usageInstructions: usageInstructions ?? product.usageInstructions,
+      allergenWarnings: allergenWarnings ?? product.allergenWarnings,
+      fssaiNumber: fssaiNumber ?? product.fssaiNumber,
+      licenseNumber: licenseNumber ?? product.licenseNumber,
+      isPublished: isPublished ?? product.isPublished,
+    });
 
-    // Handle updated images
+    // --- 4. Remove images that user deleted ----------------------------------
+    if (deletedImageIds.length) {
+      // Filter DB array
+      product.images = product.images.filter(
+        (img) => !deletedImageIds.includes(img.public_id)
+      );
+
+      // Optional: also delete from Cloudinary (or local FS / S3)
+      for (const public_id of deletedImageIds) {
+        try {
+          await cloudinary.uploader.destroy(public_id); // comment out if not using Cloudinary
+        } catch (err) {
+          console.warn("Cloudinary delete error:", err.message);
+        }
+      }
+    }
+
+    // --- 5. Handle new uploads ------------------------------------------------
     const thumbnailFile = req.files?.thumbnail?.[0];
     const imageFiles = req.files?.images || [];
 
@@ -238,21 +272,26 @@ const updateProduct = async (req, res) => {
       };
     }
 
-    if (imageFiles.length > 0) {
-      product.images = imageFiles.map((file) => ({
-        public_id: file.filename,
-        url: file.path,
-      }));
+    if (imageFiles.length) {
+      // Append new images after the already-kept ones
+      product.images.push(
+        ...imageFiles.map((file) => ({
+          public_id: file.filename,
+          url: file.path,
+        }))
+      );
     }
 
     await product.save();
-
     res.json({ success: true, product });
   } catch (err) {
-    console.error("Update product error:", err.message);
+    console.error("Update product error:", err);
     res.status(500).json({ success: false, message: "Failed to update product" });
   }
 };
+
+
+
 
 module.exports = {
   createProduct,
