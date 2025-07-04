@@ -1,3 +1,4 @@
+// 📁 src/pages/MyProductDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useProduct from "../../hooks/useProduct";
@@ -10,8 +11,10 @@ import {
   FaChevronLeft,
 } from "react-icons/fa";
 
-// Simple Modal component
-function ConfirmModal({ open, title, onCancel, onConfirm }) {
+/* ------------------------------------------------------------------ */
+/*                               Modal                                */
+/* ------------------------------------------------------------------ */
+const ConfirmModal = ({ open, title, onCancel, onConfirm }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-40 bg-black/30 flex items-center justify-center">
@@ -34,8 +37,11 @@ function ConfirmModal({ open, title, onCancel, onConfirm }) {
       </div>
     </div>
   );
-}
+};
 
+/* ------------------------------------------------------------------ */
+/*                           Main Component                           */
+/* ------------------------------------------------------------------ */
 const MyProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -44,8 +50,12 @@ const MyProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [form, setForm] = useState({});
   const [editMode, setEditMode] = useState(false);
+
+  /* -------- variable-length fields -------- */
   const [specs, setSpecs] = useState([{ key: "", value: "" }]);
   const [ingredients, setIngredients] = useState([""]);
+
+  /* -------- image management -------- */
   const [existingThumb, setExistingThumb] = useState(null);
   const [existingImgs, setExistingImgs] = useState([]);
   const [newThumbFile, setNewThumbFile] = useState(null);
@@ -53,22 +63,34 @@ const MyProductDetail = () => {
   const [newImgFiles, setNewImgFiles] = useState([]);
   const [newImgPreviews, setNewImgPreviews] = useState([]);
   const [deletedImageIds, setDeletedImageIds] = useState([]);
+
+  /* -------- ui state -------- */
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  /* ------------------------------------------------------------------ */
+  /*                       Fetch product on mount                       */
+  /* ------------------------------------------------------------------ */
   useEffect(() => {
     (async () => {
       try {
         const res = await getProductById(id);
         setProduct(res);
         setForm(res);
+
+        /* convert specifications object to editable array */
         setSpecs(
           Object.entries(res.specifications || {}).map(([key, value]) => ({
             key,
             value,
           }))
         );
-        setIngredients(res.ingredients?.length ? res.ingredients : [""]);
+
+        /* ingredients: ensure at least one placeholder WHEN in edit mode */
+        setIngredients(
+          res.ingredients?.length ? res.ingredients : [""]
+        );
+
         setExistingThumb(res.thumbnail);
         setExistingImgs(res.images || []);
       } catch {
@@ -78,6 +100,9 @@ const MyProductDetail = () => {
     // eslint-disable-next-line
   }, [id]);
 
+  /* ------------------------------------------------------------------ */
+  /*                        Helper & event handlers                     */
+  /* ------------------------------------------------------------------ */
   const handleInput = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -97,10 +122,7 @@ const MyProductDetail = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     setNewImgFiles((p) => [...p, ...files]);
-    setNewImgPreviews((p) => [
-      ...p,
-      ...files.map((f) => URL.createObjectURL(f)),
-    ]);
+    setNewImgPreviews((p) => [...p, ...files.map((f) => URL.createObjectURL(f))]);
   };
 
   const removeNewGallery = (idx) => {
@@ -113,17 +135,41 @@ const MyProductDetail = () => {
     setExistingImgs((prev) => prev.filter((_, i) => i !== index));
   };
 
+  /* ------- specifications ------- */
+  const changeSpec = (idx, field, value) =>
+    setSpecs((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    );
+  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
+  const removeSpec = (idx) =>
+    setSpecs((prev) => prev.filter((_, i) => i !== idx));
+
+  /* ------- ingredients ------- */
+  const changeIng = (idx, value) =>
+    setIngredients((prev) =>
+      prev.map((ing, i) => (i === idx ? value : ing))
+    );
+  const addIng = () => setIngredients((prev) => [...prev, ""]);
+  const removeIng = (idx) =>
+    setIngredients((prev) => prev.filter((_, i) => i !== idx));
+
+  /* ------------------------------------------------------------------ */
+  /*                               Save                                 */
+  /* ------------------------------------------------------------------ */
   const handleSave = async () => {
     setSaving(true);
     try {
+      /* build clean specifications & ingredients */
       const specObj = specs.reduce((acc, { key, value }) => {
         if (key.trim()) acc[key] = value;
         return acc;
       }, {});
       const cleanIngs = ingredients.filter((x) => x.trim());
+
       let payload;
       const hasFiles = newThumbFile || newImgFiles.length;
       if (hasFiles) {
+        /* multipart/form-data */
         payload = new FormData();
         Object.entries({
           ...form,
@@ -134,6 +180,7 @@ const MyProductDetail = () => {
         if (newThumbFile) payload.append("thumbnail", newThumbFile);
         newImgFiles.forEach((f) => payload.append("images", f));
       } else {
+        /* pure JSON */
         payload = {
           ...form,
           specifications: specObj,
@@ -141,16 +188,21 @@ const MyProductDetail = () => {
           deletedImageIds,
         };
       }
+
       await updateProduct(id, payload);
       alert("Saved!");
       setEditMode(false);
       navigate("/myproducts");
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Save failed");
     }
     setSaving(false);
   };
 
+  /* ------------------------------------------------------------------ */
+  /*                              Delete                                */
+  /* ------------------------------------------------------------------ */
   const handleDelete = async () => {
     setSaving(true);
     setShowDeleteModal(false);
@@ -163,46 +215,45 @@ const MyProductDetail = () => {
     setSaving(false);
   };
 
-  const changeSpec = (idx, field, value) =>
-    setSpecs((prev) =>
-      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+  /* ------------------------------------------------------------------ */
+  /*                 SAFE display helper (fixes error #31)              */
+  /* ------------------------------------------------------------------ */
+  const stringifyIfObj = (val) =>
+    val && typeof val === "object" ? JSON.stringify(val) : val;
+
+  const renderField = (label, name, type = "text") => {
+    const value = stringifyIfObj(form[name]);
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+
+        {editMode ? (
+          <input
+            name={name}
+            value={typeof value === "string" ? value : ""}
+            onChange={handleInput}
+            type={type}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        ) : (
+          <p className="text-sm text-gray-800">{value || "-"}</p>
+        )}
+      </div>
     );
+  };
 
-  const addSpec = () => setSpecs((prev) => [...prev, { key: "", value: "" }]);
-  const removeSpec = (idx) =>
-    setSpecs((prev) => prev.filter((_, i) => i !== idx));
-
-  const changeIng = (idx, value) =>
-    setIngredients((prev) => prev.map((ing, i) => (i === idx ? value : ing)));
-  const addIng = () => setIngredients((prev) => [...prev, ""]);
-  const removeIng = (idx) =>
-    setIngredients((prev) => prev.filter((_, i) => i !== idx));
-
-  const renderField = (label, name, type = "text") => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      {editMode ? (
-        <input
-          name={name}
-          value={form[name] || ""}
-          onChange={handleInput}
-          type={type}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      ) : (
-        <p className="text-sm text-gray-800">{form[name] || "-"}</p>
-      )}
-    </div>
-  );
-
+  /* ------------------------------------------------------------------ */
+  /*                               JSX                                  */
+  /* ------------------------------------------------------------------ */
   if (!product) return <div className="p-6">Loading...</div>;
 
-  // --- UI ---
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* Confirmation Modal */}
+      {/* ---------------------------------------------------------------- */}
+      {/*                          Confirmation Modal                      */}
+      {/* ---------------------------------------------------------------- */}
       <ConfirmModal
         open={showDeleteModal}
         title="Are you sure you want to delete this product?"
@@ -210,7 +261,9 @@ const MyProductDetail = () => {
         onConfirm={handleDelete}
       />
 
-      {/* Header */}
+      {/* ---------------------------------------------------------------- */}
+      {/*                               Header                            */}
+      {/* ---------------------------------------------------------------- */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -224,8 +277,10 @@ const MyProductDetail = () => {
             onClick={() => setEditMode((p) => !p)}
             className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center gap-1"
           >
-            {editMode ? <FaTimes /> : <FaEdit />} {editMode ? "Cancel" : "Edit"}
+            {editMode ? <FaTimes /> : <FaEdit />}{" "}
+            {editMode ? "Cancel" : "Edit"}
           </button>
+
           {editMode ? (
             <button
               onClick={handleSave}
@@ -246,10 +301,12 @@ const MyProductDetail = () => {
         </div>
       </div>
 
-      {/* Main Card */}
+      {/* ---------------------------------------------------------------- */}
+      {/*                             Main Card                           */}
+      {/* ---------------------------------------------------------------- */}
       <div className="bg-white border rounded-xl shadow-md p-6">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left: images */}
+          {/* ------------------------- Left: images --------------------- */}
           <div className="md:w-1/3">
             {/* Thumbnail */}
             <div className="border rounded-lg overflow-hidden relative mb-4">
@@ -271,9 +328,10 @@ const MyProductDetail = () => {
                 />
               )}
             </div>
+
             {/* Gallery */}
             <div className="flex gap-2 flex-wrap">
-              {/* Existing images (can delete) */}
+              {/* Existing images */}
               {existingImgs.map((img, index) => (
                 <div key={img.public_id} className="relative group w-20 h-20">
                   <img
@@ -292,7 +350,8 @@ const MyProductDetail = () => {
                   )}
                 </div>
               ))}
-              {/* New images (can undo before save) */}
+
+              {/* New previews */}
               {newImgPreviews.map((src, idx) => (
                 <div key={idx} className="relative group w-20 h-20">
                   <img
@@ -308,6 +367,7 @@ const MyProductDetail = () => {
                   </button>
                 </div>
               ))}
+
               {/* Add button */}
               {editMode && (
                 <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400">
@@ -324,7 +384,7 @@ const MyProductDetail = () => {
             </div>
           </div>
 
-          {/* Right: details */}
+          {/* ----------------------- Right: details --------------------- */}
           <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
             {renderField("Product Name", "name")}
             {renderField("Brand", "brand")}
@@ -362,6 +422,7 @@ const MyProductDetail = () => {
                 </span>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Expiry-based product
@@ -389,11 +450,14 @@ const MyProductDetail = () => {
           </div>
         </div>
 
-        {/* Specifications */}
+        {/* ---------------------------------------------------------------- */}
+        {/*                         Specifications                           */}
+        {/* ---------------------------------------------------------------- */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-3 text-gray-700">
             Specifications
           </h2>
+
           {editMode ? (
             <>
               <div className="grid md:grid-cols-2 gap-4">
@@ -444,12 +508,15 @@ const MyProductDetail = () => {
           )}
         </div>
 
-        {/* Ingredients */}
-        {ingredients.length > 0 && (
+        {/* ---------------------------------------------------------------- */}
+        {/*                            Ingredients                          */}
+        {/* ---------------------------------------------------------------- */}
+        {ingredients.some((ing) => ing.trim()) && (
           <div className="mt-8">
             <h2 className="text-lg font-semibold mb-3 text-gray-700">
               Ingredients
             </h2>
+
             {editMode ? (
               <>
                 {ingredients.map((ing, i) => (
@@ -476,9 +543,9 @@ const MyProductDetail = () => {
               </>
             ) : (
               <ul className="list-disc pl-5 text-sm text-gray-700">
-                {ingredients.map((ing, i) => (
-                  <li key={i}>{ing}</li>
-                ))}
+                {ingredients.map(
+                  (ing, i) => ing.trim() && <li key={i}>{ing}</li>
+                )}
               </ul>
             )}
           </div>
