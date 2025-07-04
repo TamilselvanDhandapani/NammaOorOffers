@@ -1,4 +1,3 @@
-// 📁 context/ProductContext.js
 import { createContext, useReducer } from "react";
 import api from "../Services/api"; // Axios instance
 
@@ -8,6 +7,7 @@ const initialState = {
   allProducts: [],
   storeProducts: [],
   productDetail: null,
+  pagination: null,
   loading: false,
   error: null,
 };
@@ -16,20 +16,35 @@ const productReducer = (state, action) => {
   switch (action.type) {
     case "FETCH_START":
       return { ...state, loading: true, error: null };
+
     case "FETCH_ALL_SUCCESS":
-      return { ...state, loading: false, allProducts: action.payload };
+      return {
+        ...state,
+        loading: false,
+        allProducts: action.payload.products,
+        pagination: action.payload.pagination,
+      };
+
     case "FETCH_STORE_SUCCESS":
       return { ...state, loading: false, storeProducts: action.payload };
+
     case "FETCH_DETAIL_SUCCESS":
       return { ...state, loading: false, productDetail: action.payload };
+
     case "DELETE_SUCCESS":
       return {
         ...state,
         loading: false,
         storeProducts: state.storeProducts.filter((p) => p._id !== action.payload),
+        allProducts: state.allProducts.filter((p) => p._id !== action.payload),
       };
+
     case "ERROR":
       return { ...state, loading: false, error: action.payload };
+
+    case "CLEAR_ERROR":
+      return { ...state, error: null };
+
     default:
       return state;
   }
@@ -38,12 +53,17 @@ const productReducer = (state, action) => {
 export const ProductProvider = ({ children }) => {
   const [state, dispatch] = useReducer(productReducer, initialState);
 
-  /* ───────────── Public: Get All Published Products ───────────── */
-  const fetchAllProducts = async () => {
+  const fetchAllProducts = async (page = 1, limit = 12) => {
     dispatch({ type: "FETCH_START" });
     try {
-      const res = await api.get("/products/public");
-      dispatch({ type: "FETCH_ALL_SUCCESS", payload: res.data.products });
+      const res = await api.get(`/products/public?page=${page}&limit=${limit}`);
+      dispatch({
+        type: "FETCH_ALL_SUCCESS",
+        payload: {
+          products: res.data.products,
+          pagination: res.data.pagination,
+        },
+      });
     } catch (err) {
       dispatch({
         type: "ERROR",
@@ -52,7 +72,6 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  /* ───────────── Public: Get Product By ID ───────────── */
   const getProductById = async (id) => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -68,7 +87,6 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  /* ───────────── Store: Get My Products ───────────── */
   const fetchStoreProducts = async () => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -82,7 +100,6 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  /* ───────────── Store: Create Product ───────────── */
   const createProduct = async (formData) => {
     try {
       const res = await api.post("/products", formData, {
@@ -94,10 +111,9 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  /* ───────────── Store: Update Product ───────────── */
   const updateProduct = async (id, formData) => {
-    const isFormData = formData instanceof FormData;
     try {
+      const isFormData = formData instanceof FormData;
       const res = await api.put(`/products/${id}`, formData, {
         headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
       });
@@ -107,7 +123,6 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  /* ───────────── Store: Delete Product ───────────── */
   const deleteProduct = async (id) => {
     try {
       await api.delete(`/products/${id}`);
@@ -116,6 +131,8 @@ export const ProductProvider = ({ children }) => {
       throw new Error(err.response?.data?.message || "Failed to delete product");
     }
   };
+
+  const clearError = () => dispatch({ type: "CLEAR_ERROR" });
 
   return (
     <ProductContext.Provider
@@ -127,6 +144,7 @@ export const ProductProvider = ({ children }) => {
         createProduct,
         updateProduct,
         deleteProduct,
+        clearError,
       }}
     >
       {children}

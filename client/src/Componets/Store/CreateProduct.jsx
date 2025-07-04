@@ -1,4 +1,3 @@
-// 📁 src/pages/CreateProduct.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlusCircle } from "react-icons/fa";
@@ -39,30 +38,31 @@ const compressImage = (file, { quality = 0.7, maxWidth = 800 } = {}) =>
     reader.readAsDataURL(file);
   });
 
+const initialForm = {
+  name: "",
+  brand: "",
+  category: "",
+  subcategory: "",
+  price: "",
+  discount: "",
+  stock: "",
+  sku: "",
+  barcode: "",
+  description: "",
+  isExpiryProduct: false,
+  manufacturingDate: "",
+  expiryDate: "",
+  batchNumber: "",
+  storageInstructions: "",
+  usageInstructions: "",
+  allergenWarnings: "",
+  fssaiNumber: "",
+  licenseNumber: "",
+  isPublished: true,
+};
+
 const CreateProduct = () => {
-  /* ───────────── State ───────────── */
-  const [form, setForm] = useState({
-    name: "",
-    brand: "",
-    category: "",
-    subcategory: "",
-    price: "",
-    discount: "",
-    stock: "",
-    sku: "",
-    barcode: "",
-    description: "",
-    isExpiryProduct: false,
-    manufacturingDate: "",
-    expiryDate: "",
-    batchNumber: "",
-    storageInstructions: "",
-    usageInstructions: "",
-    allergenWarnings: "",
-    fssaiNumber: "",
-    licenseNumber: "",
-    isPublished: true,
-  });
+  const [form, setForm] = useState(initialForm);
   const [specs, setSpecs] = useState([{ key: "RAM", value: "" }]);
   const [ingredients, setIngredients] = useState([""]);
 
@@ -95,16 +95,24 @@ const CreateProduct = () => {
   const handleImagesChange = useCallback(async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    try {
-      const compressed = await Promise.all(files.map((f) => compressImage(f)));
-      setImages(compressed);
-      setImgPrevs(compressed.map((c) => URL.createObjectURL(c)));
-    } catch (err) {
-      alert(err.message);
-    }
-  }, []);
+    if (images.length + files.length > 5)
+      return alert("You can upload a maximum of 5 product images.");
 
-  /* cleanup preview URLs */
+    try {
+      const compressedResults = await Promise.allSettled(files.map((f) => compressImage(f)));
+      const successful = compressedResults
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => r.value);
+
+      if (!successful.length) return alert("No valid images uploaded.");
+
+      setImages((prev) => [...prev, ...successful]);
+      setImgPrevs((prev) => [...prev, ...successful.map((f) => URL.createObjectURL(f))]);
+    } catch (err) {
+      alert("Image compression failed.");
+    }
+  }, [images]);
+
   useEffect(() => {
     return () => {
       thumbPrev && URL.revokeObjectURL(thumbPrev);
@@ -112,13 +120,13 @@ const CreateProduct = () => {
     };
   }, [thumbPrev, imgPrevs]);
 
-  /* ───────────── Submit ───────────── */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.name || !form.brand || !form.category || !form.price) {
       return alert("Please fill required fields");
     }
+
     if (form.isExpiryProduct) {
       if (!form.manufacturingDate || !form.expiryDate)
         return alert("Provide manufacturing & expiry dates");
@@ -128,33 +136,33 @@ const CreateProduct = () => {
 
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => fd.append(k, typeof v === "string" ? v.trim() : v));
-    fd.append(
-      "specifications",
-      JSON.stringify(
-        specs
-          .filter((s) => s.key.trim())
-          .reduce((o, s) => ({ ...o, [s.key]: s.value }), {})
-      )
-    );
+    fd.append("specifications", JSON.stringify(specs.filter((s) => s.key.trim())));
     fd.append("ingredients", JSON.stringify(ingredients.filter((i) => i.trim())));
     if (thumbnail) fd.append("thumbnail", thumbnail);
     images.forEach((img) => fd.append("images", img));
 
     try {
       await createProduct(fd);
+      alert("Product created successfully");
+      setForm(initialForm);
+      setSpecs([{ key: "RAM", value: "" }]);
+      setIngredients([""]);
+      setThumbnail(null);
+      setThumbPrev(null);
+      setImages([]);
+      setImgPrevs([]);
       navigate("/myproducts");
     } catch {
       alert("Failed to create product");
     }
   };
 
-  /* ───────────── JSX ───────────── */
   return (
     <div className="max-w-5xl mx-auto bg-white shadow-lg p-8 rounded-lg mt-8">
       <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">Create New Product</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* basic text inputs */}
+        {/* basic inputs */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             "name",
@@ -296,21 +304,19 @@ const CreateProduct = () => {
               </button>
             </div>
 
-            {[
-              ["storageInstructions", "Storage Instructions"],
-              ["usageInstructions", "Usage Instructions"],
-              ["allergenWarnings", "Allergen Warnings"],
-            ].map(([n, l]) => (
-              <div key={n}>
-                <label className="font-semibold mb-1 block">{l}</label>
-                <textarea
-                  name={n}
-                  value={form[n]}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded h-24 resize-none"
-                />
-              </div>
-            ))}
+            {[["storageInstructions", "Storage Instructions"], ["usageInstructions", "Usage Instructions"], ["allergenWarnings", "Allergen Warnings"]].map(
+              ([n, l]) => (
+                <div key={n}>
+                  <label className="font-semibold mb-1 block">{l}</label>
+                  <textarea
+                    name={n}
+                    value={form[n]}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded h-24 resize-none"
+                  />
+                </div>
+              )
+            )}
           </>
         )}
 
