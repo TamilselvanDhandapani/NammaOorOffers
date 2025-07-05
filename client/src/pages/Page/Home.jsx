@@ -191,7 +191,7 @@ const Home = () => {
       </section>
 
       {/* CATEGORY SECTION */}
-      <section className="py-20">
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -224,7 +224,7 @@ const Home = () => {
       {/* CTA BANNERS */}
 
 
-<section className="py-14">
+<section className="py-10">
   <div className="max-w-7xl mx-auto px-4">
     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
       
@@ -250,7 +250,7 @@ const Home = () => {
 </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-14 ">
+      <section className="py-10 ">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
