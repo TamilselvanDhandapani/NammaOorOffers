@@ -17,7 +17,7 @@ const CouponList = () => {
     if (!authLoading && user?.storeId) {
       fetchCouponsByStore(user.storeId);
     }
-  }, [authLoading, user,fetchCouponsByStore]);
+  }, [authLoading, user]);
 
   if (authLoading || couponLoading) {
     return <p className="couponlist-loading">Loading coupons...</p>;

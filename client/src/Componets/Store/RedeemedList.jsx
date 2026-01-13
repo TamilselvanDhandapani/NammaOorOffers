@@ -20,11 +20,11 @@ const RedeemedList = () => {
       const storeId = typeof user.storeId === "object" ? user.storeId._id : user.storeId;
       fetchRedeemedCouponsByStore(storeId);
     }
-  }, [user,fetchRedeemedCouponsByStore]);
+  }, [user]);
 
   useEffect(() => {
     setFilteredCoupons(redeemedCoupons);
-  }, [redeemedCoupons,]);
+  }, []);
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();

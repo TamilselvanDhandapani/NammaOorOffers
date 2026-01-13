@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
-import  useStore  from "../../hooks/useStore";
-import "../../styles/MyStore.css";
+import useStore from "../../hooks/useStore";
+import "../../styles/Store.css";
 
 const MyStore = () => {
-  const {
-    fetchMyStore,
-    updateStore,
-    myStore,
-    loading,
-  } = useStore();
+  const { fetchMyStore, updateStore, myStore, loading } = useStore();
 
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,7 +17,7 @@ const MyStore = () => {
 
   useEffect(() => {
     fetchMyStore();
-  }, [fetchMyStore]);
+  }, []);
 
   useEffect(() => {
     if (myStore) {
@@ -66,27 +61,32 @@ const MyStore = () => {
 
   return (
     <div className="mystore-container">
-       <h1>{myStore.storeName}'s Information</h1>
+      <h1>{myStore.storeName}'s Information</h1>
       {!editMode ? (
         <div className="mystore-card">
           <img
-            alt="Logo"
+            alt="Store Logo"
             className="store-logo"
             src={
-              myStore?.storeLogo
-                ? `http://localhost:5000${myStore.storeLogo}`
+              myStore?.storeLogo?.startsWith("http")
+                ? myStore.storeLogo
                 : "/placeholder.png"
             }
           />
           <h3>{myStore.storeName}</h3>
           <p>
             <strong>Website:</strong>{" "}
-            <a href={myStore.storeWebsite} target="_blank" rel="noopener noreferrer">
+            <a
+              href={myStore.storeWebsite}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {myStore.storeWebsite}
             </a>
           </p>
           <p>
-            <strong>Address:</strong> {myStore.storeAddress}, {myStore.storeCity}
+            <strong>Address:</strong> {myStore.storeAddress},{" "}
+            {myStore.storeCity}
           </p>
           <p>
             <strong>Description:</strong> {myStore.storeDescription}
@@ -97,9 +97,7 @@ const MyStore = () => {
         </div>
       ) : (
         <form className="store-form" onSubmit={handleSubmit}>
-
-       
-         <label>Store Name :</label>
+          <label>Store Name :</label>
           <input
             name="storeName"
             value={formData.storeName}
@@ -107,9 +105,8 @@ const MyStore = () => {
             placeholder="Store Name"
             required
           />
-      
 
-       <label>Store Website</label>
+          <label>Store Website</label>
           <input
             name="storeWebsite"
             value={formData.storeWebsite}
@@ -142,7 +139,12 @@ const MyStore = () => {
             onChange={handleChange}
             placeholder="Description"
           />
-          <input type="file" name="storeLogo" onChange={handleChange} accept="image/*" />
+          <input
+            type="file"
+            name="storeLogo"
+            onChange={handleChange}
+            accept="image/*"
+          />
           <button type="submit">Save Changes</button>
           <button type="button" onClick={() => setEditMode(false)}>
             Cancel

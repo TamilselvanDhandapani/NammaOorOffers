@@ -16,7 +16,7 @@ const RedeemedCoupons = () => {
     if (user?._id) {
       fetchMyRedeemedCoupons(user._id);
     }
-  }, [user?._id,fetchMyRedeemedCoupons]);
+  }, [user?._id]);
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;

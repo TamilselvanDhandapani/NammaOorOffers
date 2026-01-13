@@ -14,18 +14,16 @@ const {
   updateUserRole,
 } = require("../controllers/storeController");
 
-
 // Create store user (super admin only)
 router.post("/create", protect, authorizeRoles("admin"), StoreCredentials);
 
-
-// ✅ Get all users with a specific role
+// Get all users with a specific role
 router.get("/users/:role", protect, authorizeRoles("admin"), getUsersByRole);
 
-//  Update the Roles
+// Update user roles
 router.put("/:userId/role", protect, authorizeRoles("admin"), updateUserRole);
 
-// ✅ Create a new store (Only for store role)
+// Add a new store (store role)
 router.post(
   "/add",
   protect,
@@ -34,7 +32,7 @@ router.post(
   addStore
 );
 
-// ✅ Update existing store (Only for store role)
+// Update store (store role)
 router.put(
   "/update",
   protect,
@@ -43,13 +41,13 @@ router.put(
   updateStore
 );
 
-// ✅ Get store for currently logged-in store user
+// Get current store (store role)
 router.get("/my", protect, authorizeRoles("store"), getStoreByOwner);
 
-// ✅ Public route: Get all stores
+// Public: Get all stores
 router.get("/all", getAllStores);
 
-// ✅ Public route: Get single store by ID
+// ✅ Public: Get store by ID (must be last to avoid route collision)
 router.get("/:id", getStoreById);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import { createContext, useReducer, useCallback } from "react";
-import api from "../Services/api"; // Axios instance with baseURL and token
+import api from "../Services/api"; // Centralized Axios instance
 
 const StoreContext = createContext();
 
@@ -93,7 +93,7 @@ export const StoreProvider = ({ children }) => {
     }
   }, []);
 
-  // ✅ Create a store (only for 'store' role)
+  // ✅ Create store
   const createStore = async (formData) => {
     try {
       const res = await api.post("/store/add", formData, {
@@ -105,7 +105,7 @@ export const StoreProvider = ({ children }) => {
     }
   };
 
-  // ✅ Update a store
+  // ✅ Update store
   const updateStore = async (formData) => {
     try {
       const res = await api.put("/store/update", formData, {
@@ -117,7 +117,7 @@ export const StoreProvider = ({ children }) => {
     }
   };
 
-  // ✅ Get users by role (admin only)
+  // ✅ Fetch users by role
   const fetchUsersByRole = useCallback(async (role) => {
     dispatch({ type: "FETCH_START" });
     try {
@@ -131,7 +131,7 @@ export const StoreProvider = ({ children }) => {
     }
   }, []);
 
-  // ✅ Change a user's role
+  // ✅ Change user role
   const changeUserRole = useCallback(async (userId, newRole) => {
     dispatch({ type: "FETCH_START" });
     try {

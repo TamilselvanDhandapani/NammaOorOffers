@@ -2,7 +2,7 @@
 import { useCallback, createContext, useState } from "react";
 import api from "../Services/api";
 
-export const AnalyticsContext = createContext(); // ✅ Must be exported separately
+ const AnalyticsContext = createContext(); // ✅ Must be exported separately
 
 export const AnalyticsProvider = ({ children }) => {
   const [adminStats, setAdminStats] = useState(null);
@@ -55,4 +55,4 @@ export const AnalyticsProvider = ({ children }) => {
 };
 
 
-export default AnalyticsProvider;
+export default AnalyticsContext;

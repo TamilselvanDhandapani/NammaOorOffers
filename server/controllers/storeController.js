@@ -62,7 +62,8 @@ const addStore = async (req, res) => {
       return res.status(400).json({ msg: "Please fill all required fields." });
     }
 
-    const storeLogo = req.file ? `/uploads/${req.file.filename}` : "";
+    // ✅ Use Cloudinary URL if image is uploaded
+    const storeLogo = req.file?.path || ""; // This is the Cloudinary URL
 
     // ❗ Prevent duplicate store for user
     const existingStore = await StoreInfo.findOne({ owner: req.user.id });
@@ -74,7 +75,7 @@ const addStore = async (req, res) => {
 
     const newStore = await StoreInfo.create({
       storeName,
-      storeLogo,
+      storeLogo, // ✅ Saved as Cloudinary URL
       storeWebsite,
       storeAddress,
       storeCity,
@@ -96,14 +97,19 @@ const addStore = async (req, res) => {
   }
 };
 
-
-// ✅ Update store info
+// ✅ Update store info (Cloudinary version)
 const updateStore = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
+    // ✅ Use Cloudinary image URL if a new image was uploaded
     if (req.file) {
-      updateData.storeLogo = `/uploads/${req.file.filename}`;
+      updateData.storeLogo = req.file.path; // Cloudinary image URL
+    }
+
+    // Optional: Handle parsed JSON for nested fields (like socialMedia)
+    if (updateData.socialMedia && typeof updateData.socialMedia === "string") {
+      updateData.socialMedia = JSON.parse(updateData.socialMedia);
     }
 
     const updatedStore = await StoreInfo.findOneAndUpdate(
@@ -122,6 +128,7 @@ const updateStore = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
+
 
 // ✅ Get all stores (admin/public)
 const getAllStores = async (req, res) => {

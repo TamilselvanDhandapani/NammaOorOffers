@@ -60,7 +60,7 @@ const OffersDetails = () => {
     };
 
     fetchDetails();
-  }, [id, user?.id,fetchMyRedeemedCoupons, getCouponById, redeemedCoupons]);
+  }, [id, user?.id]);
 
   const handleRedeem = async () => {
     if (!user) {
